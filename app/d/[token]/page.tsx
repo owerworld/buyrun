@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getGuest, inviteLabel, list } from "@/lib/data";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, SiteFooter } from "@/components/Invite";
+import { ThemeStyle } from "@/components/Theme";
 import { respondAction } from "../../actions";
 
 /** WhatsApp/Telegram link önizlemesi: çiftin adları, tarih ve şehir. Davetlinin adı paylaşılmaz. */
@@ -31,6 +32,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
 
   return (
     <main className="wrap">
+      <ThemeStyle theme={inv.theme} />
       <Hero inv={inv} greeting={<>Sevgili <b>{g.name}</b>, {greet} sizi aramızda görmek istiyoruz.</>} />
       <EventsCard inv={inv} events={events} />
 

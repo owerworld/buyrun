@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemePicker } from "@/components/Theme";
 import { createAction } from "../actions";
 
 export default async function Olustur({ searchParams }: { searchParams: Promise<{ hata?: string }> }) {
@@ -16,6 +17,8 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
         </div>
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" />
+
+        <ThemePicker />
 
         <h2 style={{ marginTop: 20 }}>Nikâh ve düğün</h2>
         <div className="grid2">

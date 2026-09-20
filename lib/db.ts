@@ -15,6 +15,7 @@ const SCHEMA = [
     bus_time TEXT NOT NULL DEFAULT '',
     bus_note TEXT NOT NULL DEFAULT '',
     program TEXT NOT NULL DEFAULT '',
+    theme TEXT NOT NULL DEFAULT 'klasik',
     delete_after TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
@@ -49,6 +50,8 @@ const SCHEMA = [
     responded_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  // Önceden kurulmuş veritabanları için tema sütunu
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'klasik'`,
   `CREATE INDEX IF NOT EXISTS guests_family_idx ON guests(family_id)`,
   `CREATE INDEX IF NOT EXISTS guests_invitation_idx ON guests(invitation_id)`,
 ];

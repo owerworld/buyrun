@@ -3,10 +3,12 @@
 import { redirect } from "next/navigation";
 import { addGuest, createInvitation, getAdmin, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
+import { DEFAULT_THEME, isTheme } from "@/lib/themes";
 
 const s = (f: FormData, k: string, max = 120) => String(f.get(k) ?? "").trim().slice(0, max);
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
 const isTime = (v: string) => /^\d{2}:\d{2}$/.test(v);
+const theme = (f: FormData) => { const t = s(f, "theme", 20); return isTheme(t) ? t : DEFAULT_THEME; };
 
 export async function createAction(f: FormData) {
   const fail = (m: string) => redirect(`/olustur?hata=${encodeURIComponent(m)}`);
@@ -29,7 +31,7 @@ export async function createAction(f: FormData) {
   const admin = await createInvitation({
     nameA, nameB, city: s(f, "city", 40), events,
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
-    program: s(f, "program", 600),
+    program: s(f, "program", 600), theme: theme(f),
   });
   redirect(`/yonet/${admin}`);
 }
@@ -60,7 +62,7 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
   await updateInvitation(adminToken, {
     nameA, nameB, city: s(f, "city", 40), events,
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
-    program: s(f, "program", 600),
+    program: s(f, "program", 600), theme: theme(f),
   });
   redirect(`/yonet/${adminToken}?guncellendi=1`);
 }

@@ -3,7 +3,7 @@
 Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri silme.
 
 ## Ne çalışıyor
-- `/olustur` — Çift davetiyeyi oluşturur (düğün + isteğe bağlı kına, servis, program)
+- `/olustur` — Çift davetiyeyi oluşturur (düğün + isteğe bağlı kına, servis, program, tema)
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım
 - `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program (linkler değişmez)
 - `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, silme
@@ -12,6 +12,13 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/gizlilik` — KVKK aydınlatma TASLAĞI (avukat onayı bekliyor)
 - Link önizleme posteri — `/d/[token]` ve `/onizleme/[token]` paylaşıldığında WhatsApp'ta çiftin adları, tarih ve şehir yazan poster çıkar (davetlinin adı posterde yer almaz)
 - `/api/cron/cleanup` — Son etkinlikten 90 gün sonra tüm veriyi siler (Vercel Cron, her gece)
+
+## Temalar
+`lib/themes.ts` içinde üç tema var: **klasik** (bordo-altın), **krem** (kum beji & zeytin yeşili),
+**gece** (lacivert & altın). Renkler 2026 Türkiye davetiye trendlerine göre seçildi.
+Tema yalnızca `globals.css` değişkenlerini ezer; yeni CSS yapısı kurulmaz. Yeni tema eklemek
+için `THEMES` dizisine bir kayıt eklemek yeterli — davetli sayfası, önizleme ve link posteri
+otomatik uyum sağlar.
 
 ## Bilerek olmayanlar (hukuki ilkeler)
 IBAN / para toplama yok · Sistem mesaj göndermez (aile kendi WhatsApp'ından paylaşır) · Telefon numarası istenmez · Fotoğraf yok · Müzik yok · Kişisel linkler arama motorlarına kapalı (X-Robots-Tag + robots.txt)
@@ -35,7 +42,7 @@ Oluşturma → aile paneli → davetli ekleme → davetli sayfası (sadece kendi
 ## Sıradaki işler
 - [x] Davetiye başına link önizleme görseli (Open Graph) — WhatsApp'ta poster gibi görünsün
 - [ ] Instagram hikâyesi boyutunda paylaşım görseli
-- [ ] Hazır tema/şablonlar
+- [x] Hazır tema/şablonlar (klasik bordo-altın · sade krem · modern koyu)
 - [ ] İstek sınırlama (rate limit) ve yönetim linkini kaybeden çift için kurtarma
 - [ ] Ödeme (ancak avukat ve mali müşavir onayından sonra)
 - [ ] Marka adı TÜRKPATENT kontrolü — "Buyrun" çalışma adıdır

@@ -7,7 +7,7 @@ export type Status = "bekliyor" | "geliyor" | "gelmiyor";
 
 export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
-  bus_from: string; bus_time: string; bus_note: string; program: string; delete_after: string;
+  bus_from: string; bus_time: string; bus_note: string; program: string; theme: string; delete_after: string;
 }
 export interface EventRow { id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number; }
 export interface Family { id: string; invitation_id: string; side: Side; panel_token: string; }
@@ -22,7 +22,7 @@ export const list = (s: string) => (s ? s.split(",").filter(Boolean) : []);
 export interface NewEvent { kind: string; title: string; date: string; time: string; venue: string; address: string; }
 export interface NewInvitation {
   nameA: string; nameB: string; city: string;
-  events: NewEvent[]; busFrom: string; busTime: string; busNote: string; program: string;
+  events: NewEvent[]; busFrom: string; busTime: string; busNote: string; program: string; theme: string;
 }
 
 /** Veri saklama kuralı: son etkinlikten 90 gün sonra her şey silinir. */
@@ -36,9 +36,9 @@ export async function createInvitation(input: NewInvitation) {
   const deleteAfter = addDays(dates[dates.length - 1], RETENTION_DAYS);
 
   await q(
-    `INSERT INTO invitations (id, admin_token, name_a, name_b, city, main_date, bus_from, bus_time, bus_note, program, delete_after)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-    [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, deleteAfter]
+    `INSERT INTO invitations (id, admin_token, name_a, name_b, city, main_date, bus_from, bus_time, bus_note, program, theme, delete_after)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+    [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.theme, deleteAfter]
   );
   let i = 0;
   for (const e of input.events) {
@@ -56,7 +56,7 @@ export async function createInvitation(input: NewInvitation) {
 export interface EditEvent { id: string; date: string; time: string; venue: string; address: string; }
 export interface EditInvitation {
   nameA: string; nameB: string; city: string;
-  events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string;
+  events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string; theme: string;
 }
 
 /** Çift davetiyesini sonradan düzenler. Etkinlikler yerinde güncellenir, davetli linkleri bozulmaz. */
@@ -82,8 +82,8 @@ export async function updateInvitation(adminToken: string, input: EditInvitation
 
   await q(
     `UPDATE invitations SET name_a = $1, name_b = $2, city = $3, main_date = $4,
-       bus_from = $5, bus_time = $6, bus_note = $7, program = $8, delete_after = $9 WHERE id = $10`,
-    [input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, deleteAfter, inv.id]
+       bus_from = $5, bus_time = $6, bus_note = $7, program = $8, theme = $9, delete_after = $10 WHERE id = $11`,
+    [input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.theme, deleteAfter, inv.id]
   );
 }
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdmin } from "@/lib/data";
+import { ThemePicker } from "@/components/Theme";
 import { updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
@@ -31,6 +32,8 @@ export default async function Duzenle({ params, searchParams }: {
         </div>
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" defaultValue={inv.city} />
+
+        <ThemePicker current={inv.theme} />
 
         {events.map((e) => (
           <div key={e.id}>

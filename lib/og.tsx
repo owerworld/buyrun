@@ -3,17 +3,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Invitation } from "./data";
 import { shortDate } from "./format";
+import { themeOf } from "./themes";
 
 /** WhatsApp, Telegram vb. link önizlemesi için poster ölçüsü. */
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 export const ogAlt = "Davetiye önizlemesi";
-
-/** Davetiyenin renkleri (globals.css ile aynı değerler). */
-const VELVET = "#3E0F24";
-const VELVET2 = "#5A1532";
-const GOLD = "#CFA85A";
-const CREAM = "#F7EEDC";
 
 const FONT_DIR = join(process.cwd(), "assets", "fonts");
 
@@ -47,6 +42,7 @@ function nameSize(text: string) {
 export async function posterImage(inv: Invitation, label: string) {
   const line = `${inv.name_a} ile ${inv.name_b}`;
   const size = nameSize(line);
+  const { bg: VELVET, bg2: VELVET2, frame: GOLD, text: CREAM, accent: ACCENT } = themeOf(inv.theme).og;
 
   return new ImageResponse(
     (
@@ -76,7 +72,7 @@ export async function posterImage(inv: Invitation, label: string) {
             padding: "40px 56px",
           }}
         >
-          <div style={{ display: "flex", fontSize: 24, fontWeight: 500, letterSpacing: 6, color: GOLD }}>
+          <div style={{ display: "flex", fontSize: 24, fontWeight: 500, letterSpacing: 6, color: ACCENT }}>
             MUTLULUĞUMUZA ORTAK OLUN
           </div>
 
@@ -106,7 +102,7 @@ export async function posterImage(inv: Invitation, label: string) {
           </div>
 
           {inv.city ? (
-            <div style={{ display: "flex", marginTop: 10, fontSize: 28, fontWeight: 500, color: GOLD }}>{inv.city}</div>
+            <div style={{ display: "flex", marginTop: 10, fontSize: 28, fontWeight: 500, color: ACCENT }}>{inv.city}</div>
           ) : null}
 
           <div style={{ display: "flex", marginTop: 34, fontSize: 22, fontWeight: 500, color: CREAM, opacity: 0.75 }}>

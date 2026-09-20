@@ -111,3 +111,13 @@ details summary{cursor:pointer;font-weight:700}
 .site-footer b{color:var(--ink)}
 .brand{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px}
 .brand a{font-family:var(--disp);font-weight:700;font-size:1.4rem;text-decoration:none;color:var(--ink)}
+
+/* Tema seçici (oluşturma ve düzenleme formları) */
+.temalar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
+.temalar label{position:relative;display:block;height:100%}
+.temalar input{position:absolute;opacity:0;inset:0}
+.tema{display:block;height:100%;text-align:center;border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;font-size:.85rem;font-weight:700;cursor:pointer}
+.tema small{display:block;margin-top:2px;font-size:.72rem;font-weight:400;color:var(--muted)}
+.temalar input:checked+.tema{border-color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold)}
+.temalar input:focus-visible+.tema{outline:3px solid var(--focus);outline-offset:2px}
+.sw{display:block;height:26px;margin-bottom:6px;border-radius:8px;border:1px solid var(--line);background:linear-gradient(90deg,var(--a) 0 40%,var(--b) 40% 70%,var(--c) 70% 100%)}
