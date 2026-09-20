@@ -1,0 +1,56 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getAdmin, SIDE_LABEL, summarize } from "@/lib/data";
+import { siteUrl } from "@/lib/format";
+import { CopyButton } from "@/components/CopyButton";
+
+export default async function Yonet({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  const data = await getAdmin(token);
+  if (!data) notFound();
+  const { inv, events, families, guests } = data;
+  const sum = summarize(guests, events);
+  const base = siteUrl();
+
+  return (
+    <main className="wrap">
+      <div className="brand"><Link href="/">Buyrun</Link></div>
+      <section className="card">
+        <h1 className="title">{inv.name_a} ile {inv.name_b}</h1>
+        <p className="muted">Davetiyeniz hazır. Bu sayfa yönetim sayfanız, linkini kaydedin ve kimseyle paylaşmayın.</p>
+        <div className="linkbox">{`${base}/yonet/${token}`}</div>
+        <CopyButton text={`${base}/yonet/${token}`} label="Yönetim linkini kopyala" />
+        <p style={{ marginTop: 12 }}><Link className="btn ghost full" href={`/onizleme/${token}`}>Davetiyeyi önizle</Link></p>
+      </section>
+
+      <section className="card">
+        <h2>Aile panelleri</h2>
+        <p className="muted small">Her aile kendi davetlilerini kendi panelinden ekler. Oğlan evi panelinin linkini damadın ailesine gönderin.</p>
+        {families.map((f) => {
+          const url = `${base}/p/${f.panel_token}`;
+          const msg = `${inv.name_a} ile ${inv.name_b} düğünü için ${SIDE_LABEL[f.side].toLowerCase()} davetli paneli: ${url}\nBu linki sadece aile içinde paylaşın.`;
+          return (
+            <div key={f.id} style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 12 }}>
+              <h3>{SIDE_LABEL[f.side]} paneli</h3>
+              <div className="linkbox">{url}</div>
+              <div className="guest act" style={{ borderTop: 0, padding: 0 }}>
+                <Link className="lnk" href={`/p/${f.panel_token}`}>Paneli aç</Link>
+                <CopyButton text={url} label="Linki kopyala" />
+                <a className="lnk" href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer">WhatsApp ile gönder</a>
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      <section className="card">
+        <h2>Ortak sayım</h2>
+        <div className="stats">
+          <div className="stat"><b>{sum.people}</b><span>Gelecek kişi</span></div>
+          <div className="stat"><b>{sum.waiting}</b><span>Yanıt bekleyen davet</span></div>
+        </div>
+        <div className="heads">{sum.perEvent.map((e) => <div key={e.id} className={`head ${e.kind}`}>{e.title}<br /><b>{e.people}</b> kişi</div>)}</div>
+      </section>
+    </main>
+  );
+}
