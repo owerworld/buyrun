@@ -1,7 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdmin } from "@/lib/data";
+import { getAdmin, inviteLabel } from "@/lib/data";
+import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, SiteFooter } from "@/components/Invite";
+
+/** Çift önizleme linkini paylaştığında da aynı poster görünür. */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const data = await getAdmin(token);
+  if (!data) return { title: "Davetiye bulunamadı" };
+  const { inv, events } = data;
+  const title = `${inv.name_a} ile ${inv.name_b} · ${inviteLabel(events)}`;
+  const description = [shortDate(inv.main_date), inv.city].filter(Boolean).join(" · ");
+  return { title, description, openGraph: { type: "website", locale: "tr_TR", siteName: "Buyrun", title, description } };
+}
 
 export default async function Onizleme({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

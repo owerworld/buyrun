@@ -134,3 +134,14 @@ export function summarize(guests: Guest[], events: EventRow[]) {
     })),
   };
 }
+
+/** Davetin kısa adı: "Kına ve düğün daveti" gibi. Link önizlemesinde kullanılır. */
+export function inviteLabel(events: { kind: string }[]) {
+  const kinds = events.map((e) => e.kind);
+  const kina = kinds.includes("kina");
+  const dugun = kinds.includes("dugun");
+  if (kina && dugun) return "Kına ve düğün daveti";
+  if (kina) return "Kına daveti";
+  if (dugun) return "Düğün daveti";
+  return "Davet";
+}

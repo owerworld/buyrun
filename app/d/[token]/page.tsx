@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGuest, list } from "@/lib/data";
+import { getGuest, inviteLabel, list } from "@/lib/data";
+import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, SiteFooter } from "@/components/Invite";
 import { respondAction } from "../../actions";
+
+/** WhatsApp/Telegram link önizlemesi: çiftin adları, tarih ve şehir. Davetlinin adı paylaşılmaz. */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const data = await getGuest(token);
+  if (!data) return { title: "Davetiye bulunamadı" };
+  const { inv, events } = data;
+  const title = `${inv.name_a} ile ${inv.name_b} · ${inviteLabel(events)}`;
+  const description = `${[shortDate(inv.main_date), inv.city].filter(Boolean).join(" · ")} — Davetiyeyi açıp katılım durumunuzu bildirebilirsiniz.`;
+  return { title, description, openGraph: { type: "website", locale: "tr_TR", siteName: "Buyrun", title, description } };
+}
 
 export default async function Davet({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<{ duzenle?: string; tamam?: string; hata?: string }> }) {
   const { token } = await params;

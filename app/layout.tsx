@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { siteUrl } from "@/lib/format";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "Buyrun – Dijital davetiye ve LCV",
   description: "Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli.",
   robots: { index: false, follow: false },

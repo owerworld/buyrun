@@ -9,6 +9,7 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
 - `/onizleme/[token]` — Davetiye önizleme
 - `/gizlilik` — KVKK aydınlatma TASLAĞI (avukat onayı bekliyor)
+- Link önizleme posteri — `/d/[token]` ve `/onizleme/[token]` paylaşıldığında WhatsApp'ta çiftin adları, tarih ve şehir yazan poster çıkar (davetlinin adı posterde yer almaz)
 - `/api/cron/cleanup` — Son etkinlikten 90 gün sonra tüm veriyi siler (Vercel Cron, her gece)
 
 ## Bilerek olmayanlar (hukuki ilkeler)
@@ -31,7 +32,7 @@ npm run dev        # http://localhost:3000
 Oluşturma → aile paneli → davetli ekleme → davetli sayfası (sadece kendi etkinlikleri) → LCV → panelde anında sayım → diğer aile ortak sayımı görür ama listeyi görmez → silme → silinen link 404 → cron yetkisiz 401 → geçmiş tarih reddedilir.
 
 ## Sıradaki işler
-- [ ] Davetiye başına link önizleme görseli (Open Graph) — WhatsApp'ta poster gibi görünsün
+- [x] Davetiye başına link önizleme görseli (Open Graph) — WhatsApp'ta poster gibi görünsün
 - [ ] Instagram hikâyesi boyutunda paylaşım görseli
 - [ ] Hazır tema/şablonlar
 - [ ] İstek sınırlama (rate limit) ve yönetim linkini kaybeden çift için kurtarma

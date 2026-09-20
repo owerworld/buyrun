@@ -4,6 +4,8 @@ const privatePaths = ["/d/:path*", "/p/:path*", "/yonet/:path*", "/onizleme/:pat
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite"],
+  // Link önizleme posterinin yazı tipleri sunucu paketine dahil edilsin
+  outputFileTracingIncludes: { "/**": ["./assets/fonts/*.ttf"] },
   poweredByHeader: false,
   async headers() {
     return [
