@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { addGuest, createInvitation, removeGuest, respond, type NewEvent, type Status } from "@/lib/data";
+import { addGuest, createInvitation, getAdmin, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
 
 const s = (f: FormData, k: string, max = 120) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -32,6 +32,37 @@ export async function createAction(f: FormData) {
     program: s(f, "program", 600),
   });
   redirect(`/yonet/${admin}`);
+}
+
+export async function updateInvitationAction(adminToken: string, f: FormData) {
+  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}`);
+  const data = await getAdmin(adminToken);
+  if (!data) redirect("/");
+
+  const nameA = s(f, "nameA", 40), nameB = s(f, "nameB", 40);
+  if (!nameA || !nameB) fail("Çiftin iki adını da yazın.");
+
+  const events: EditEvent[] = [];
+  for (const e of data.events) {
+    const ev = {
+      id: e.id,
+      date: s(f, `e_${e.id}_date`),
+      time: s(f, `e_${e.id}_time`),
+      venue: s(f, `e_${e.id}_venue`, 80),
+      address: s(f, `e_${e.id}_address`),
+    };
+    if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail(`${e.title} için tarih, saat ve yer zorunlu.`);
+    // Tarihi değiştiriyorsa geçmişe alamaz; dokunmadıysa eski tarih olduğu gibi kalır
+    if (ev.date !== e.event_date && ev.date < todayIso()) fail(`${e.title} tarihi geçmişte olamaz.`);
+    events.push(ev);
+  }
+
+  await updateInvitation(adminToken, {
+    nameA, nameB, city: s(f, "city", 40), events,
+    busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
+    program: s(f, "program", 600),
+  });
+  redirect(`/yonet/${adminToken}?guncellendi=1`);
 }
 
 export async function addGuestAction(panelToken: string, f: FormData) {

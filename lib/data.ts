@@ -53,6 +53,40 @@ export async function createInvitation(input: NewInvitation) {
   return admin;
 }
 
+export interface EditEvent { id: string; date: string; time: string; venue: string; address: string; }
+export interface EditInvitation {
+  nameA: string; nameB: string; city: string;
+  events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string;
+}
+
+/** Çift davetiyesini sonradan düzenler. Etkinlikler yerinde güncellenir, davetli linkleri bozulmaz. */
+export async function updateInvitation(adminToken: string, input: EditInvitation) {
+  const data = await getAdmin(adminToken);
+  if (!data) throw new Error("Davetiye bulunamadı");
+  const { inv, events } = data;
+
+  // Yalnızca bu davetiyeye ait etkinlikler güncellenebilir
+  const edits = input.events.filter((e) => events.some((x) => x.id === e.id));
+  for (const e of edits) {
+    await q(
+      `UPDATE events SET event_date = $1, event_time = $2, venue = $3, address = $4 WHERE id = $5 AND invitation_id = $6`,
+      [e.date, e.time, e.venue, e.address, e.id, inv.id]
+    );
+  }
+
+  // Tarihler değiştiyse ana tarih ve silme tarihi yeniden hesaplanır
+  const after = events.map((e) => edits.find((x) => x.id === e.id)?.date ?? e.event_date).sort();
+  const wedding = events.find((e) => e.kind === "dugun");
+  const mainDate = (wedding && edits.find((x) => x.id === wedding.id)?.date) ?? wedding?.event_date ?? after[0];
+  const deleteAfter = addDays(after[after.length - 1], RETENTION_DAYS);
+
+  await q(
+    `UPDATE invitations SET name_a = $1, name_b = $2, city = $3, main_date = $4,
+       bus_from = $5, bus_time = $6, bus_note = $7, program = $8, delete_after = $9 WHERE id = $10`,
+    [input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, deleteAfter, inv.id]
+  );
+}
+
 async function eventsOf(invId: string) {
   return q<EventRow>(`SELECT * FROM events WHERE invitation_id = $1 ORDER BY event_date, sort`, [invId]);
 }

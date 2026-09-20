@@ -4,8 +4,12 @@ import { getAdmin, SIDE_LABEL, summarize } from "@/lib/data";
 import { siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
 
-export default async function Yonet({ params }: { params: Promise<{ token: string }> }) {
+export default async function Yonet({ params, searchParams }: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ guncellendi?: string }>;
+}) {
   const { token } = await params;
+  const { guncellendi } = await searchParams;
   const data = await getAdmin(token);
   if (!data) notFound();
   const { inv, events, families, guests } = data;
@@ -15,12 +19,16 @@ export default async function Yonet({ params }: { params: Promise<{ token: strin
   return (
     <main className="wrap">
       <div className="brand"><Link href="/">Buyrun</Link></div>
+      {guncellendi && <p className="info" role="status" style={{ marginTop: 0 }}>Davetiye güncellendi. Davetlileriniz yeni bilgileri görüyor.</p>}
       <section className="card">
         <h1 className="title">{inv.name_a} ile {inv.name_b}</h1>
         <p className="muted">Davetiyeniz hazır. Bu sayfa yönetim sayfanız, linkini kaydedin ve kimseyle paylaşmayın.</p>
         <div className="linkbox">{`${base}/yonet/${token}`}</div>
         <CopyButton text={`${base}/yonet/${token}`} label="Yönetim linkini kopyala" />
-        <p style={{ marginTop: 12 }}><Link className="btn ghost full" href={`/onizleme/${token}`}>Davetiyeyi önizle</Link></p>
+        <div className="btns" style={{ marginTop: 12 }}>
+          <Link className="btn ghost" href={`/onizleme/${token}`}>Davetiyeyi önizle</Link>
+          <Link className="btn ghost" href={`/yonet/${token}/duzenle`}>Davetiyeyi düzenle</Link>
+        </div>
       </section>
 
       <section className="card">
