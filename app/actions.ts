@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { addGuest, addExtraEvent, adminTokenByRecoveryCode, createInvitation, getAdmin, removeExtraEvent, removeGuest, respond, setGuestEvents, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
+import { addGuest, addExtraEvent, adminTokenByRecoveryCode, createInvitation, getAdmin, removeExtraEvent, removeGuest, respond, updateGuest, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
 import { DEFAULT_MAIN, isExtraKind, isMainKind, kindOf } from "@/lib/events";
 import { DEFAULT_THEME, isTheme } from "@/lib/themes";
@@ -41,7 +41,7 @@ export async function createAction(f: FormData) {
   const admin = await createInvitation({
     nameA, nameB, city: s(f, "city", 40), events,
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
-    program: s(f, "program", 600), theme: theme(f),
+    program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
   });
   redirect(`/yonet/${admin}`);
 }
@@ -72,7 +72,7 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
   await updateInvitation(adminToken, {
     nameA, nameB, city: s(f, "city", 40), events,
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
-    program: s(f, "program", 600), theme: theme(f),
+    program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
   });
   redirect(`/yonet/${adminToken}?guncellendi=1`);
 }
@@ -88,11 +88,11 @@ export async function addGuestAction(panelToken: string, f: FormData) {
   redirect(`/p/${panelToken}?yeni=${t}`);
 }
 
-/** Davetlinin çağrıldığı günleri günceller. */
-export async function setGuestEventsAction(panelToken: string, guestId: string, f: FormData) {
+/** Davetlinin adını ve çağrıldığı günleri günceller. */
+export async function updateGuestAction(panelToken: string, guestId: string, f: FormData) {
   let sifirlandi = false;
   try {
-    sifirlandi = await setGuestEvents(panelToken, guestId, f.getAll("ev").map(String));
+    sifirlandi = await updateGuest(panelToken, guestId, s(f, "name", 60), f.getAll("ev").map(String));
   } catch (e) {
     redirect(`/p/${panelToken}?hata=${encodeURIComponent((e as Error).message)}`);
   }
@@ -137,7 +137,7 @@ export async function addExtraEventAction(adminToken: string, f: FormData) {
   if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail(`${kind.title} için tarih, saat ve yer zorunlu.`);
   if (ev.date < todayIso()) fail(`${kind.title} tarihi geçmişte olamaz.`);
   try {
-    await addExtraEvent(adminToken, ev, f.get("mevcut") === "on");
+    await addExtraEvent(adminToken, ev, f.get("mevcut") === "on", s(f, "k_program", 600));
   } catch (e) {
     fail((e as Error).message);
   }

@@ -1,5 +1,5 @@
 import type { EventRow, Invitation } from "@/lib/data";
-import { mainOf, programTitle } from "@/lib/events";
+import { isExtraKind, mainOf, programTitle } from "@/lib/events";
 import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
 import { Sirma } from "./Sirma";
 
@@ -23,10 +23,14 @@ export function Hero({ inv, greeting }: { inv: Invitation; greeting: React.React
 const mapsUrl = (e: EventRow) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${e.venue} ${e.address}`)}`;
 
 export function EventsCard({ inv, events, title = "Davetli olduğunuz günler" }: { inv: Invitation; events: EventRow[]; title?: string }) {
-  const program = inv.program.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
-    const m = l.match(/^(\d{1,2}[:.]\d{2})\s+(.*)$/);
-    return m ? [m[1].replace(".", ":"), m[2]] : ["", l];
-  });
+  /** "19:00 Nikâh töreni" satırlarını saat ve metin olarak ayırır. */
+  const parseProgram = (text: string) =>
+    text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+      const m = l.match(/^(\d{1,2}[:.]\d{2})\s+(.*)$/);
+      return m ? [m[1].replace(".", ":"), m[2]] : ["", l];
+    });
+  // Ana törenin programı invitations.program, ikinci etkinliğinki extra_program sütununda
+  const programOf = (e: EventRow) => parseProgram(isExtraKind(e.kind) ? inv.extra_program : inv.program);
   const hasWedding = Boolean(mainOf(events));
   return (
     <section className="card">
@@ -45,12 +49,16 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler" }
       {hasWedding && inv.bus_from && (
         <div className="bus"><span aria-hidden="true">🚌</span><div><b>Servis:</b> {inv.bus_from}{inv.bus_time ? `, saat ${inv.bus_time}` : ""}.{inv.bus_note && <span className="muted"> {inv.bus_note}</span>}</div></div>
       )}
-      {hasWedding && program.length > 0 && (
-        <>
-          <h3 style={{ margin: "14px 0 6px" }}>{programTitle(events)}</h3>
-          <ul className="prog">{program.map(([t, x], i) => <li key={i}><b>{t}</b><span>{x}</span></li>)}</ul>
-        </>
-      )}
+      {events.map((e) => {
+        const lines = programOf(e);
+        if (!lines.length) return null;
+        return (
+          <div key={`prog-${e.id}`}>
+            <h3 style={{ margin: "14px 0 6px" }}>{isExtraKind(e.kind) ? `${e.title} programı` : programTitle(events)}</h3>
+            <ul className="prog">{lines.map(([t, x], i) => <li key={i}><b>{t}</b><span>{x}</span></li>)}</ul>
+          </div>
+        );
+      })}
     </section>
   );
 }

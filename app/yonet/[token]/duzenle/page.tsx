@@ -68,6 +68,12 @@ export default async function Duzenle({ params, searchParams }: {
         <input type="text" id="busNote" name="busNote" maxLength={160} placeholder="Örn: Dönüş 23:30'da salondan" defaultValue={inv.bus_note} />
         <label className="lbl" htmlFor="program">Tören günü programı</label>
         <textarea id="program" name="program" maxLength={600} placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 Nikâh töreni"} defaultValue={inv.program} />
+        {extra && (
+          <>
+            <label className="lbl" htmlFor="k_program">{extra.title} programı</label>
+            <textarea id="k_program" name="k_program" maxLength={600} placeholder={"Her satıra bir madde:\n20:00 Karşılama\n21:30 Kına yakma"} defaultValue={inv.extra_program} />
+          </>
+        )}
 
         <div className="btns" style={{ marginTop: 18 }}>
           <button className="btn" type="submit">Değişiklikleri kaydet</button>
@@ -112,6 +118,8 @@ export default async function Duzenle({ params, searchParams }: {
           <input type="text" id="k_venue" name="k_venue" required maxLength={80} placeholder="Örn: Kız evi ya da davet salonu" />
           <label className="lbl" htmlFor="k_address">Adres</label>
           <input type="text" id="k_address" name="k_address" maxLength={120} placeholder="İlçe, şehir" />
+          <label className="lbl" htmlFor="k_program">Bu günün programı (isteğe bağlı)</label>
+          <textarea id="k_program" name="k_program" maxLength={600} placeholder={"Her satıra bir madde:\n20:00 Karşılama\n21:30 Kına yakma"} />
           <label className="tog small" style={{ marginTop: 12 }}>
             <input type="checkbox" name="mevcut" defaultChecked />
             <span>Şu ana kadar eklenmiş {guests.length} davetli bu güne de çağrılsın.</span>

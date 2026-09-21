@@ -4,7 +4,7 @@ import { getPanel, list, SIDE_LABEL, summarize, type Guest, type Invitation } fr
 import { phraseFor } from "@/lib/events";
 import { siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
-import { addGuestAction, removeGuestAction, setGuestEventsAction } from "../../actions";
+import { addGuestAction, removeGuestAction, updateGuestAction } from "../../actions";
 
 const STATUS = { geliyor: "Geliyor", gelmiyor: "Gelemiyor", bekliyor: "Bekliyor" } as const;
 
@@ -49,8 +49,8 @@ export default async function Panel({ params, searchParams }: {
       {(guncellendi || sifirlandi) && (
         <p className="info" role="status" style={{ marginTop: 0 }}>
           {sifirlandi
-            ? "Davetlinin günleri değişti. Geliyorum dediği gün artık davetinde olmadığı için yanıtı beklemeye alındı, kendisine tekrar sorabilirsiniz."
-            : "Davetlinin günleri güncellendi. Linki ve verdiği yanıt aynen duruyor."}
+            ? "Davetli güncellendi. Geliyorum dediği gün artık davetinde olmadığı için yanıtı beklemeye alındı, kendisine tekrar sorabilirsiniz."
+            : "Davetli güncellendi. Linki ve verdiği yanıt aynen duruyor."}
         </p>
       )}
 
@@ -87,21 +87,27 @@ export default async function Panel({ params, searchParams }: {
                 <a className="lnk" href={`https://wa.me/?text=${encodeURIComponent(inviteText(inv, g, kindsOf(g)))}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
                 <form action={removeGuestAction.bind(null, token, g.id)}><button className="lnk" type="submit" style={{ color: "var(--no)" }}>Sil</button></form>
               </div>
-              {events.length > 1 && (
-                <details style={{ gridColumn: "1/-1" }}>
-                  <summary className="lnk">Günleri değiştir</summary>
-                  <form action={setGuestEventsAction.bind(null, token, g.id)}>
-                    <div className="evpick">
-                      {events.map((e) => (
-                        <label className="tog" key={e.id}>
-                          <input type="checkbox" name="ev" value={e.id} defaultChecked={list(g.event_ids).includes(e.id)} /> {e.title}
-                        </label>
-                      ))}
-                    </div>
-                    <button className="btn sm" type="submit">Kaydet</button>
-                  </form>
-                </details>
-              )}
+              <details style={{ gridColumn: "1/-1" }}>
+                <summary className="lnk">Adını ve günlerini değiştir</summary>
+                <form action={updateGuestAction.bind(null, token, g.id)}>
+                  <label className="lbl" htmlFor={`ad_${g.id}`}>Ad soyad ya da aile</label>
+                  <input type="text" id={`ad_${g.id}`} name="name" required maxLength={60} defaultValue={g.name} />
+                  {events.length > 1 && (
+                    <>
+                      <span className="lbl">Davetli olduğu günler</span>
+                      <div className="evpick">
+                        {events.map((e) => (
+                          <label className="tog" key={e.id}>
+                            <input type="checkbox" name="ev" value={e.id} defaultChecked={list(g.event_ids).includes(e.id)} /> {e.title}
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {events.length === 1 && <input type="hidden" name="ev" value={events[0].id} />}
+                  <button className="btn sm" type="submit" style={{ marginTop: 6 }}>Kaydet</button>
+                </form>
+              </details>
             </div>
           ))}
         </div>

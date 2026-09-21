@@ -8,7 +8,7 @@ export type Status = "bekliyor" | "geliyor" | "gelmiyor";
 
 export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
-  bus_from: string; bus_time: string; bus_note: string; program: string; theme: string;
+  bus_from: string; bus_time: string; bus_note: string; program: string; extra_program: string; theme: string;
   recovery_code: string; delete_after: string;
 }
 export interface EventRow { id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number; }
@@ -24,7 +24,7 @@ export const list = (s: string) => (s ? s.split(",").filter(Boolean) : []);
 export interface NewEvent { kind: string; title: string; date: string; time: string; venue: string; address: string; }
 export interface NewInvitation {
   nameA: string; nameB: string; city: string;
-  events: NewEvent[]; busFrom: string; busTime: string; busNote: string; program: string; theme: string;
+  events: NewEvent[]; busFrom: string; busTime: string; busNote: string; program: string; extraProgram: string; theme: string;
 }
 
 /** Veri saklama kuralı: son etkinlikten 90 gün sonra her şey silinir. */
@@ -39,9 +39,9 @@ export async function createInvitation(input: NewInvitation) {
   const deleteAfter = addDays(dates[dates.length - 1], RETENTION_DAYS);
 
   await q(
-    `INSERT INTO invitations (id, admin_token, name_a, name_b, city, main_date, bus_from, bus_time, bus_note, program, theme, recovery_code, delete_after)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-    [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.theme, recovery, deleteAfter]
+    `INSERT INTO invitations (id, admin_token, name_a, name_b, city, main_date, bus_from, bus_time, bus_note, program, extra_program, theme, recovery_code, delete_after)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+    [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.extraProgram, input.theme, recovery, deleteAfter]
   );
   let i = 0;
   for (const e of input.events) {
@@ -59,7 +59,7 @@ export async function createInvitation(input: NewInvitation) {
 export interface EditEvent { id: string; date: string; time: string; venue: string; address: string; }
 export interface EditInvitation {
   nameA: string; nameB: string; city: string;
-  events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string; theme: string;
+  events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string; extraProgram: string; theme: string;
 }
 
 /** Çift davetiyesini sonradan düzenler. Etkinlikler yerinde güncellenir, davetli linkleri bozulmaz. */
@@ -85,8 +85,8 @@ export async function updateInvitation(adminToken: string, input: EditInvitation
 
   await q(
     `UPDATE invitations SET name_a = $1, name_b = $2, city = $3, main_date = $4,
-       bus_from = $5, bus_time = $6, bus_note = $7, program = $8, theme = $9, delete_after = $10 WHERE id = $11`,
-    [input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.theme, deleteAfter, inv.id]
+       bus_from = $5, bus_time = $6, bus_note = $7, program = $8, extra_program = $9, theme = $10, delete_after = $11 WHERE id = $12`,
+    [input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.extraProgram, input.theme, deleteAfter, inv.id]
   );
 }
 
@@ -147,16 +147,17 @@ export async function addGuest(panelToken: string, name: string, eventIds: strin
 }
 
 /**
- * Davetlinin çağrıldığı günleri değiştirir. Linki ve verdiği yanıt korunur.
+ * Davetlinin adını ve çağrıldığı günleri değiştirir. Linki ve verdiği yanıt korunur.
  * Artık davetli olmadığı günler katılım kaydından da düşer; geliyorum dediği
  * tek gün elinden alınırsa yanıt "bekliyor"a döner ki aile tekrar sorabilsin.
  */
-export async function setGuestEvents(panelToken: string, guestId: string, eventIds: string[]) {
+export async function updateGuest(panelToken: string, guestId: string, name: string, eventIds: string[]) {
   const panel = await getPanel(panelToken);
   if (!panel) throw new Error("Panel bulunamadı");
   const guest = panel.guests.find((g) => g.id === guestId && g.family_id === panel.family.id);
   if (!guest) throw new Error("Davetli bulunamadı");
 
+  if (!name) throw new Error("Davetlinin adını yazın");
   const valid = panel.events.filter((e) => eventIds.includes(e.id)).map((e) => e.id);
   if (!valid.length) throw new Error("En az bir gün seçin");
 
@@ -164,8 +165,8 @@ export async function setGuestEvents(panelToken: string, guestId: string, eventI
   const sifirla = guest.status === "geliyor" && attend.length === 0;
 
   await q(
-    `UPDATE guests SET event_ids = $1, attend_ids = $2, status = $3, count = $4 WHERE id = $5 AND family_id = $6`,
-    [valid.join(","), attend.join(","), sifirla ? "bekliyor" : guest.status, sifirla ? 1 : guest.count, guestId, panel.family.id]
+    `UPDATE guests SET name = $1, event_ids = $2, attend_ids = $3, status = $4, count = $5 WHERE id = $6 AND family_id = $7`,
+    [name, valid.join(","), attend.join(","), sifirla ? "bekliyor" : guest.status, sifirla ? 1 : guest.count, guestId, panel.family.id]
   );
   return sifirla;
 }
@@ -210,7 +211,7 @@ async function refreshDates(invId: string) {
 }
 
 /** İkinci etkinliği (kına ya da after party) sonradan ekler. */
-export async function addExtraEvent(adminToken: string, e: NewEvent, inviteExisting: boolean) {
+export async function addExtraEvent(adminToken: string, e: NewEvent, inviteExisting: boolean, program = "") {
   const data = await getAdmin(adminToken);
   if (!data) throw new Error("Davetiye bulunamadı");
   if (extraOf(data.events)) throw new Error("Bu davetiyede zaten ikinci bir etkinlik var.");
@@ -221,6 +222,7 @@ export async function addExtraEvent(adminToken: string, e: NewEvent, inviteExist
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0)`,
     [eventId, data.inv.id, e.kind, kindOf(e.kind).title, e.date, e.time, e.venue, e.address]
   );
+  await q(`UPDATE invitations SET extra_program = $1 WHERE id = $2`, [program, data.inv.id]);
   if (inviteExisting) {
     await q(`UPDATE guests SET event_ids = event_ids || $1 WHERE invitation_id = $2`, [`,${eventId}`, data.inv.id]);
   }
@@ -255,6 +257,7 @@ export async function removeExtraEvent(adminToken: string) {
     }
   }
   await q(`DELETE FROM events WHERE id = $1 AND invitation_id = $2`, [extra.id, data.inv.id]);
+  await q(`UPDATE invitations SET extra_program = '' WHERE id = $1`, [data.inv.id]);
   await refreshDates(data.inv.id);
 }
 

@@ -46,6 +46,8 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
           <input type="text" id="k_venue" name="k_venue" maxLength={80} placeholder="Örn: Kız evi ya da davet salonu" />
           <label className="lbl" htmlFor="k_address">Adres</label>
           <input type="text" id="k_address" name="k_address" maxLength={120} />
+          <label className="lbl" htmlFor="k_program">Bu günün programı</label>
+          <textarea id="k_program" name="k_program" maxLength={600} placeholder={"Her satıra bir madde:\n20:00 Karşılama\n21:30 Kına yakma"} />
         </details>
 
         <details style={{ marginTop: 14 }}>

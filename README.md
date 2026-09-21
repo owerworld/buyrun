@@ -7,7 +7,7 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım
 - `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program, tema (linkler değişmez)
   · kına gecesi sonradan eklenebilir/kaldırılabilir; yalnızca kınaya çağrılmış davetli varsa kaldırma engellenir
-- `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, günlerini değiştir, silme
+- `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, adını/günlerini düzelt, silme
 - `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
 - `/onizleme/[token]` — Davetiye önizleme
 - `/onizleme/[token]/story` — Instagram hikâyesi ölçüsünde (1080×1920) dikey davetiye görseli, yönetim sayfasından indirilir
@@ -23,6 +23,11 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
   Telefon/e-posta istemediğimiz için tek kurtarma yolu budur.
 - **Erişilebilirlik**: 320px genişlikte yatay kaydırma yok, dokunma hedefleri ≥24px,
   metin kontrastları WCAG 2.1 AA (açık ve koyu mod, üç tema) — axe-core ile doğrulandı.
+
+## Program
+Her etkinliğin kendi günlük programı olabilir (ana tören `invitations.program`,
+ikinci etkinlik `invitations.extra_program`). Davetli sayfasında etkinlik sırasına göre çıkarlar.
+İkinci etkinlik kaldırılırsa programı da temizlenir.
 
 ## Tören türleri
 `lib/events.ts` tek kaynak: ana tören **düğün, nişan ya da söz**, ikinci etkinlik **kına gecesi ya da after party**.
