@@ -7,7 +7,7 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım
 - `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program, tema (linkler değişmez)
   · kına gecesi sonradan eklenebilir/kaldırılabilir; yalnızca kınaya çağrılmış davetli varsa kaldırma engellenir
-- `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, silme
+- `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, günlerini değiştir, silme
 - `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
 - `/onizleme/[token]` — Davetiye önizleme
 - `/onizleme/[token]/story` — Instagram hikâyesi ölçüsünde (1080×1920) dikey davetiye görseli, yönetim sayfasından indirilir

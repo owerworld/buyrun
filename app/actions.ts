@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { addGuest, addExtraEvent, adminTokenByRecoveryCode, createInvitation, getAdmin, removeExtraEvent, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
+import { addGuest, addExtraEvent, adminTokenByRecoveryCode, createInvitation, getAdmin, removeExtraEvent, removeGuest, respond, setGuestEvents, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
 import { DEFAULT_MAIN, isExtraKind, isMainKind, kindOf } from "@/lib/events";
 import { DEFAULT_THEME, isTheme } from "@/lib/themes";
@@ -86,6 +86,17 @@ export async function addGuestAction(panelToken: string, f: FormData) {
     redirect(`/p/${panelToken}?hata=${encodeURIComponent("Kısa sürede çok fazla davetli eklendi. Bir saat sonra kaldığınız yerden devam edebilirsiniz.")}#ekle`);
   const t = await addGuest(panelToken, name, ev);
   redirect(`/p/${panelToken}?yeni=${t}`);
+}
+
+/** Davetlinin çağrıldığı günleri günceller. */
+export async function setGuestEventsAction(panelToken: string, guestId: string, f: FormData) {
+  let sifirlandi = false;
+  try {
+    sifirlandi = await setGuestEvents(panelToken, guestId, f.getAll("ev").map(String));
+  } catch (e) {
+    redirect(`/p/${panelToken}?hata=${encodeURIComponent((e as Error).message)}`);
+  }
+  redirect(`/p/${panelToken}?${sifirlandi ? "sifirlandi=1" : "guncellendi=1"}`);
 }
 
 export async function removeGuestAction(panelToken: string, guestId: string) {

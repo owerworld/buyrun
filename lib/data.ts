@@ -146,6 +146,30 @@ export async function addGuest(panelToken: string, name: string, eventIds: strin
   return t;
 }
 
+/**
+ * Davetlinin çağrıldığı günleri değiştirir. Linki ve verdiği yanıt korunur.
+ * Artık davetli olmadığı günler katılım kaydından da düşer; geliyorum dediği
+ * tek gün elinden alınırsa yanıt "bekliyor"a döner ki aile tekrar sorabilsin.
+ */
+export async function setGuestEvents(panelToken: string, guestId: string, eventIds: string[]) {
+  const panel = await getPanel(panelToken);
+  if (!panel) throw new Error("Panel bulunamadı");
+  const guest = panel.guests.find((g) => g.id === guestId && g.family_id === panel.family.id);
+  if (!guest) throw new Error("Davetli bulunamadı");
+
+  const valid = panel.events.filter((e) => eventIds.includes(e.id)).map((e) => e.id);
+  if (!valid.length) throw new Error("En az bir gün seçin");
+
+  const attend = list(guest.attend_ids).filter((a) => valid.includes(a));
+  const sifirla = guest.status === "geliyor" && attend.length === 0;
+
+  await q(
+    `UPDATE guests SET event_ids = $1, attend_ids = $2, status = $3, count = $4 WHERE id = $5 AND family_id = $6`,
+    [valid.join(","), attend.join(","), sifirla ? "bekliyor" : guest.status, sifirla ? 1 : guest.count, guestId, panel.family.id]
+  );
+  return sifirla;
+}
+
 export async function removeGuest(panelToken: string, guestId: string) {
   const panel = await getPanel(panelToken);
   if (!panel) return;

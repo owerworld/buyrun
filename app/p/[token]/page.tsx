@@ -4,7 +4,7 @@ import { getPanel, list, SIDE_LABEL, summarize, type Guest, type Invitation } fr
 import { phraseFor } from "@/lib/events";
 import { siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
-import { addGuestAction, removeGuestAction } from "../../actions";
+import { addGuestAction, removeGuestAction, setGuestEventsAction } from "../../actions";
 
 const STATUS = { geliyor: "Geliyor", gelmiyor: "Gelemiyor", bekliyor: "Bekliyor" } as const;
 
@@ -13,9 +13,12 @@ function inviteText(inv: Invitation, g: Guest, kinds: string[]) {
   return `Sevgili ${g.name}, ${inv.name_a} ile ${inv.name_b} sizi ${nere} davet ediyor. Katılım durumunuzu buradan bildirebilirsiniz: ${siteUrl()}/d/${g.token}`;
 }
 
-export default async function Panel({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<{ yeni?: string; hata?: string }> }) {
+export default async function Panel({ params, searchParams }: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string }>;
+}) {
   const { token } = await params;
-  const { yeni, hata } = await searchParams;
+  const { yeni, hata, guncellendi, sifirlandi } = await searchParams;
   const data = await getPanel(token);
   if (!data) notFound();
   const { inv, family, events, guests } = data;
@@ -41,6 +44,14 @@ export default async function Panel({ params, searchParams }: { params: Promise<
             <Link className="btn ghost" href={`/p/${token}`}>Tamam</Link>
           </div>
         </section>
+      )}
+
+      {(guncellendi || sifirlandi) && (
+        <p className="info" role="status" style={{ marginTop: 0 }}>
+          {sifirlandi
+            ? "Davetlinin günleri değişti. Geliyorum dediği gün artık davetinde olmadığı için yanıtı beklemeye alındı, kendisine tekrar sorabilirsiniz."
+            : "Davetlinin günleri güncellendi. Linki ve verdiği yanıt aynen duruyor."}
+        </p>
       )}
 
       <section className="card">
@@ -76,6 +87,21 @@ export default async function Panel({ params, searchParams }: { params: Promise<
                 <a className="lnk" href={`https://wa.me/?text=${encodeURIComponent(inviteText(inv, g, kindsOf(g)))}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
                 <form action={removeGuestAction.bind(null, token, g.id)}><button className="lnk" type="submit" style={{ color: "var(--no)" }}>Sil</button></form>
               </div>
+              {events.length > 1 && (
+                <details style={{ gridColumn: "1/-1" }}>
+                  <summary className="lnk">Günleri değiştir</summary>
+                  <form action={setGuestEventsAction.bind(null, token, g.id)}>
+                    <div className="evpick">
+                      {events.map((e) => (
+                        <label className="tog" key={e.id}>
+                          <input type="checkbox" name="ev" value={e.id} defaultChecked={list(g.event_ids).includes(e.id)} /> {e.title}
+                        </label>
+                      ))}
+                    </div>
+                    <button className="btn sm" type="submit">Kaydet</button>
+                  </form>
+                </details>
+              )}
             </div>
           ))}
         </div>
