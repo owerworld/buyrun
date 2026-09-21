@@ -1,4 +1,5 @@
 import type { EventRow, Invitation } from "@/lib/data";
+import { mainOf, programTitle } from "@/lib/events";
 import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
 import { Sirma } from "./Sirma";
 
@@ -26,7 +27,7 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler" }
     const m = l.match(/^(\d{1,2}[:.]\d{2})\s+(.*)$/);
     return m ? [m[1].replace(".", ":"), m[2]] : ["", l];
   });
-  const hasWedding = events.some((e) => e.kind === "dugun");
+  const hasWedding = Boolean(mainOf(events));
   return (
     <section className="card">
       <h2>{title}</h2>
@@ -46,7 +47,7 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler" }
       )}
       {hasWedding && program.length > 0 && (
         <>
-          <h3 style={{ margin: "14px 0 6px" }}>Düğün günü programı</h3>
+          <h3 style={{ margin: "14px 0 6px" }}>{programTitle(events)}</h3>
           <ul className="prog">{program.map(([t, x], i) => <li key={i}><b>{t}</b><span>{x}</span></li>)}</ul>
         </>
       )}

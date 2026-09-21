@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
+import { EXTRA_KINDS, MAIN_KINDS } from "@/lib/events";
 import { createAction } from "../actions";
 
 export default async function Olustur({ searchParams }: { searchParams: Promise<{ hata?: string }> }) {
@@ -11,6 +13,8 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
         <h1 className="title">Davetiyeni oluştur</h1>
         {hata && <p className="err" role="alert">{hata}</p>}
 
+        <KindPicker name="tur" kinds={MAIN_KINDS} legend="Tören türü" />
+
         <div className="grid2">
           <div><label className="lbl" htmlFor="nameA">Gelinin adı</label><input type="text" id="nameA" name="nameA" required maxLength={40} /></div>
           <div><label className="lbl" htmlFor="nameB">Damadın adı</label><input type="text" id="nameB" name="nameB" required maxLength={40} /></div>
@@ -20,19 +24,20 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
 
         <ThemePicker />
 
-        <h2 style={{ marginTop: 20 }}>Nikâh ve düğün</h2>
+        <h2 style={{ marginTop: 20 }}>Tören bilgileri</h2>
         <div className="grid2">
           <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required /></div>
           <div><label className="lbl" htmlFor="d_time">Saat</label><input type="time" id="d_time" name="d_time" required /></div>
         </div>
-        <label className="lbl" htmlFor="d_venue">Salon</label>
+        <label className="lbl" htmlFor="d_venue">Salon / yer</label>
         <input type="text" id="d_venue" name="d_venue" required maxLength={80} />
         <label className="lbl" htmlFor="d_address">Adres</label>
         <input type="text" id="d_address" name="d_address" maxLength={120} placeholder="İlçe, şehir" />
 
         <details style={{ marginTop: 18 }}>
-          <summary>Kına gecesi de var</summary>
-          <label className="tog" style={{ marginTop: 10 }}><input type="checkbox" name="hasKina" /> Kına gecesini davetiyeye ekle</label>
+          <summary>İkinci bir etkinlik de var</summary>
+          <label className="tog" style={{ marginTop: 10 }}><input type="checkbox" name="hasKina" /> İkinci etkinliği davetiyeye ekle</label>
+          <KindPicker name="k_tur" kinds={EXTRA_KINDS} legend="Etkinlik türü" />
           <div className="grid2">
             <div><label className="lbl" htmlFor="k_date">Tarih</label><input type="date" id="k_date" name="k_date" /></div>
             <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" /></div>
@@ -44,14 +49,14 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
         </details>
 
         <details style={{ marginTop: 14 }}>
-          <summary>Servis ve günün programı</summary>
+          <summary>Servis ve tören günü programı</summary>
           <div className="grid2">
             <div><label className="lbl" htmlFor="busFrom">Servis kalkış yeri</label><input type="text" id="busFrom" name="busFrom" maxLength={120} /></div>
             <div><label className="lbl" htmlFor="busTime">Kalkış saati</label><input type="time" id="busTime" name="busTime" /></div>
           </div>
           <label className="lbl" htmlFor="busNote">Servis notu</label>
           <input type="text" id="busNote" name="busNote" maxLength={160} placeholder="Örn: Dönüş 23:30'da salondan" />
-          <label className="lbl" htmlFor="program">Düğün günü programı</label>
+          <label className="lbl" htmlFor="program">Tören günü programı</label>
           <textarea id="program" name="program" maxLength={600} placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 Nikâh töreni"} />
         </details>
 

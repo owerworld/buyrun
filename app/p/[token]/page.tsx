@@ -1,18 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPanel, list, SIDE_LABEL, summarize, type Guest, type Invitation } from "@/lib/data";
+import { phraseFor } from "@/lib/events";
 import { siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
 import { addGuestAction, removeGuestAction } from "../../actions";
 
 const STATUS = { geliyor: "Geliyor", gelmiyor: "Gelemiyor", bekliyor: "Bekliyor" } as const;
 
-function phrase(kinds: string[]) {
-  const k = kinds.includes("kina"), d = kinds.includes("dugun");
-  return k && d ? "kına gecelerine ve düğünlerine" : k ? "kına gecelerine" : "düğünlerine";
-}
 function inviteText(inv: Invitation, g: Guest, kinds: string[]) {
-  return `Sevgili ${g.name}, ${inv.name_a} ile ${inv.name_b} sizi ${phrase(kinds)} davet ediyor. Katılım durumunuzu buradan bildirebilirsiniz: ${siteUrl()}/d/${g.token}`;
+  const nere = phraseFor(kinds.map((kind) => ({ kind })));
+  return `Sevgili ${g.name}, ${inv.name_a} ile ${inv.name_b} sizi ${nere} davet ediyor. Katılım durumunuzu buradan bildirebilirsiniz: ${siteUrl()}/d/${g.token}`;
 }
 
 export default async function Panel({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<{ yeni?: string; hata?: string }> }) {

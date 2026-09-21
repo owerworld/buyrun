@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { getGuest, inviteLabel } from "@/lib/data";
+import { getGuest } from "@/lib/data";
+import { inviteLabel } from "@/lib/events";
 import { ogAlt, ogContentType, ogSize, posterImage } from "@/lib/og";
 
 export const alt = ogAlt;

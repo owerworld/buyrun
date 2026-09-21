@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGuest, inviteLabel, list } from "@/lib/data";
+import { getGuest, list } from "@/lib/data";
+import { greetingFor, inviteLabel } from "@/lib/events";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";
@@ -24,8 +25,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
   const data = await getGuest(token);
   if (!data) notFound();
   const { guest: g, inv, events } = data;
-  const kinds = events.map((e) => e.kind);
-  const greet = kinds.includes("kina") && kinds.includes("dugun") ? "kınamızda ve düğünümüzde" : kinds.includes("kina") ? "kına gecemizde" : "düğünümüzde";
+  const greet = greetingFor(events);
   const answered = g.status !== "bekliyor" && sp.duzenle !== "1";
   const attended = list(g.attend_ids);
   const act = respondAction.bind(null, token);

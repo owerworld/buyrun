@@ -1,8 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { addGuest, addKina, adminTokenByRecoveryCode, createInvitation, getAdmin, removeGuest, removeKina, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
+import { addGuest, addExtraEvent, adminTokenByRecoveryCode, createInvitation, getAdmin, removeExtraEvent, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
+import { DEFAULT_MAIN, isExtraKind, isMainKind, kindOf } from "@/lib/events";
 import { DEFAULT_THEME, isTheme } from "@/lib/themes";
 import { allow, LIMITS } from "@/lib/ratelimit";
 import { normalizeCode } from "@/lib/tokens";
@@ -20,16 +21,21 @@ export async function createAction(f: FormData) {
   if (!(await allow(LIMITS.davetiye.action, LIMITS.davetiye.limit, LIMITS.davetiye.window)))
     fail("Kısa sürede çok fazla davetiye oluşturuldu. Bir saat sonra tekrar deneyin.");
 
+  const tur = s(f, "tur", 20);
+  const main = kindOf(isMainKind(tur) ? tur : DEFAULT_MAIN);
+
   const events: NewEvent[] = [];
-  const wedding = { date: s(f, "d_date"), time: s(f, "d_time"), venue: s(f, "d_venue"), address: s(f, "d_address") };
-  if (!isDate(wedding.date) || !isTime(wedding.time) || !wedding.venue) fail("Düğün tarihi, saati ve salonu zorunlu.");
-  if (wedding.date < todayIso()) fail("Düğün tarihi geçmişte olamaz.");
-  events.push({ kind: "dugun", title: "Nikâh ve Düğün", ...wedding });
+  const toren = { date: s(f, "d_date"), time: s(f, "d_time"), venue: s(f, "d_venue"), address: s(f, "d_address") };
+  if (!isDate(toren.date) || !isTime(toren.time) || !toren.venue) fail(`${main.title} için tarih, saat ve yer zorunlu.`);
+  if (toren.date < todayIso()) fail("Tören tarihi geçmişte olamaz.");
+  events.push({ kind: main.id, title: main.title, ...toren });
 
   if (f.get("hasKina") === "on") {
-    const kina = { date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue"), address: s(f, "k_address") };
-    if (!isDate(kina.date) || !isTime(kina.time) || !kina.venue) fail("Kına için tarih, saat ve yer zorunlu.");
-    events.unshift({ kind: "kina", title: "Kına Gecesi", ...kina });
+    const ikinciTur = s(f, "k_tur", 20);
+    const ikinci = kindOf(isExtraKind(ikinciTur) ? ikinciTur : "kina");
+    const e = { date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue"), address: s(f, "k_address") };
+    if (!isDate(e.date) || !isTime(e.time) || !e.venue) fail(`${ikinci.title} için tarih, saat ve yer zorunlu.`);
+    events.unshift({ kind: ikinci.id, title: ikinci.title, ...e });
   }
 
   const admin = await createInvitation({
@@ -111,26 +117,28 @@ export async function recoverAction(f: FormData) {
   redirect(`/yonet/${admin}`);
 }
 
-/** Kına gecesini sonradan ekler. */
-export async function addKinaAction(adminToken: string, f: FormData) {
-  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#kina`);
-  const ev = { kind: "kina", title: "Kına Gecesi", date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue", 80), address: s(f, "k_address") };
-  if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail("Kına için tarih, saat ve yer zorunlu.");
-  if (ev.date < todayIso()) fail("Kına tarihi geçmişte olamaz.");
+/** İkinci etkinliği (kına ya da after party) sonradan ekler. */
+export async function addExtraEventAction(adminToken: string, f: FormData) {
+  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#etkinlik`);
+  const tur = s(f, "k_tur", 20);
+  const kind = kindOf(isExtraKind(tur) ? tur : "kina");
+  const ev = { kind: kind.id, title: kind.title, date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue", 80), address: s(f, "k_address") };
+  if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail(`${kind.title} için tarih, saat ve yer zorunlu.`);
+  if (ev.date < todayIso()) fail(`${kind.title} tarihi geçmişte olamaz.`);
   try {
-    await addKina(adminToken, ev, f.get("mevcut") === "on");
+    await addExtraEvent(adminToken, ev, f.get("mevcut") === "on");
   } catch (e) {
     fail((e as Error).message);
   }
   redirect(`/yonet/${adminToken}?guncellendi=1`);
 }
 
-/** Kına gecesini kaldırır. Yalnızca kınaya çağrılmış davetli varsa reddeder. */
-export async function removeKinaAction(adminToken: string, f: FormData) {
-  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#kina`);
+/** İkinci etkinliği kaldırır. Yalnızca o güne çağrılmış davetli varsa reddeder. */
+export async function removeExtraEventAction(adminToken: string, f: FormData) {
+  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#etkinlik`);
   if (f.get("onay") !== "on") fail("Kaldırmak için onay kutusunu işaretleyin.");
   try {
-    await removeKina(adminToken);
+    await removeExtraEvent(adminToken);
   } catch (e) {
     fail((e as Error).message);
   }

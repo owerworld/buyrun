@@ -1,6 +1,7 @@
 import { q } from "./db";
 import { id, recoveryCode, token } from "./tokens";
 import { addDays } from "./format";
+import { extraOf, isExtraKind, kindOf, mainOf } from "./events";
 
 export type Side = "kiz" | "oglan";
 export type Status = "bekliyor" | "geliyor" | "gelmiyor";
@@ -34,7 +35,7 @@ export async function createInvitation(input: NewInvitation) {
   const admin = token(16);
   const recovery = recoveryCode();
   const dates = input.events.map((e) => e.date).sort();
-  const mainDate = input.events.find((e) => e.kind === "dugun")?.date ?? dates[0];
+  const mainDate = input.events.find((e) => !isExtraKind(e.kind))?.date ?? dates[0];
   const deleteAfter = addDays(dates[dates.length - 1], RETENTION_DAYS);
 
   await q(
@@ -78,7 +79,7 @@ export async function updateInvitation(adminToken: string, input: EditInvitation
 
   // Tarihler değiştiyse ana tarih ve silme tarihi yeniden hesaplanır
   const after = events.map((e) => edits.find((x) => x.id === e.id)?.date ?? e.event_date).sort();
-  const wedding = events.find((e) => e.kind === "dugun");
+  const wedding = mainOf(events);
   const mainDate = (wedding && edits.find((x) => x.id === wedding.id)?.date) ?? wedding?.event_date ?? after[0];
   const deleteAfter = addDays(after[after.length - 1], RETENTION_DAYS);
 
@@ -178,23 +179,23 @@ async function refreshDates(invId: string) {
   const events = await eventsOf(invId);
   if (!events.length) return;
   const dates = events.map((e) => e.event_date).sort();
-  const mainDate = events.find((e) => e.kind === "dugun")?.event_date ?? dates[0];
+  const mainDate = mainOf(events)?.event_date ?? dates[0];
   await q(`UPDATE invitations SET main_date = $1, delete_after = $2 WHERE id = $3`, [
     mainDate, addDays(dates[dates.length - 1], RETENTION_DAYS), invId,
   ]);
 }
 
-/** Kına gecesini sonradan ekler. İsteğe bağlı olarak mevcut davetlileri de kınaya çağırır. */
-export async function addKina(adminToken: string, e: NewEvent, inviteExisting: boolean) {
+/** İkinci etkinliği (kına ya da after party) sonradan ekler. */
+export async function addExtraEvent(adminToken: string, e: NewEvent, inviteExisting: boolean) {
   const data = await getAdmin(adminToken);
   if (!data) throw new Error("Davetiye bulunamadı");
-  if (data.events.some((x) => x.kind === "kina")) throw new Error("Bu davetiyede zaten bir kına gecesi var.");
+  if (extraOf(data.events)) throw new Error("Bu davetiyede zaten ikinci bir etkinlik var.");
 
   const eventId = id();
   await q(
     `INSERT INTO events (id, invitation_id, kind, title, event_date, event_time, venue, address, sort)
-     VALUES ($1,$2,'kina','Kına Gecesi',$3,$4,$5,$6,0)`,
-    [eventId, data.inv.id, e.date, e.time, e.venue, e.address]
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0)`,
+    [eventId, data.inv.id, e.kind, kindOf(e.kind).title, e.date, e.time, e.venue, e.address]
   );
   if (inviteExisting) {
     await q(`UPDATE guests SET event_ids = event_ids || $1 WHERE invitation_id = $2`, [`,${eventId}`, data.inv.id]);
@@ -202,34 +203,34 @@ export async function addKina(adminToken: string, e: NewEvent, inviteExisting: b
   await refreshDates(data.inv.id);
 }
 
-/** Yalnızca kınaya çağrılmış davetli sayısı. Kına kaldırılmadan önce kontrol edilir. */
-export function kinaOnlyGuests(guests: Guest[], kinaId: string) {
-  return guests.filter((g) => { const ids = list(g.event_ids); return ids.length === 1 && ids[0] === kinaId; });
+/** Yalnızca bu etkinliğe çağrılmış davetliler. Etkinlik kaldırılmadan önce kontrol edilir. */
+export function onlyGuestsOf(guests: Guest[], eventId: string) {
+  return guests.filter((g) => { const ids = list(g.event_ids); return ids.length === 1 && ids[0] === eventId; });
 }
 
-/** Kına gecesini kaldırır ve davetlilerin kayıtlarından bu günü temizler. */
-export async function removeKina(adminToken: string) {
+/** İkinci etkinliği kaldırır ve davetlilerin kayıtlarından bu günü temizler. */
+export async function removeExtraEvent(adminToken: string) {
   const data = await getAdmin(adminToken);
   if (!data) throw new Error("Davetiye bulunamadı");
-  const kina = data.events.find((e) => e.kind === "kina");
-  if (!kina) throw new Error("Bu davetiyede kına gecesi yok.");
+  const extra = extraOf(data.events);
+  if (!extra) throw new Error("Bu davetiyede ikinci bir etkinlik yok.");
 
-  const yalnizKina = kinaOnlyGuests(data.guests, kina.id);
-  if (yalnizKina.length) {
+  const yalniz = onlyGuestsOf(data.guests, extra.id);
+  if (yalniz.length) {
     throw new Error(
-      `${yalnizKina.length} davetli yalnızca kına gecesine çağrılmış. Kınayı kaldırmadan önce ailelerin bu kişileri panelden silmesi gerekiyor.`
+      `${yalniz.length} davetli yalnızca "${extra.title}" etkinliğine çağrılmış. Kaldırmadan önce ailelerin bu kişileri panelden silmesi gerekiyor.`
     );
   }
 
-  // Davetlilerin gün listelerinden kınayı çıkar
+  // Davetlilerin gün listelerinden bu etkinliği çıkar
   for (const g of data.guests) {
-    const ev = list(g.event_ids).filter((i) => i !== kina.id).join(",");
-    const at = list(g.attend_ids).filter((i) => i !== kina.id).join(",");
+    const ev = list(g.event_ids).filter((i) => i !== extra.id).join(",");
+    const at = list(g.attend_ids).filter((i) => i !== extra.id).join(",");
     if (ev !== g.event_ids || at !== g.attend_ids) {
       await q(`UPDATE guests SET event_ids = $1, attend_ids = $2 WHERE id = $3`, [ev, at, g.id]);
     }
   }
-  await q(`DELETE FROM events WHERE id = $1 AND invitation_id = $2`, [kina.id, data.inv.id]);
+  await q(`DELETE FROM events WHERE id = $1 AND invitation_id = $2`, [extra.id, data.inv.id]);
   await refreshDates(data.inv.id);
 }
 
@@ -252,15 +253,4 @@ export function summarize(guests: Guest[], events: EventRow[]) {
       people: coming.filter((g) => list(g.attend_ids).includes(e.id)).reduce((s, g) => s + g.count, 0),
     })),
   };
-}
-
-/** Davetin kısa adı: "Kına ve düğün daveti" gibi. Link önizlemesinde kullanılır. */
-export function inviteLabel(events: { kind: string }[]) {
-  const kinds = events.map((e) => e.kind);
-  const kina = kinds.includes("kina");
-  const dugun = kinds.includes("dugun");
-  if (kina && dugun) return "Kına ve düğün daveti";
-  if (kina) return "Kına daveti";
-  if (dugun) return "Düğün daveti";
-  return "Davet";
 }

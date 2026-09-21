@@ -51,7 +51,7 @@ export default async function Yonet({ params, searchParams }: {
         <p className="muted small">Her aile kendi davetlilerini kendi panelinden ekler. Oğlan evi panelinin linkini damadın ailesine gönderin.</p>
         {families.map((f) => {
           const url = `${base}/p/${f.panel_token}`;
-          const msg = `${inv.name_a} ile ${inv.name_b} düğünü için ${SIDE_LABEL[f.side].toLowerCase()} davetli paneli: ${url}\nBu linki sadece aile içinde paylaşın.`;
+          const msg = `${inv.name_a} ile ${inv.name_b} daveti için ${SIDE_LABEL[f.side].toLowerCase()} davetli paneli: ${url}\nBu linki sadece aile içinde paylaşın.`;
           return (
             <div key={f.id} style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 12 }}>
               <h3>{SIDE_LABEL[f.side]} paneli</h3>

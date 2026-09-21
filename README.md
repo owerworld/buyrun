@@ -3,7 +3,7 @@
 Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri silme.
 
 ## Ne çalışıyor
-- `/olustur` — Çift davetiyeyi oluşturur (düğün + isteğe bağlı kına, servis, program, tema)
+- `/olustur` — Çift davetiyeyi oluşturur (düğün/nişan/söz + isteğe bağlı kına ya da after party, servis, program, tema)
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım
 - `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program, tema (linkler değişmez)
   · kına gecesi sonradan eklenebilir/kaldırılabilir; yalnızca kınaya çağrılmış davetli varsa kaldırma engellenir
@@ -23,6 +23,14 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
   Telefon/e-posta istemediğimiz için tek kurtarma yolu budur.
 - **Erişilebilirlik**: 320px genişlikte yatay kaydırma yok, dokunma hedefleri ≥24px,
   metin kontrastları WCAG 2.1 AA (açık ve koyu mod, üç tema) — axe-core ile doğrulandı.
+
+## Tören türleri
+`lib/events.ts` tek kaynak: ana tören **düğün, nişan ya da söz**, ikinci etkinlik **kına gecesi ya da after party**.
+Davetli sayfasındaki selamlama, ailenin WhatsApp'tan gönderdiği mesaj, program başlığı ve link önizleme
+metni hep bu tablodan türer — yeni bir tür eklemek `MAIN_KINDS` / `EXTRA_KINDS` dizisine bir satır eklemektir.
+
+Sünnet, mezuniyet, kulüp etkinliği gibi türler bilerek yok: bu ürün "iki isim + iki aile" modeline göre
+kurulu, o etkinlikler ayrı bir akış ister.
 
 ## Temalar
 `lib/themes.ts` içinde üç tema var: **klasik** (bordo-altın), **krem** (kum beji & zeytin yeşili),

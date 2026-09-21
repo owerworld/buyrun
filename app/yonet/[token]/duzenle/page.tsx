@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdmin, kinaOnlyGuests } from "@/lib/data";
+import { getAdmin, onlyGuestsOf } from "@/lib/data";
+import { EXTRA_KINDS, extraOf, isExtraKind } from "@/lib/events";
+import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
-import { addKinaAction, removeKinaAction, updateInvitationAction } from "../../../actions";
+import { addExtraEventAction, removeExtraEventAction, updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
 export default async function Duzenle({ params, searchParams }: {
@@ -15,8 +17,8 @@ export default async function Duzenle({ params, searchParams }: {
   if (!data) notFound();
   const { inv, events, guests } = data;
   const save = updateInvitationAction.bind(null, token);
-  const kina = events.find((e) => e.kind === "kina");
-  const yalnizKina = kina ? kinaOnlyGuests(guests, kina.id).length : 0;
+  const extra = extraOf(events);
+  const yalnizExtra = extra ? onlyGuestsOf(guests, extra.id).length : 0;
 
   return (
     <main className="wrap">
@@ -50,7 +52,7 @@ export default async function Duzenle({ params, searchParams }: {
                 <input type="time" id={`e_${e.id}_time`} name={`e_${e.id}_time`} required defaultValue={e.event_time} />
               </div>
             </div>
-            <label className="lbl" htmlFor={`e_${e.id}_venue`}>{e.kind === "kina" ? "Yer" : "Salon"}</label>
+            <label className="lbl" htmlFor={`e_${e.id}_venue`}>{isExtraKind(e.kind) ? "Yer" : "Salon / yer"}</label>
             <input type="text" id={`e_${e.id}_venue`} name={`e_${e.id}_venue`} required maxLength={80} defaultValue={e.venue} />
             <label className="lbl" htmlFor={`e_${e.id}_address`}>Adres</label>
             <input type="text" id={`e_${e.id}_address`} name={`e_${e.id}_address`} maxLength={120} placeholder="İlçe, şehir" defaultValue={e.address} />
@@ -64,7 +66,7 @@ export default async function Duzenle({ params, searchParams }: {
         </div>
         <label className="lbl" htmlFor="busNote">Servis notu</label>
         <input type="text" id="busNote" name="busNote" maxLength={160} placeholder="Örn: Dönüş 23:30'da salondan" defaultValue={inv.bus_note} />
-        <label className="lbl" htmlFor="program">Düğün günü programı</label>
+        <label className="lbl" htmlFor="program">Tören günü programı</label>
         <textarea id="program" name="program" maxLength={600} placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 Nikâh töreni"} defaultValue={inv.program} />
 
         <div className="btns" style={{ marginTop: 18 }}>
@@ -73,34 +75,35 @@ export default async function Duzenle({ params, searchParams }: {
         </div>
       </form>
 
-      {kina ? (
-        <form action={removeKinaAction.bind(null, token)} className="card" id="kina">
-          <h2>Kına gecesini kaldır</h2>
+      {extra ? (
+        <form action={removeExtraEventAction.bind(null, token)} className="card" id="etkinlik">
+          <h2>{extra.title} etkinliğini kaldır</h2>
           <p className="muted small">
-            Kına gecesi davetiyeden çıkar, davetlilerin bu gün için verdiği yanıtlar silinir.
-            Düğün bilgileri ve davetli linkleri etkilenmez.
+            Bu gün davetiyeden çıkar, davetlilerin yalnızca bu gün için verdiği yanıtlar silinir.
+            Ana tören bilgileri ve davetli linkleri etkilenmez.
           </p>
-          {yalnizKina > 0 ? (
+          {yalnizExtra > 0 ? (
             <p className="err">
-              {yalnizKina} davetli yalnızca kına gecesine çağrılmış. Kınayı kaldırırsanız ellerinde boş bir
-              davetiye kalır. Önce ailelerin bu kişileri kendi panellerinden silmesi gerekiyor.
+              {yalnizExtra} davetli yalnızca bu güne çağrılmış. Kaldırırsanız ellerinde boş bir davetiye
+              kalır. Önce ailelerin bu kişileri kendi panellerinden silmesi gerekiyor.
             </p>
           ) : (
             <>
               <label className="tog small" style={{ marginTop: 10 }}>
                 <input type="checkbox" name="onay" />
-                <span>Kına gecesini kaldırmak istediğimi onaylıyorum.</span>
+                <span>{extra.title} etkinliğini kaldırmak istediğimi onaylıyorum.</span>
               </label>
               <button className="btn danger full" type="submit" style={{ marginTop: 12 }}>
-                Kına gecesini kaldır
+                {extra.title} etkinliğini kaldır
               </button>
             </>
           )}
         </form>
       ) : (
-        <form action={addKinaAction.bind(null, token)} className="card" id="kina">
-          <h2>Kına gecesi ekle</h2>
-          <p className="muted small">Davetiyede şu an sadece düğün var. Kına gecesini şimdi ekleyebilirsiniz.</p>
+        <form action={addExtraEventAction.bind(null, token)} className="card" id="etkinlik">
+          <h2>İkinci etkinlik ekle</h2>
+          <p className="muted small">Davetiyede şu an tek gün var. Kına gecesi ya da after party ekleyebilirsiniz.</p>
+          <KindPicker name="k_tur" kinds={EXTRA_KINDS} legend="Etkinlik türü" />
           <div className="grid2">
             <div><label className="lbl" htmlFor="k_date">Tarih</label><input type="date" id="k_date" name="k_date" required /></div>
             <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" required /></div>
@@ -111,9 +114,9 @@ export default async function Duzenle({ params, searchParams }: {
           <input type="text" id="k_address" name="k_address" maxLength={120} placeholder="İlçe, şehir" />
           <label className="tog small" style={{ marginTop: 12 }}>
             <input type="checkbox" name="mevcut" defaultChecked />
-            <span>Şu ana kadar eklenmiş {guests.length} davetli kınaya da çağrılsın.</span>
+            <span>Şu ana kadar eklenmiş {guests.length} davetli bu güne de çağrılsın.</span>
           </label>
-          <button className="btn full" type="submit" style={{ marginTop: 12 }}>Kına gecesini ekle</button>
+          <button className="btn full" type="submit" style={{ marginTop: 12 }}>Etkinliği ekle</button>
         </form>
       )}
     </main>

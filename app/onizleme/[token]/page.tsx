@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdmin, inviteLabel } from "@/lib/data";
+import { getAdmin } from "@/lib/data";
+import { inviteLabel } from "@/lib/events";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";

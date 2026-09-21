@@ -126,3 +126,12 @@ details summary{cursor:pointer;font-weight:700}
 .temalar input:checked+.tema{border-color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold)}
 .temalar input:focus-visible+.tema{outline:3px solid var(--focus);outline-offset:2px}
 .sw{display:block;height:26px;margin-bottom:6px;border-radius:8px;border:1px solid var(--line);background:linear-gradient(90deg,var(--a) 0 40%,var(--b) 40% 70%,var(--c) 70% 100%)}
+
+/* Tören türü ve ikinci etkinlik seçicileri */
+.secenekler{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
+.secenekler.iki{grid-template-columns:repeat(2,1fr)}
+.secenekler label{position:relative;display:block;height:100%}
+.secenekler input{position:absolute;opacity:0;inset:0}
+.secenek{display:flex;align-items:center;justify-content:center;height:100%;min-height:48px;padding:10px 6px;text-align:center;border:1.5px solid var(--line);border-radius:12px;font-size:.88rem;font-weight:700;cursor:pointer}
+.secenekler input:checked+.secenek{border-color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold)}
+.secenekler input:focus-visible+.secenek{outline:3px solid var(--focus);outline-offset:2px}
