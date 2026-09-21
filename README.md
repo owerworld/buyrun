@@ -9,9 +9,18 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, silme
 - `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
 - `/onizleme/[token]` — Davetiye önizleme
+- `/kurtar` — Yönetim linkini kaybeden çift, kurtarma koduyla geri döner
 - `/gizlilik` — KVKK aydınlatma TASLAĞI (avukat onayı bekliyor)
 - Link önizleme posteri — `/d/[token]` ve `/onizleme/[token]` paylaşıldığında WhatsApp'ta çiftin adları, tarih ve şehir yazan poster çıkar (davetlinin adı posterde yer almaz)
 - `/api/cron/cleanup` — Son etkinlikten 90 gün sonra tüm veriyi siler (Vercel Cron, her gece)
+
+## Sağlamlaştırma
+- **İstek sınırlama** (`lib/ratelimit.ts`): davetiye 5/saat, davetli 150/saat, kurtarma denemesi 10/saat — IP başına.
+  IP ham hâliyle saklanmaz; `CRON_SECRET` ile birlikte özetlenir (SHA-256) ve sayaçlar gece temizlenir.
+- **Kurtarma kodu**: davetiye oluşturulurken `ABCD-EFGH-JKMN` biçiminde üretilir, yönetim sayfasında hep görünür.
+  Telefon/e-posta istemediğimiz için tek kurtarma yolu budur.
+- **Erişilebilirlik**: 320px genişlikte yatay kaydırma yok, dokunma hedefleri ≥24px,
+  metin kontrastları WCAG 2.1 AA (açık ve koyu mod, üç tema) — axe-core ile doğrulandı.
 
 ## Temalar
 `lib/themes.ts` içinde üç tema var: **klasik** (bordo-altın), **krem** (kum beji & zeytin yeşili),
@@ -43,6 +52,6 @@ Oluşturma → aile paneli → davetli ekleme → davetli sayfası (sadece kendi
 - [x] Davetiye başına link önizleme görseli (Open Graph) — WhatsApp'ta poster gibi görünsün
 - [ ] Instagram hikâyesi boyutunda paylaşım görseli
 - [x] Hazır tema/şablonlar (klasik bordo-altın · sade krem · modern koyu)
-- [ ] İstek sınırlama (rate limit) ve yönetim linkini kaybeden çift için kurtarma
+- [x] İstek sınırlama (rate limit) ve yönetim linkini kaybeden çift için kurtarma
 - [ ] Ödeme (ancak avukat ve mali müşavir onayından sonra)
 - [ ] Marka adı TÜRKPATENT kontrolü — "Buyrun" çalışma adıdır

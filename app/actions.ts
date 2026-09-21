@@ -1,9 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { addGuest, createInvitation, getAdmin, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
+import { addGuest, adminTokenByRecoveryCode, createInvitation, getAdmin, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
 import { DEFAULT_THEME, isTheme } from "@/lib/themes";
+import { allow, LIMITS } from "@/lib/ratelimit";
+import { normalizeCode } from "@/lib/tokens";
 
 const s = (f: FormData, k: string, max = 120) => String(f.get(k) ?? "").trim().slice(0, max);
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -15,6 +17,8 @@ export async function createAction(f: FormData) {
   const nameA = s(f, "nameA", 40), nameB = s(f, "nameB", 40);
   if (!nameA || !nameB) fail("Çiftin iki adını da yazın.");
   if (f.get("kvkk") !== "on") fail("Devam etmek için aydınlatma metnini onaylayın.");
+  if (!(await allow(LIMITS.davetiye.action, LIMITS.davetiye.limit, LIMITS.davetiye.window)))
+    fail("Kısa sürede çok fazla davetiye oluşturuldu. Bir saat sonra tekrar deneyin.");
 
   const events: NewEvent[] = [];
   const wedding = { date: s(f, "d_date"), time: s(f, "d_time"), venue: s(f, "d_venue"), address: s(f, "d_address") };
@@ -72,6 +76,8 @@ export async function addGuestAction(panelToken: string, f: FormData) {
   const ev = f.getAll("ev").map(String);
   if (!name) redirect(`/p/${panelToken}?hata=${encodeURIComponent("Davetlinin adını yazın.")}#ekle`);
   if (!ev.length) redirect(`/p/${panelToken}?hata=${encodeURIComponent("En az bir gün seçin.")}#ekle`);
+  if (!(await allow(LIMITS.davetli.action, LIMITS.davetli.limit, LIMITS.davetli.window)))
+    redirect(`/p/${panelToken}?hata=${encodeURIComponent("Kısa sürede çok fazla davetli eklendi. Bir saat sonra kaldığınız yerden devam edebilirsiniz.")}#ekle`);
   const t = await addGuest(panelToken, name, ev);
   redirect(`/p/${panelToken}?yeni=${t}`);
 }
@@ -90,4 +96,17 @@ export async function respondAction(guestToken: string, f: FormData) {
     redirect(`/d/${guestToken}?duzenle=1&hata=${encodeURIComponent((e as Error).message)}`);
   }
   redirect(`/d/${guestToken}?tamam=1`);
+}
+
+/** Yönetim linkini kaybeden çift, kurtarma koduyla linke geri döner. */
+export async function recoverAction(f: FormData) {
+  const fail = (m: string) => redirect(`/kurtar?hata=${encodeURIComponent(m)}`);
+  if (!(await allow(LIMITS.kurtarma.action, LIMITS.kurtarma.limit, LIMITS.kurtarma.window)))
+    fail("Çok fazla deneme yapıldı. Bir saat sonra tekrar deneyin.");
+
+  const code = normalizeCode(s(f, "kod", 40));
+  if (!code) fail("Kod 12 karakter olmalı. Örnek: ABCD-EFGH-JKMN");
+  const admin = await adminTokenByRecoveryCode(code);
+  if (!admin) fail("Bu koda ait davetiye bulunamadı. Kodu kontrol edin.");
+  redirect(`/yonet/${admin}`);
 }

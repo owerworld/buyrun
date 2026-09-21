@@ -16,6 +16,7 @@ const SCHEMA = [
     bus_note TEXT NOT NULL DEFAULT '',
     program TEXT NOT NULL DEFAULT '',
     theme TEXT NOT NULL DEFAULT 'klasik',
+    recovery_code TEXT NOT NULL DEFAULT '',
     delete_after TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
@@ -50,8 +51,15 @@ const SCHEMA = [
     responded_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS rate_limits (
+    bucket TEXT PRIMARY KEY,
+    hits INT NOT NULL DEFAULT 1,
+    reset_at TIMESTAMPTZ NOT NULL
+  )`,
   // Önceden kurulmuş veritabanları için tema sütunu
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'klasik'`,
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS recovery_code TEXT NOT NULL DEFAULT ''`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS invitations_recovery_idx ON invitations(recovery_code) WHERE recovery_code <> ''`,
   `CREATE INDEX IF NOT EXISTS guests_family_idx ON guests(family_id)`,
   `CREATE INDEX IF NOT EXISTS guests_invitation_idx ON guests(invitation_id)`,
 ];

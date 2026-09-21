@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cleanupExpired } from "@/lib/data";
+import { cleanupRateLimits } from "@/lib/ratelimit";
 import { todayIso } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -10,5 +11,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const deleted = await cleanupExpired(todayIso());
-  return NextResponse.json({ deleted });
+  const limits = await cleanupRateLimits();
+  return NextResponse.json({ deleted, limits });
 }

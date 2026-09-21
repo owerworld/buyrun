@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdmin, SIDE_LABEL, summarize } from "@/lib/data";
+import { ensureRecoveryCode, getAdmin, SIDE_LABEL, summarize } from "@/lib/data";
 import { siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
 
@@ -15,6 +15,7 @@ export default async function Yonet({ params, searchParams }: {
   const { inv, events, families, guests } = data;
   const sum = summarize(guests, events);
   const base = siteUrl();
+  const recovery = await ensureRecoveryCode(token);
 
   return (
     <main className="wrap">
@@ -25,6 +26,12 @@ export default async function Yonet({ params, searchParams }: {
         <p className="muted">Davetiyeniz hazır. Bu sayfa yönetim sayfanız, linkini kaydedin ve kimseyle paylaşmayın.</p>
         <div className="linkbox">{`${base}/yonet/${token}`}</div>
         <CopyButton text={`${base}/yonet/${token}`} label="Yönetim linkini kopyala" />
+        <div className="info" style={{ marginTop: 12 }}>
+          <b>Kurtarma kodunuz: <span style={{ letterSpacing: ".12em" }}>{recovery}</span></b>
+          <br />Bu kodu bir yere yazın ya da ekran görüntüsünü alın. Yönetim linkini kaybederseniz{" "}
+          <Link href="/kurtar">kurtar sayfasından</Link> bu kodla geri dönersiniz.
+          {" "}<CopyButton text={recovery} label="Kodu kopyala" />
+        </div>
         <div className="btns" style={{ marginTop: 12 }}>
           <Link className="btn ghost" href={`/onizleme/${token}`}>Davetiyeyi önizle</Link>
           <Link className="btn ghost" href={`/yonet/${token}/duzenle`}>Davetiyeyi düzenle</Link>

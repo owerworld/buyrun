@@ -18,6 +18,7 @@ export default function Home() {
         <p><b>İki aile kendi panelinden davetli ekler.</b> Her davetliye özel link oluşur, mesajı kendi WhatsApp'ından gönderirsin.</p>
         <p><b>Yanıtlar anında düşer.</b> Kaç kişi geleceğini ve kimin yanıt vermediğini görürsün.</p>
         <p className="muted">Telefon numarası istemiyoruz, para toplamıyoruz. Misafir listesi son etkinlikten 90 gün sonra otomatik silinir.</p>
+        <p className="small">Davetiyeniz zaten var ama yönetim linkini kaybettiyseniz: <Link href="/kurtar">yönetim linkini kurtar</Link></p>
       </section>
     </main>
   );

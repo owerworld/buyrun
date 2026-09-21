@@ -1,5 +1,5 @@
 import { q } from "./db";
-import { id, token } from "./tokens";
+import { id, recoveryCode, token } from "./tokens";
 import { addDays } from "./format";
 
 export type Side = "kiz" | "oglan";
@@ -7,7 +7,8 @@ export type Status = "bekliyor" | "geliyor" | "gelmiyor";
 
 export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
-  bus_from: string; bus_time: string; bus_note: string; program: string; theme: string; delete_after: string;
+  bus_from: string; bus_time: string; bus_note: string; program: string; theme: string;
+  recovery_code: string; delete_after: string;
 }
 export interface EventRow { id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number; }
 export interface Family { id: string; invitation_id: string; side: Side; panel_token: string; }
@@ -31,14 +32,15 @@ export const RETENTION_DAYS = 90;
 export async function createInvitation(input: NewInvitation) {
   const inv = id();
   const admin = token(16);
+  const recovery = recoveryCode();
   const dates = input.events.map((e) => e.date).sort();
   const mainDate = input.events.find((e) => e.kind === "dugun")?.date ?? dates[0];
   const deleteAfter = addDays(dates[dates.length - 1], RETENTION_DAYS);
 
   await q(
-    `INSERT INTO invitations (id, admin_token, name_a, name_b, city, main_date, bus_from, bus_time, bus_note, program, theme, delete_after)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-    [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.theme, deleteAfter]
+    `INSERT INTO invitations (id, admin_token, name_a, name_b, city, main_date, bus_from, bus_time, bus_note, program, theme, recovery_code, delete_after)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+    [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.theme, recovery, deleteAfter]
   );
   let i = 0;
   for (const e of input.events) {
@@ -97,6 +99,29 @@ export async function getAdmin(adminToken: string) {
   const families = await q<Family>(`SELECT * FROM families WHERE invitation_id = $1 ORDER BY side DESC`, [inv.id]);
   const guests = await q<Guest>(`SELECT * FROM guests WHERE invitation_id = $1`, [inv.id]);
   return { inv, events: await eventsOf(inv.id), families, guests };
+}
+
+/**
+ * Yönetim linkini kaybeden çift için kurtarma kodu.
+ * Kod, davetiye oluşturulurken üretilir; eski kayıtlarda boşsa ilk açılışta tamamlanır.
+ */
+export async function ensureRecoveryCode(adminToken: string) {
+  const [inv] = await q<Invitation>(`SELECT * FROM invitations WHERE admin_token = $1`, [adminToken]);
+  if (!inv) return "";
+  if (inv.recovery_code) return inv.recovery_code;
+  const code = recoveryCode();
+  await q(`UPDATE invitations SET recovery_code = $1 WHERE id = $2 AND recovery_code = ''`, [code, inv.id]);
+  const [fresh] = await q<Invitation>(`SELECT recovery_code FROM invitations WHERE id = $1`, [inv.id]);
+  return fresh?.recovery_code ?? code;
+}
+
+/** Kurtarma kodundan yönetim linkini bulur. Kod yanlışsa null döner. */
+export async function adminTokenByRecoveryCode(code: string) {
+  if (!code) return null;
+  const [inv] = await q<{ admin_token: string }>(
+    `SELECT admin_token FROM invitations WHERE recovery_code = $1`, [code]
+  );
+  return inv?.admin_token ?? null;
 }
 
 export async function getPanel(panelToken: string) {
