@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdmin } from "@/lib/data";
+import { getAdmin, kinaOnlyGuests } from "@/lib/data";
 import { ThemePicker } from "@/components/Theme";
-import { updateInvitationAction } from "../../../actions";
+import { addKinaAction, removeKinaAction, updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
 export default async function Duzenle({ params, searchParams }: {
@@ -13,8 +13,10 @@ export default async function Duzenle({ params, searchParams }: {
   const { hata } = await searchParams;
   const data = await getAdmin(token);
   if (!data) notFound();
-  const { inv, events } = data;
+  const { inv, events, guests } = data;
   const save = updateInvitationAction.bind(null, token);
+  const kina = events.find((e) => e.kind === "kina");
+  const yalnizKina = kina ? kinaOnlyGuests(guests, kina.id).length : 0;
 
   return (
     <main className="wrap">
@@ -69,11 +71,51 @@ export default async function Duzenle({ params, searchParams }: {
           <button className="btn" type="submit">Değişiklikleri kaydet</button>
           <Link className="btn ghost" href={`/yonet/${token}`}>Vazgeç</Link>
         </div>
-        <p className="info">
-          Kına gecesini sonradan eklemek ya da kaldırmak bu ekranda yok — davetlilerin hangi güne çağrıldığı
-          buna bağlı olduğu için ayrı ele alınması gerekiyor.
-        </p>
       </form>
+
+      {kina ? (
+        <form action={removeKinaAction.bind(null, token)} className="card" id="kina">
+          <h2>Kına gecesini kaldır</h2>
+          <p className="muted small">
+            Kına gecesi davetiyeden çıkar, davetlilerin bu gün için verdiği yanıtlar silinir.
+            Düğün bilgileri ve davetli linkleri etkilenmez.
+          </p>
+          {yalnizKina > 0 ? (
+            <p className="err">
+              {yalnizKina} davetli yalnızca kına gecesine çağrılmış. Kınayı kaldırırsanız ellerinde boş bir
+              davetiye kalır. Önce ailelerin bu kişileri kendi panellerinden silmesi gerekiyor.
+            </p>
+          ) : (
+            <>
+              <label className="tog small" style={{ marginTop: 10 }}>
+                <input type="checkbox" name="onay" />
+                <span>Kına gecesini kaldırmak istediğimi onaylıyorum.</span>
+              </label>
+              <button className="btn danger full" type="submit" style={{ marginTop: 12 }}>
+                Kına gecesini kaldır
+              </button>
+            </>
+          )}
+        </form>
+      ) : (
+        <form action={addKinaAction.bind(null, token)} className="card" id="kina">
+          <h2>Kına gecesi ekle</h2>
+          <p className="muted small">Davetiyede şu an sadece düğün var. Kına gecesini şimdi ekleyebilirsiniz.</p>
+          <div className="grid2">
+            <div><label className="lbl" htmlFor="k_date">Tarih</label><input type="date" id="k_date" name="k_date" required /></div>
+            <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" required /></div>
+          </div>
+          <label className="lbl" htmlFor="k_venue">Yer</label>
+          <input type="text" id="k_venue" name="k_venue" required maxLength={80} placeholder="Örn: Kız evi ya da davet salonu" />
+          <label className="lbl" htmlFor="k_address">Adres</label>
+          <input type="text" id="k_address" name="k_address" maxLength={120} placeholder="İlçe, şehir" />
+          <label className="tog small" style={{ marginTop: 12 }}>
+            <input type="checkbox" name="mevcut" defaultChecked />
+            <span>Şu ana kadar eklenmiş {guests.length} davetli kınaya da çağrılsın.</span>
+          </label>
+          <button className="btn full" type="submit" style={{ marginTop: 12 }}>Kına gecesini ekle</button>
+        </form>
+      )}
     </main>
   );
 }

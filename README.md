@@ -5,7 +5,8 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 ## Ne çalışıyor
 - `/olustur` — Çift davetiyeyi oluşturur (düğün + isteğe bağlı kına, servis, program, tema)
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım
-- `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program (linkler değişmez)
+- `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program, tema (linkler değişmez)
+  · kına gecesi sonradan eklenebilir/kaldırılabilir; yalnızca kınaya çağrılmış davetli varsa kaldırma engellenir
 - `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, silme
 - `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
 - `/onizleme/[token]` — Davetiye önizleme

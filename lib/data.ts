@@ -173,6 +173,66 @@ export async function respond(guestToken: string, r: { status: Status; count: nu
   );
 }
 
+/** Etkinlik tarihleri değiştiğinde ana tarih ve silme tarihi yeniden hesaplanır. */
+async function refreshDates(invId: string) {
+  const events = await eventsOf(invId);
+  if (!events.length) return;
+  const dates = events.map((e) => e.event_date).sort();
+  const mainDate = events.find((e) => e.kind === "dugun")?.event_date ?? dates[0];
+  await q(`UPDATE invitations SET main_date = $1, delete_after = $2 WHERE id = $3`, [
+    mainDate, addDays(dates[dates.length - 1], RETENTION_DAYS), invId,
+  ]);
+}
+
+/** Kına gecesini sonradan ekler. İsteğe bağlı olarak mevcut davetlileri de kınaya çağırır. */
+export async function addKina(adminToken: string, e: NewEvent, inviteExisting: boolean) {
+  const data = await getAdmin(adminToken);
+  if (!data) throw new Error("Davetiye bulunamadı");
+  if (data.events.some((x) => x.kind === "kina")) throw new Error("Bu davetiyede zaten bir kına gecesi var.");
+
+  const eventId = id();
+  await q(
+    `INSERT INTO events (id, invitation_id, kind, title, event_date, event_time, venue, address, sort)
+     VALUES ($1,$2,'kina','Kına Gecesi',$3,$4,$5,$6,0)`,
+    [eventId, data.inv.id, e.date, e.time, e.venue, e.address]
+  );
+  if (inviteExisting) {
+    await q(`UPDATE guests SET event_ids = event_ids || $1 WHERE invitation_id = $2`, [`,${eventId}`, data.inv.id]);
+  }
+  await refreshDates(data.inv.id);
+}
+
+/** Yalnızca kınaya çağrılmış davetli sayısı. Kına kaldırılmadan önce kontrol edilir. */
+export function kinaOnlyGuests(guests: Guest[], kinaId: string) {
+  return guests.filter((g) => { const ids = list(g.event_ids); return ids.length === 1 && ids[0] === kinaId; });
+}
+
+/** Kına gecesini kaldırır ve davetlilerin kayıtlarından bu günü temizler. */
+export async function removeKina(adminToken: string) {
+  const data = await getAdmin(adminToken);
+  if (!data) throw new Error("Davetiye bulunamadı");
+  const kina = data.events.find((e) => e.kind === "kina");
+  if (!kina) throw new Error("Bu davetiyede kına gecesi yok.");
+
+  const yalnizKina = kinaOnlyGuests(data.guests, kina.id);
+  if (yalnizKina.length) {
+    throw new Error(
+      `${yalnizKina.length} davetli yalnızca kına gecesine çağrılmış. Kınayı kaldırmadan önce ailelerin bu kişileri panelden silmesi gerekiyor.`
+    );
+  }
+
+  // Davetlilerin gün listelerinden kınayı çıkar
+  for (const g of data.guests) {
+    const ev = list(g.event_ids).filter((i) => i !== kina.id).join(",");
+    const at = list(g.attend_ids).filter((i) => i !== kina.id).join(",");
+    if (ev !== g.event_ids || at !== g.attend_ids) {
+      await q(`UPDATE guests SET event_ids = $1, attend_ids = $2 WHERE id = $3`, [ev, at, g.id]);
+    }
+  }
+  await q(`DELETE FROM events WHERE id = $1 AND invitation_id = $2`, [kina.id, data.inv.id]);
+  await refreshDates(data.inv.id);
+}
+
 /** Saklama süresi dolan davetiyeleri (ve bağlı tüm verileri) siler. */
 export async function cleanupExpired(today: string) {
   const rows = await q<{ id: string }>(`DELETE FROM invitations WHERE delete_after < $1 RETURNING id`, [today]);

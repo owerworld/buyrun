@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { addGuest, adminTokenByRecoveryCode, createInvitation, getAdmin, removeGuest, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
+import { addGuest, addKina, adminTokenByRecoveryCode, createInvitation, getAdmin, removeGuest, removeKina, respond, updateInvitation, type EditEvent, type NewEvent, type Status } from "@/lib/data";
 import { todayIso } from "@/lib/format";
 import { DEFAULT_THEME, isTheme } from "@/lib/themes";
 import { allow, LIMITS } from "@/lib/ratelimit";
@@ -109,4 +109,30 @@ export async function recoverAction(f: FormData) {
   const admin = await adminTokenByRecoveryCode(code);
   if (!admin) fail("Bu koda ait davetiye bulunamadı. Kodu kontrol edin.");
   redirect(`/yonet/${admin}`);
+}
+
+/** Kına gecesini sonradan ekler. */
+export async function addKinaAction(adminToken: string, f: FormData) {
+  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#kina`);
+  const ev = { kind: "kina", title: "Kına Gecesi", date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue", 80), address: s(f, "k_address") };
+  if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail("Kına için tarih, saat ve yer zorunlu.");
+  if (ev.date < todayIso()) fail("Kına tarihi geçmişte olamaz.");
+  try {
+    await addKina(adminToken, ev, f.get("mevcut") === "on");
+  } catch (e) {
+    fail((e as Error).message);
+  }
+  redirect(`/yonet/${adminToken}?guncellendi=1`);
+}
+
+/** Kına gecesini kaldırır. Yalnızca kınaya çağrılmış davetli varsa reddeder. */
+export async function removeKinaAction(adminToken: string, f: FormData) {
+  const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#kina`);
+  if (f.get("onay") !== "on") fail("Kaldırmak için onay kutusunu işaretleyin.");
+  try {
+    await removeKina(adminToken);
+  } catch (e) {
+    fail((e as Error).message);
+  }
+  redirect(`/yonet/${adminToken}?guncellendi=1`);
 }
