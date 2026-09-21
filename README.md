@@ -45,6 +45,11 @@ npm run dev        # http://localhost:3000
 3. Ortam değişkenleri: `DATABASE_URL`, `CRON_SECRET` (rastgele uzun metin), `NEXT_PUBLIC_SITE_URL` (örn. https://buyrun.app)
 4. Tablolar ilk istekte otomatik oluşur.
 
+> **Dikkat:** Vercel ortam değişkenlerini yayın anında sabitler. Veritabanını var olan bir projeye
+> sonradan bağlarsan **yeniden yayınlaman** gerekir, yoksa `DATABASE_URL` o yayına girmez.
+
+Şu an yayında: **https://buyrun.vercel.app** (sunucu bölgesi Frankfurt / fra1, veritabanı Neon).
+
 ## Test edilenler (uçtan uca)
 Oluşturma → aile paneli → davetli ekleme → davetli sayfası (sadece kendi etkinlikleri) → LCV → panelde anında sayım → diğer aile ortak sayımı görür ama listeyi görmez → silme → silinen link 404 → cron yetkisiz 401 → geçmiş tarih reddedilir.
 
