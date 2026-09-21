@@ -36,6 +36,14 @@ export default async function Yonet({ params, searchParams }: {
           <Link className="btn ghost" href={`/onizleme/${token}`}>Davetiyeyi önizle</Link>
           <Link className="btn ghost" href={`/yonet/${token}/duzenle`}>Davetiyeyi düzenle</Link>
         </div>
+        <p style={{ marginTop: 8 }}>
+          <a className="btn ghost full" href={`/onizleme/${token}/story`} download>
+            Instagram hikâyesi görselini indir
+          </a>
+        </p>
+        <p className="muted small" style={{ margin: "6px 0 0" }}>
+          Hikâye ölçüsünde (1080×1920) dikey davetiye. Kişiye özel bilgi içermez, hesabınızdan paylaşabilirsiniz.
+        </p>
       </section>
 
       <section className="card">

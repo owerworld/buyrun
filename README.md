@@ -9,6 +9,7 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, silme
 - `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
 - `/onizleme/[token]` — Davetiye önizleme
+- `/onizleme/[token]/story` — Instagram hikâyesi ölçüsünde (1080×1920) dikey davetiye görseli, yönetim sayfasından indirilir
 - `/kurtar` — Yönetim linkini kaybeden çift, kurtarma koduyla geri döner
 - `/gizlilik` — KVKK aydınlatma TASLAĞI (avukat onayı bekliyor)
 - Link önizleme posteri — `/d/[token]` ve `/onizleme/[token]` paylaşıldığında WhatsApp'ta çiftin adları, tarih ve şehir yazan poster çıkar (davetlinin adı posterde yer almaz)
@@ -55,7 +56,7 @@ Oluşturma → aile paneli → davetli ekleme → davetli sayfası (sadece kendi
 
 ## Sıradaki işler
 - [x] Davetiye başına link önizleme görseli (Open Graph) — WhatsApp'ta poster gibi görünsün
-- [ ] Instagram hikâyesi boyutunda paylaşım görseli
+- [x] Instagram hikâyesi boyutunda paylaşım görseli
 - [x] Hazır tema/şablonlar (klasik bordo-altın · sade krem · modern koyu)
 - [x] İstek sınırlama (rate limit) ve yönetim linkini kaybeden çift için kurtarma
 - [ ] Ödeme (ancak avukat ve mali müşavir onayından sonra)
