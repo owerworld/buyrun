@@ -72,6 +72,12 @@ async function createExec(): Promise<Exec> {
     const sql = postgres(process.env.DATABASE_URL, { max: 5, prepare: false });
     return async (text, params = []) => (await sql.unsafe(text, params as any[])) as unknown as Row[];
   }
+  // Vercel'de dosya sistemi salt okunur; sessizce yedeğe düşmek yerine ne eksik olduğunu söyle
+  if (process.env.VERCEL) {
+    throw new Error(
+      "DATABASE_URL tanımlı değil. Vercel panelinde veritabanını projeye bağlayın ve yeniden yayınlayın."
+    );
+  }
   // Yerel geliştirme: dosya tabanlı PGlite (gerçek Postgres, sunucu gerektirmez)
   const { PGlite } = await import("@electric-sql/pglite");
   const dir = process.env.PGLITE_DIR || "./.data/pglite";

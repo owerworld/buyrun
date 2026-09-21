@@ -19,5 +19,8 @@ export function addDays(iso: string, n: number) {
 export const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  // Elle ayarlanan adres > Vercel'in kalıcı üretim adresi > o anki yayının adresi > yerel
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  const raw = process.env.NEXT_PUBLIC_SITE_URL || (vercel ? `https://${vercel}` : "http://localhost:3000");
+  return raw.replace(/\/$/, "");
 }
