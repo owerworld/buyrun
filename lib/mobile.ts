@@ -176,6 +176,32 @@ export async function respondMobile(row: EventRow, body: unknown, origin: string
   }
   return createMobileGuest(row,data,origin);
 }
+/** Yanlış eklenen davetliyi siler. Web panelinden kullanılır; uygulamanın kendi akışında yok. */
+export async function removeMobileGuest(row: { id: string }, guestId: string) {
+  const gone = await q(`DELETE FROM mobile_guests WHERE event_id=$1 AND id=$2 RETURNING id`, [row.id, guestId]);
+  if (!gone.length) throw new MobileError("Davetli bulunamadı.", 404);
+}
+
+/** Etkinlik paneli için sayım. "Belki" diyenler ayrı tutulur, toplama katılmaz. */
+export function mobileSummary(guests: { status: MobileStatus; count: number }[]) {
+  const by = (s: MobileStatus) => guests.filter((g) => g.status === s);
+  const going = by("going");
+  const waiting = by("pending").length;
+  return {
+    people: going.reduce((sum, g) => sum + g.count, 0),
+    going: going.length,
+    maybe: by("maybe").length,
+    declined: by("declined").length,
+    waiting,
+    invites: guests.length,
+    answeredPct: guests.length ? Math.round(((guests.length - waiting) / guests.length) * 100) : 0,
+  };
+}
+
+export const MOBILE_STATUS_LABEL: Record<MobileStatus, string> = {
+  going: "Geliyor", maybe: "Belki", declined: "Gelemiyor", pending: "Bekliyor",
+};
+
 export async function cleanupMobileExpired(today: string) {
   await mobileReady();
   const rows = await q(`DELETE FROM mobile_events WHERE delete_after < $1 RETURNING id`,[today]);

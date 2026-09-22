@@ -3,6 +3,8 @@
 Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri silme.
 
 ## Ne çalışıyor
+- `/etkinlik` — Genel etkinlik daveti: doğum günü, ev partisi, mezuniyet, kulüp etkinliği… Tek ev sahibi, tek liste, Geliyor/Belki/Gelemiyor
+- `/etkinlik/[manageToken]` — Ev sahibinin paneli: davetliler, davet linkleri, sayım, düzenleme
 - `/olustur` — Çift davetiyeyi oluşturur (düğün/nişan/söz + isteğe bağlı kına ya da after party, servis, program, tema)
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım ve yanıt oranı
 - `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program, tema (linkler değişmez)
@@ -50,6 +52,15 @@ kurulu, o etkinlikler ayrı bir akış ister.
 Tema yalnızca `globals.css` değişkenlerini ezer; yeni CSS yapısı kurulmaz. Yeni tema eklemek
 için `THEMES` dizisine bir kayıt eklemek yeterli — davetli sayfası, önizleme ve link posteri
 otomatik uyum sağlar.
+
+## İki davet türü
+Ürün iki ayrı akış içerir, ana sayfa ikisini de gösterir:
+- **Düğün davetiyesi** (`/olustur` → `/yonet` → `/p` → `/d`): çift + kız evi/oğlan evi modeli, kına/after party, servis, program.
+- **Etkinlik daveti** (`/etkinlik` → `/etkinlik/[manageToken]` → `/m`): tek ev sahibi, yedi kategori,
+  "Belki" seçeneği, kontenjan. Mobil uygulamayla **aynı veriyi ve aynı API'yi** kullanır; uygulamada
+  oluşturulan etkinlik web panelinden, web'de oluşturulan etkinlik uygulamadan yönetilebilir.
+
+Web'de kişisel kapak fotoğrafı yüklenmez; yalnızca üç hazır kapak sunulur.
 
 ## Mobil uygulama
 `buyrun-mobile/` — Expo / React Native ile iOS ve Android uygulaması. Ayrıntılar `MOBIL.md` ve
