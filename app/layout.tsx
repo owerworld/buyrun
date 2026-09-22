@@ -1,6 +1,10 @@
+import localFont from "next/font/local";
 import type { Metadata, Viewport } from "next";
 import { siteUrl } from "@/lib/format";
 import "./globals.css";
+
+const display = localFont({ src: "../assets/fonts/cormorant-600.ttf", variable: "--font-display", display: "swap", weight: "600" });
+const ui = localFont({ src: [{ path: "../assets/fonts/manrope-500.ttf", weight: "500" }, { path: "../assets/fonts/manrope-700.ttf", weight: "700" }], variable: "--font-ui", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -18,13 +22,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" />
-      </head>
+    <html lang="tr" className={`${display.variable} ${ui.variable}`}>
       <body>{children}</body>
     </html>
   );

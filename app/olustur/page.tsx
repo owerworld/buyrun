@@ -7,12 +7,13 @@ import { createAction } from "../actions";
 export default async function Olustur({ searchParams }: { searchParams: Promise<{ hata?: string }> }) {
   const { hata } = await searchParams;
   return (
-    <main className="wrap">
-      <div className="brand"><Link href="/">Buyrun</Link></div>
+    <main className="wrap form-wrap">
+      <div className="brand"><Link href="/">Buyrun</Link><Link className="back-link" href="/">← Ana sayfa</Link></div>
       <form action={createAction} className="card">
-        <h1 className="title">Davetiyeni oluştur</h1>
+        <p className="eyebrow">Güzel bir başlangıç</p><h1 className="title">Davetiyeni oluştur</h1><p className="muted">Önce bilgilerinizi ekleyin, sonra size en çok yakışan temayı seçin.</p>
         {hata && <p className="err" role="alert">{hata}</p>}
 
+        <div className="form-section-heading"><span>01</span><h2>Siz ve kutlamanız</h2></div>
         <KindPicker name="tur" kinds={MAIN_KINDS} legend="Tören türü" />
 
         <div className="grid2">
@@ -22,7 +23,7 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" />
 
-        <h2 style={{ marginTop: 20 }}>Tören bilgileri</h2>
+        <div className="form-section-heading"><span>02</span><h2>Ne zaman, nerede?</h2></div>
         <div className="grid2">
           <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required /></div>
           <div><label className="lbl" htmlFor="d_time">Saat</label><input type="time" id="d_time" name="d_time" required /></div>
@@ -32,7 +33,8 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
         <label className="lbl" htmlFor="d_address">Adres</label>
         <input type="text" id="d_address" name="d_address" maxLength={120} placeholder="İlçe, şehir" />
 
-        <details style={{ marginTop: 18 }}>
+        <div className="form-section-heading"><span>03</span><h2>Diğer ayrıntılar <small>İsteğe bağlı</small></h2></div>
+        <details className="form-disclosure">
           <summary>İkinci bir etkinlik de var</summary>
           <label className="tog" style={{ marginTop: 10 }}><input type="checkbox" name="hasKina" /> İkinci etkinliği davetiyeye ekle</label>
           <KindPicker name="k_tur" kinds={EXTRA_KINDS} legend="Etkinlik türü" />
@@ -48,7 +50,7 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
           <textarea id="k_program" name="k_program" maxLength={600} placeholder={"Her satıra bir madde:\n20:00 Karşılama\n21:30 Kına yakma"} />
         </details>
 
-        <details style={{ marginTop: 14 }}>
+        <details className="form-disclosure">
           <summary>Servis ve tören günü programı</summary>
           <div className="grid2">
             <div><label className="lbl" htmlFor="busFrom">Servis kalkış yeri</label><input type="text" id="busFrom" name="busFrom" maxLength={120} /></div>
@@ -60,6 +62,7 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
           <textarea id="program" name="program" maxLength={600} placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 Nikâh töreni"} />
         </details>
 
+        <div className="form-section-heading"><span>04</span><h2>Size yakışan görünüm</h2></div>
         <ThemePicker />
 
         <label className="tog small" style={{ marginTop: 18 }}>

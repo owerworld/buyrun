@@ -27,10 +27,10 @@ export function ThemePicker({ current }: { current?: string }) {
             <input type="radio" name="theme" value={t.id} defaultChecked={t.id === selected} />
             <span className="tema">
               <span
-                className="sw"
+                className="theme-preview"
                 aria-hidden="true"
-                style={{ ["--a" as string]: t.swatch[0], ["--b" as string]: t.swatch[1], ["--c" as string]: t.swatch[2] }}
-              />
+                style={{ background: t.og.bg, color: t.og.text, borderColor: t.og.frame }}
+              ><span>A</span><em>ile</em><span>B</span></span>
               {t.label}
               <small>{t.hint}</small>
             </span>

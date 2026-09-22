@@ -51,6 +51,22 @@ Tema yalnızca `globals.css` değişkenlerini ezer; yeni CSS yapısı kurulmaz. 
 için `THEMES` dizisine bir kayıt eklemek yeterli — davetli sayfası, önizleme ve link posteri
 otomatik uyum sağlar.
 
+## Mobil uygulama
+`buyrun-mobile/` — Expo / React Native ile iOS ve Android uygulaması. Ayrıntılar `MOBIL.md` ve
+`buyrun-mobile/README.md` dosyalarında. Web projesinin TypeScript kontrolü bu klasörü kapsamaz
+(`tsconfig.json` → `exclude`); mobil projenin kendi `tsconfig` ve bağımlılıkları vardır.
+
+Mobil uygulamanın kullandığı API bu Next.js projesindedir:
+- `POST /api/mobile/events` — etkinlik oluşturur, yönetim ve davet token'ı döner
+- `GET|PATCH /api/mobile/events/[manageToken]` — yönetim verisi ve düzenleme
+- `POST /api/mobile/events/[manageToken]/guests` · `PATCH .../guests/[guestId]` — davetli yönetimi
+- `GET|POST /api/mobile/invites/[inviteToken]` — davetlinin gördüğü veri ve yanıtı
+- `/m/[token]` — davetlinin uygulama indirmeden yanıt verdiği sayfa
+
+Mobil veriler **ayrı tablolarda** durur (`mobile_events`, `mobile_guests`); düğün/aile verilerine
+dokunmaz. Her uç noktada istek sınırlama vardır, veriler etkinlikten 90 gün sonra aynı cron işiyle silinir.
+Derleme adresi `buyrun-mobile/eas.json` içinde `EXPO_PUBLIC_API_URL` ile sabitlenmiştir.
+
 ## Bilerek olmayanlar (hukuki ilkeler)
 IBAN / para toplama yok · Sistem mesaj göndermez (aile kendi WhatsApp'ından paylaşır) · Telefon numarası istenmez · Fotoğraf yok · Müzik yok · Kişisel linkler arama motorlarına kapalı (X-Robots-Tag + robots.txt)
 
@@ -82,3 +98,16 @@ Oluşturma → aile paneli → davetli ekleme → davetli sayfası (sadece kendi
 - [x] İstek sınırlama (rate limit) ve yönetim linkini kaybeden çift için kurtarma
 - [ ] Ödeme (ancak avukat ve mali müşavir onayından sonra)
 - [ ] Marka adı TÜRKPATENT kontrolü — "Buyrun" çalışma adıdır
+
+
+## 22 Eylül 2026 arayüz düzenlemesi
+
+- Çiftin yönetim alanı: **Genel bakış / Aile panelleri / Davetiye**.
+- Aile paneli: **Davetliler / Davetli ekle / Ortak sayım**; arama ve süzgeç adres üzerinden çalışmaya devam eder.
+- Üç ana ölçüm: gelecek **kişi**, yanıt bekleyen **davet**, yanıt oranı. Yanıt dağılımı davet kayıtlarını, etkinlik çubukları kişileri gösterir; sayılar birbirine karıştırılmaz.
+- Oluşturma formunda dört bilgi grubu, üç tema önizlemesi ve telefona uyarlanan düzen.
+- Davetli sayfasında etkinlik/katılım kısayolları; gelemeyen kişinin gereksiz kişi/gün alanları gizlenir.
+- Yanlışlıkla silmeyi önleyen zorunlu onay; hatalı ekleme doğru sekmeye döner.
+- Yazı tipleri uygulamadan yüklenir; harici font isteği yoktur.
+
+Bu sürümde üretim derlemesi, TypeScript kontrolü ve yerel HTTP akış kontrolleri geçti: 11 ekran, davetli ekleme/düzenleme/silme, LCV, Türkçe arama, filtre, ailelerin veri ayrımı ve Excel dışa aktarma. Yeni tasarım için tarayıcıda görsel/ekran okuyucu doğrulaması yapılmadı. Üstteki önceki sürümün axe-core notu, bu yeni düzenin test sonucu değildir.

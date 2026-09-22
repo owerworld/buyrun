@@ -21,8 +21,8 @@ export default async function Duzenle({ params, searchParams }: {
   const yalnizExtra = extra ? onlyGuestsOf(guests, extra.id).length : 0;
 
   return (
-    <main className="wrap">
-      <div className="brand"><Link href="/">Buyrun</Link><span className="muted small">Düzenle</span></div>
+    <main className="wrap form-wrap">
+      <div className="brand"><Link href="/">Buyrun</Link><Link className="back-link" href={`/yonet/${token}?bolum=davetiye`}>← Davetiyeye dön</Link></div>
       <form action={save} className="card">
         <h1 className="title">Davetiyeyi düzenle</h1>
         <p className="muted small" style={{ marginTop: -4 }}>
@@ -37,7 +37,7 @@ export default async function Duzenle({ params, searchParams }: {
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" defaultValue={inv.city} />
 
-        <ThemePicker current={inv.theme} />
+
 
         {events.map((e) => (
           <div key={e.id}>
@@ -75,6 +75,8 @@ export default async function Duzenle({ params, searchParams }: {
           </>
         )}
 
+        <div className="form-section-heading"><span>✦</span><h2>Görünüm</h2></div>
+        <ThemePicker current={inv.theme} />
         <div className="btns" style={{ marginTop: 18 }}>
           <button className="btn" type="submit">Değişiklikleri kaydet</button>
           <Link className="btn ghost" href={`/yonet/${token}`}>Vazgeç</Link>

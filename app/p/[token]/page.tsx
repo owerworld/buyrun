@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPanel, list, SIDE_LABEL, summarize, type Guest, type Invitation } from "@/lib/data";
-import { phraseFor } from "@/lib/events";
+import { phraseFor, isMainKind } from "@/lib/events";
 import { searchFold, siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
+import { Workspace } from "@/components/Workspace";
+import { AttendanceStats, ResponseChart, EventChart } from "@/components/Attendance";
+import { shortDate } from "@/lib/format";
 import { addGuestAction, removeGuestAction, updateGuestAction } from "../../actions";
 
 const STATUS = { geliyor: "Geliyor", gelmiyor: "Gelemiyor", bekliyor: "Bekliyor" } as const;
@@ -15,10 +18,10 @@ function inviteText(inv: Invitation, g: Guest, kinds: string[]) {
 
 export default async function Panel({ params, searchParams }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string; durum?: string; ara?: string }>;
+  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string; durum?: string; ara?: string; bolum?: string }>;
 }) {
   const { token } = await params;
-  const { yeni, hata, guncellendi, sifirlandi, durum, ara } = await searchParams;
+  const { yeni, hata, guncellendi, sifirlandi, durum, ara, bolum } = await searchParams;
   const data = await getPanel(token);
   if (!data) notFound();
   const { inv, family, events, guests } = data;
@@ -51,19 +54,23 @@ export default async function Panel({ params, searchParams }: {
   const aramaGoster = mine.length >= 8 || Boolean(arama);
   const fresh = yeni ? mine.find((g) => g.token === yeni) : undefined;
   const add = addGuestAction.bind(null, token);
+  const active = bolum === "ekle" || bolum === "sayim" ? bolum : "liste";
+  const root = `/p/${token}`;
 
   return (
-    <main className="wrap">
-      <div className="brand"><Link href="/">Buyrun</Link><span className="muted small">{inv.name_a} ile {inv.name_b}</span></div>
+    <Workspace title={`${SIDE_LABEL[family.side]} paneli`} subtitle={`${inv.name_a} ile ${inv.name_b} · ${shortDate(inv.main_date)}`} label="Ailenin davetli alanı"
+      nav={[{label:"Davetliler", href:root, active:active === "liste", icon:"people"}, {label:"Davetli ekle", href:`${root}?bolum=ekle`, active:active === "ekle", icon:"add"}, {label:"Ortak sayım", href:`${root}?bolum=sayim`, active:active === "sayim", icon:"overview"}]}
+      action={active !== "ekle" ? <Link className="btn" href={`${root}?bolum=ekle`}>+ Davetli ekle</Link> : undefined}>
+      {hata && <p className="err" role="alert">{hata}</p>}
 
-      {fresh && (
-        <section className="card" role="status">
+      {fresh && active === "liste" && (
+        <section className="surface fresh-guest" role="status">
           <h2>{fresh.name} eklendi</h2>
           <p className="muted small">Kişiye özel link hazır. Mesajı kendi WhatsApp'ınızdan gönderin.</p>
           <div className="linkbox">{inviteText(inv, fresh, kindsOf(fresh))}</div>
           <div className="btns">
             <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(inviteText(inv, fresh, kindsOf(fresh)))}`} target="_blank" rel="noopener noreferrer">WhatsApp'ta aç</a>
-            <Link className="btn ghost" href={`/p/${token}`}>Tamam</Link>
+            <Link className="btn ghost" href={`${root}?bolum=ekle`}>Bir davetli daha ekle</Link>
           </div>
         </section>
       )}
@@ -76,21 +83,16 @@ export default async function Panel({ params, searchParams }: {
         </p>
       )}
 
-      <section className="card">
-        <h1 className="title">{SIDE_LABEL[family.side]} paneli</h1>
-        <p className="muted small">Kendi davetlilerinizi yönetirsiniz. Salon için gereken toplam, iki ailenin yanıtlarını birleştirir.</p>
-        <h3 style={{ marginBottom: 8 }}>Ortak sayım (iki aile)</h3>
-        <div className="stats uc">
-          <div className="stat"><b>{sum.people}</b><span>Gelecek kişi</span></div>
-          <div className="stat"><b>{sum.waiting}</b><span>Bekleyen</span></div>
-          <div className="stat"><b>%{sum.answeredPct}</b><span>Yanıt oranı</span></div>
-        </div>
-        <div className="heads">{sum.perEvent.map((e) => <div key={e.id} className={`head ${e.kind}`}>{e.title}<br /><b>{e.people}</b> kişi</div>)}</div>
-      </section>
+      {active === "sayim" && <>
+        <div className="page-section-title"><h2>İki aile, ortak katılım</h2><p className="muted">Salon için gereken toplamı burada görün. Diğer ailenin davetli bilgileri gizlidir.</p></div>
+        <AttendanceStats summary={sum} />
+        <div className="family-grid"><ResponseChart summary={sum} /><EventChart summary={sum} /></div>
+      </>}
 
-      <section className="card">
-        <h2>{SIDE_LABEL[family.side]} davetlileri ({mine.length})</h2>
-        {mine.length === 0 && <p className="muted">Henüz davetli yok. Aşağıdan ilk davetliyi ekleyin.</p>}
+      {active === "liste" && <section className="surface guest-surface">
+        <div className="section-heading"><h2>Davetlileriniz</h2><span className="subtle-badge">{mine.length} davet</span></div>
+        <p className="muted small">Bu listede yalnızca ailenizin eklediği davetliler görünür.</p>
+        {mine.length === 0 && <div className="empty-state"><span className="empty-symbol" aria-hidden="true">♡</span><h3>İlk davetle başlayın.</h3><p className="muted">Bir kişinin ya da ailenin adını yazın; kişiye özel mesajını hazırlayalım.</p><Link className="btn" href={`${root}?bolum=ekle`}>İlk davetliyi ekle</Link></div>}
         {mine.length > 0 && (
           <nav className="filtre" aria-label="Davetlileri duruma göre süz">
             {FILTRELER.map(([deger, etiket]) => (
@@ -158,6 +160,7 @@ export default async function Panel({ params, searchParams }: {
                   <button className="btn sm" type="submit" style={{ marginTop: 6 }}>Kaydet</button>
                 </form>
                 <form action={removeGuestAction.bind(null, token, g.id)} style={{ marginTop: 10 }}>
+                  <label className="tog small"><input type="checkbox" name="silOnay" required />Bu davetlinin ve yanıtının silinmesini onaylıyorum.</label>
                   <button className="lnk" type="submit" style={{ color: "var(--no)" }}>Bu davetliyi sil</button>
                 </form>
               </details>
@@ -172,25 +175,24 @@ export default async function Panel({ params, searchParams }: {
         {waiting.length > 0 && (
           <div style={{ marginTop: 12 }}>
             <CopyButton
-              text={waiting.map((g) => `${g.name}: Merhaba, düğünümüze katılım durumunuzu bildirebilir misiniz? ${siteUrl()}/d/${g.token}`).join("\n\n")}
-              label={`Yanıt bekleyen ${waiting.length} kişi için hatırlatma metnini kopyala`}
+              text={waiting.map((g) => `${g.name}: Merhaba, davetimize katılım durumunuzu bildirebilir misiniz? ${siteUrl()}/d/${g.token}`).join("\n\n")}
+              label={`Yanıt bekleyen ${waiting.length} davet için hatırlatma metnini kopyala`}
             />
           </div>
         )}
-      </section>
+      </section>}
 
-      <form action={add} className="card" id="ekle">
+      {active === "ekle" && <div className="add-guest-layout"><form action={add} className="surface" id="ekle">
         <h2>Davetli ekle</h2>
-        {hata && <p className="err" role="alert">{hata}</p>}
         <label className="lbl" htmlFor="name">Ad soyad ya da aile</label>
         <input type="text" id="name" name="name" required maxLength={60} placeholder="Örn: Fatma Teyze ve ailesi" />
         <span className="lbl">Davetli olduğu günler</span>
         <div className="evpick">
-          {events.map((e) => <label key={e.id} className="tog"><input type="checkbox" name="ev" value={e.id} defaultChecked={e.kind === "dugun" || family.side === "kiz"} /> {e.title}</label>)}
+          {events.map((e) => <label key={e.id} className="tog"><input type="checkbox" name="ev" value={e.id} defaultChecked={isMainKind(e.kind) || family.side === "kiz"} /> {e.title}</label>)}
         </div>
         <button className="btn full" type="submit" style={{ marginTop: 10 }}>Ekle ve mesajı hazırla</button>
         <div className="info">Telefon numarası istemiyoruz. Davetiyeyi kendi WhatsApp'ınızdan gönderirsiniz. Misafir listesi son etkinlikten 90 gün sonra otomatik silinir. Bu panelin linkini sadece aile içinde paylaşın.</div>
-      </form>
-    </main>
+      </form><aside className="surface add-guest-help"><p className="eyebrow">Üç küçük adım</p><ol><li><b>Bir isim yazın.</b><span>Tek kişi veya bütün aile için bir davet oluşturun.</span></li><li><b>Günleri seçin.</b><span>Davetliniz sadece çağrıldığı etkinlikleri görür.</span></li><li><b>Mesajı paylaşın.</b><span>Hazırlanan mesajı kendi WhatsApp'ınızdan gönderin.</span></li></ol><p className="chart-note">Telefon numarası veya üyelik gerekmez.</p></aside></div>}
+    </Workspace>
   );
 }

@@ -31,13 +31,14 @@ export default async function Davet({ params, searchParams }: { params: Promise<
   const act = respondAction.bind(null, token);
 
   return (
-    <main className="wrap">
+    <main className="wrap invite-wrap">
       <ThemeStyle theme={inv.theme} />
       <Hero inv={inv} greeting={<>Sevgili <b>{g.name}</b>, {greet} sizi aramızda görmek istiyoruz.</>} />
-      <EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} />
+      <nav className="invite-shortcuts" aria-label="Davetiye bölümleri"><a href="#gunler">Etkinlik bilgileri</a><a href="#katilim">{answered ? "Yanıtınız" : "Katılım bildir"}<span aria-hidden="true">↓</span></a></nav>
+      <div id="gunler"><EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} /></div>
 
       {answered ? (
-        <section className="card done" aria-live="polite">
+        <section id="katilim" className="card done" aria-live="polite">
           <div className="seal" style={sp.tamam ? undefined : { animation: "none" }}>{g.status === "geliyor" ? <>Görüşmek<br />üzere</> : <>Teşekkür<br />ederiz</>}</div>
           <h2 style={{ marginBottom: 4 }}>Yanıtınız iletildi</h2>
           <p className="muted" style={{ margin: 0 }}>
@@ -49,7 +50,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
           <div className="info" style={{ textAlign: "left" }}>Sen de bir davet mi düzenliyorsun? Düğün, nişan ya da kına için davetiyeni birkaç dakikada hazırla. <Link href="/">Buyrun ile oluştur</Link></div>
         </section>
       ) : (
-        <form action={act} className="card">
+        <form action={act} className="card rsvp-form" id="katilim">
           <h2>Katılım durumunuz</h2>
           <p className="muted small" style={{ marginTop: -4 }}>Üye olmanıza gerek yok.</p>
           {sp.hata && <p className="err" role="alert">{sp.hata}</p>}
@@ -60,10 +61,10 @@ export default async function Davet({ params, searchParams }: { params: Promise<
               <label><input className="noo" type="radio" name="status" value="gelmiyor" defaultChecked={g.status === "gelmiyor"} /><span>Gelemiyorum</span></label>
             </div>
           </fieldset>
-          <div className="row">
+          <div className="rsvp-details"><div className="row">
             <label htmlFor="count">Geliyorsanız kaç kişi?</label>
             <select id="count" name="count" defaultValue={String(Math.max(1, g.count))} style={{ width: 90 }}>
-              {Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
+              {Array.from({ length: 15 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
             </select>
           </div>
           {events.length > 1 && events.map((e) => (
@@ -71,7 +72,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
               <label className="tog"><input type="checkbox" name="attend" value={e.id} defaultChecked={attended.length ? attended.includes(e.id) : true} /> {e.title}</label>
             </div>
           ))}
-          <label className="lbl" htmlFor="note">Çifte bir not bırakın (isteğe bağlı)</label>
+          </div><label className="lbl" htmlFor="note">Çifte bir not bırakın (isteğe bağlı)</label>
           <textarea id="note" name="note" maxLength={200} defaultValue={g.note} placeholder="Örn: Mutluluklar dileriz!" />
           <button className="btn full" type="submit" style={{ marginTop: 12 }}>Yanıtı gönder</button>
         </form>

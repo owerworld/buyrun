@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Buyrun",
+    "slug": "buyrun-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.buyrun.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#DDFC79",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "app.buyrun.mobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Buyrun · Mobil önizleme",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Davetiyenize bir kapak seçmek için fotoğraflarınıza erişim gerekir.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "scheme": "buyrun"
+  }
+}

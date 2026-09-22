@@ -73,7 +73,7 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      Bu davetiye yalnızca <b>buyrun.app</b> adresinde açılır. Sizden uygulama indirmeniz ya da para göndermeniz istenirse dikkat edin.<br />
+      <b>Buyrun</b> ile hazırlandı. Katılım için üyelik gerekmez.<br />
       <a href="/gizlilik">Gizlilik ve KVKK</a>
     </footer>
   );

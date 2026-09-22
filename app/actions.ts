@@ -80,10 +80,10 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
 export async function addGuestAction(panelToken: string, f: FormData) {
   const name = s(f, "name", 60);
   const ev = f.getAll("ev").map(String);
-  if (!name) redirect(`/p/${panelToken}?hata=${encodeURIComponent("Davetlinin adını yazın.")}#ekle`);
-  if (!ev.length) redirect(`/p/${panelToken}?hata=${encodeURIComponent("En az bir gün seçin.")}#ekle`);
+  if (!name) redirect(`/p/${panelToken}?bolum=ekle&hata=${encodeURIComponent("Davetlinin adını yazın.")}#ekle`);
+  if (!ev.length) redirect(`/p/${panelToken}?bolum=ekle&hata=${encodeURIComponent("En az bir gün seçin.")}#ekle`);
   if (!(await allow(LIMITS.davetli.action, LIMITS.davetli.limit, LIMITS.davetli.window)))
-    redirect(`/p/${panelToken}?hata=${encodeURIComponent("Kısa sürede çok fazla davetli eklendi. Bir saat sonra kaldığınız yerden devam edebilirsiniz.")}#ekle`);
+    redirect(`/p/${panelToken}?bolum=ekle&hata=${encodeURIComponent("Kısa sürede çok fazla davetli eklendi. Bir saat sonra kaldığınız yerden devam edebilirsiniz.")}#ekle`);
   const t = await addGuest(panelToken, name, ev);
   redirect(`/p/${panelToken}?yeni=${t}`);
 }
@@ -99,7 +99,8 @@ export async function updateGuestAction(panelToken: string, guestId: string, f: 
   redirect(`/p/${panelToken}?${sifirlandi ? "sifirlandi=1" : "guncellendi=1"}`);
 }
 
-export async function removeGuestAction(panelToken: string, guestId: string) {
+export async function removeGuestAction(panelToken: string, guestId: string, f: FormData) {
+  if (f.get("silOnay") !== "on") redirect(`/p/${panelToken}?hata=${encodeURIComponent("Silmek için onay kutusunu işaretleyin.")}`);
   await removeGuest(panelToken, guestId);
   redirect(`/p/${panelToken}`);
 }
