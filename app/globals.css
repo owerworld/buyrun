@@ -70,7 +70,7 @@ h3{font-size:1rem;margin:0}
 .tog{display:flex;align-items:center;gap:10px;cursor:pointer}
 .tog input{width:24px;height:24px;flex:0 0 auto;accent-color:var(--velvet2)}
 label.lbl,.lbl{font-size:.85rem;font-weight:700;margin:12px 0 4px;display:block}
-textarea,input[type=text],input[type=date],input[type=time],select{width:100%;min-width:0;max-width:100%;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);padding:11px 12px}
+textarea,input[type=text],input[type=search],input[type=date],input[type=time],select{width:100%;min-width:0;max-width:100%;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);padding:11px 12px}
 textarea{min-height:76px;resize:vertical}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .grid2>*{min-width:0}
@@ -141,3 +141,9 @@ details summary{cursor:pointer;font-weight:700}
 .filtre a{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1.5px solid var(--line);border-radius:99px;font-size:.85rem;font-weight:700;color:var(--ink);text-decoration:none}
 .filtre a.secili{border-color:var(--gold);background:var(--chip)}
 .filtre a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Yalnızca ekran okuyucular için */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* Davetli arama satırı */
+.ara{display:flex;gap:8px;margin:10px 0 0}
+.ara input{flex:1;min-width:0}

@@ -24,3 +24,12 @@ export function siteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL || (vercel ? `https://${vercel}` : "http://localhost:3000");
   return raw.replace(/\/$/, "");
 }
+
+/**
+ * Arama için metni sadeleştirir: büyük/küçük harf ve Türkçe şapkalı harf farkı
+ * gözetilmez. "sukru" yazan "Şükrü"yü, "nikah" yazan "Nikâh"ı bulur.
+ */
+export const searchFold = (v: string) =>
+  v
+    .toLocaleLowerCase("tr")
+    .replace(/[çğıöşüâîû]/g, (c) => "cgiosuaiu"["çğıöşüâîû".indexOf(c)]);

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPanel, list, SIDE_LABEL, summarize, type Guest, type Invitation } from "@/lib/data";
 import { phraseFor } from "@/lib/events";
-import { siteUrl } from "@/lib/format";
+import { searchFold, siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
 import { addGuestAction, removeGuestAction, updateGuestAction } from "../../actions";
 
@@ -15,10 +15,10 @@ function inviteText(inv: Invitation, g: Guest, kinds: string[]) {
 
 export default async function Panel({ params, searchParams }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string; durum?: string }>;
+  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string; durum?: string; ara?: string }>;
 }) {
   const { token } = await params;
-  const { yeni, hata, guncellendi, sifirlandi, durum } = await searchParams;
+  const { yeni, hata, guncellendi, sifirlandi, durum, ara } = await searchParams;
   const data = await getPanel(token);
   if (!data) notFound();
   const { inv, family, events, guests } = data;
@@ -34,8 +34,21 @@ export default async function Panel({ params, searchParams }: {
     gelmiyor: mine.filter((g) => g.status === "gelmiyor").length,
   };
   const suzgec = durum && durum in STATUS ? durum : "";
-  const gosterilen = suzgec ? mine.filter((g) => g.status === suzgec) : mine;
+  const arama = (ara ?? "").trim();
+  const aranan = searchFold(arama);
+  const gosterilen = mine
+    .filter((g) => (suzgec ? g.status === suzgec : true))
+    .filter((g) => (aranan ? searchFold(g.name).includes(aranan) : true));
   const FILTRELER: [string, string][] = [["", "Tümü"], ["bekliyor", "Bekleyen"], ["geliyor", "Geliyor"], ["gelmiyor", "Gelemiyor"]];
+  /** Süzgeç ve arama birbirini sıfırlamasın diye linkler ikisini de taşır. */
+  const panelUrl = (d: string, a: string) => {
+    const q = new URLSearchParams();
+    if (d) q.set("durum", d);
+    if (a) q.set("ara", a);
+    return `/p/${token}${q.size ? `?${q}` : ""}`;
+  };
+  // Kısa listede arama kutusu gereksiz yer kaplar
+  const aramaGoster = mine.length >= 8 || Boolean(arama);
   const fresh = yeni ? mine.find((g) => g.token === yeni) : undefined;
   const add = addGuestAction.bind(null, token);
 
@@ -86,7 +99,7 @@ export default async function Panel({ params, searchParams }: {
             {FILTRELER.map(([deger, etiket]) => (
               <Link
                 key={deger || "tumu"}
-                href={deger ? `/p/${token}?durum=${deger}` : `/p/${token}`}
+                href={panelUrl(deger, arama)}
                 aria-current={suzgec === deger ? "page" : undefined}
                 className={suzgec === deger ? "secili" : undefined}
               >
@@ -95,7 +108,20 @@ export default async function Panel({ params, searchParams }: {
             ))}
           </nav>
         )}
-        {mine.length > 0 && gosterilen.length === 0 && (
+        {aramaGoster && (
+          <form className="ara" method="get" action={`/p/${token}`}>
+            {suzgec && <input type="hidden" name="durum" value={suzgec} />}
+            <label className="sr-only" htmlFor="ara">Davetli ara</label>
+            <input type="search" id="ara" name="ara" defaultValue={arama} maxLength={60} placeholder="İsimle ara" />
+            <button className="btn sm" type="submit">Ara</button>
+          </form>
+        )}
+        {arama && (
+          <p className="muted small" style={{ marginTop: 8 }} aria-live="polite">
+            “{arama}” için {gosterilen.length} sonuç. <Link href={panelUrl(suzgec, "")}>Aramayı temizle</Link>
+          </p>
+        )}
+        {mine.length > 0 && gosterilen.length === 0 && !arama && (
           <p className="muted" style={{ marginTop: 12 }}>Bu durumda davetli yok.</p>
         )}
         <div>
