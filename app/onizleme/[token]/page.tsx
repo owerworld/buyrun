@@ -28,6 +28,15 @@ export default async function Onizleme({ params }: { params: Promise<{ token: st
       <p className="info" style={{ marginTop: 0 }}>Önizleme: davetlileriniz bunu kendi adlarıyla görür. <Link href={`/yonet/${token}`}>Yönetime dön</Link></p>
       <Hero inv={data.inv} greeting={<>Sevgili <b>misafirimiz</b>, bu mutlu günümüzde sizi aramızda görmek istiyoruz.</>} />
       <EventsCard inv={data.inv} events={data.events} title="Etkinlikler" calendarHref={`/onizleme/${token}/takvim`} />
+      <section className="card">
+        <h2>Paylaşım görseli</h2>
+        <p className="muted small">
+          Hikâye ölçüsünde (1080×1920) dikey davetiye. Kişiye özel bilgi içermez, hesabınızdan paylaşabilirsiniz.
+        </p>
+        <a className="btn ghost full" href={`/onizleme/${token}/story`} download style={{ marginTop: 10 }}>
+          Instagram hikâyesi görselini indir
+        </a>
+      </section>
       <SiteFooter />
     </main>
   );

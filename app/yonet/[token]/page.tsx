@@ -28,22 +28,13 @@ export default async function Yonet({ params, searchParams }: {
         <CopyButton text={`${base}/yonet/${token}`} label="Yönetim linkini kopyala" />
         <div className="info" style={{ marginTop: 12 }}>
           <b>Kurtarma kodunuz: <span style={{ letterSpacing: ".12em" }}>{recovery}</span></b>
-          <br />Bu kodu bir yere yazın ya da ekran görüntüsünü alın. Yönetim linkini kaybederseniz{" "}
-          <Link href="/kurtar">kurtar sayfasından</Link> bu kodla geri dönersiniz.
           {" "}<CopyButton text={recovery} label="Kodu kopyala" />
+          <br />Linki kaybederseniz <Link href="/kurtar">kurtar sayfasından</Link> bu kodla geri dönersiniz.
         </div>
         <div className="btns" style={{ marginTop: 12 }}>
           <Link className="btn ghost" href={`/onizleme/${token}`}>Davetiyeyi önizle</Link>
           <Link className="btn ghost" href={`/yonet/${token}/duzenle`}>Davetiyeyi düzenle</Link>
         </div>
-        <p style={{ marginTop: 8 }}>
-          <a className="btn ghost full" href={`/onizleme/${token}/story`} download>
-            Instagram hikâyesi görselini indir
-          </a>
-        </p>
-        <p className="muted small" style={{ margin: "6px 0 0" }}>
-          Hikâye ölçüsünde (1080×1920) dikey davetiye. Kişiye özel bilgi içermez, hesabınızdan paylaşabilirsiniz.
-        </p>
       </section>
 
       <section className="card">
@@ -68,10 +59,9 @@ export default async function Yonet({ params, searchParams }: {
 
       <section className="card">
         <h2>Ortak sayım</h2>
-        <div className="stats">
+        <div className="stats uc">
           <div className="stat"><b>{sum.people}</b><span>Gelecek kişi</span></div>
-          <div className="stat"><b>{sum.waiting}</b><span>Yanıt bekleyen davet</span></div>
-          <div className="stat"><b>{sum.invites}</b><span>Gönderilen davet</span></div>
+          <div className="stat"><b>{sum.waiting}</b><span>Bekleyen</span></div>
           <div className="stat"><b>%{sum.answeredPct}</b><span>Yanıt oranı</span></div>
         </div>
         <div className="heads">{sum.perEvent.map((e) => <div key={e.id} className={`head ${e.kind}`}>{e.title}<br /><b>{e.people}</b> kişi</div>)}</div>

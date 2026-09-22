@@ -80,13 +80,10 @@ export default async function Panel({ params, searchParams }: {
         <h1 className="title">{SIDE_LABEL[family.side]} paneli</h1>
         <p className="muted small">Kendi davetlilerinizi yönetirsiniz. Salon için gereken toplam, iki ailenin yanıtlarını birleştirir.</p>
         <h3 style={{ marginBottom: 8 }}>Ortak sayım (iki aile)</h3>
-        <div className="stats">
+        <div className="stats uc">
           <div className="stat"><b>{sum.people}</b><span>Gelecek kişi</span></div>
-          <div className="stat"><b>{sum.waiting}</b><span>Yanıt bekleyen davet</span></div>
-          <div className="stat"><b>{sum.comingInvites}</b><span>Geliyorum diyen davet</span></div>
-          <div className="stat"><b>{sum.declined}</b><span>Gelemiyorum diyen</span></div>
+          <div className="stat"><b>{sum.waiting}</b><span>Bekleyen</span></div>
           <div className="stat"><b>%{sum.answeredPct}</b><span>Yanıt oranı</span></div>
-          <div className="stat"><b>{sum.invites}</b><span>Gönderilen davet</span></div>
         </div>
         <div className="heads">{sum.perEvent.map((e) => <div key={e.id} className={`head ${e.kind}`}>{e.title}<br /><b>{e.people}</b> kişi</div>)}</div>
       </section>
@@ -137,12 +134,11 @@ export default async function Panel({ params, searchParams }: {
               </div>
               <span className={`pill ${g.status}`}>{STATUS[g.status]}</span>
               <div className="act">
-                <CopyButton text={inviteText(inv, g, kindsOf(g))} label="Davet mesajını kopyala" />
                 <a className="lnk" href={`https://wa.me/?text=${encodeURIComponent(inviteText(inv, g, kindsOf(g)))}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                <form action={removeGuestAction.bind(null, token, g.id)}><button className="lnk" type="submit" style={{ color: "var(--no)" }}>Sil</button></form>
+                <CopyButton text={inviteText(inv, g, kindsOf(g))} label="Mesajı kopyala" />
               </div>
               <details style={{ gridColumn: "1/-1" }}>
-                <summary className="lnk">Adını ve günlerini değiştir</summary>
+                <summary className="lnk">Düzenle</summary>
                 <form action={updateGuestAction.bind(null, token, g.id)}>
                   <label className="lbl" htmlFor={`ad_${g.id}`}>Ad soyad ya da aile</label>
                   <input type="text" id={`ad_${g.id}`} name="name" required maxLength={60} defaultValue={g.name} />
@@ -160,6 +156,9 @@ export default async function Panel({ params, searchParams }: {
                   )}
                   {events.length === 1 && <input type="hidden" name="ev" value={events[0].id} />}
                   <button className="btn sm" type="submit" style={{ marginTop: 6 }}>Kaydet</button>
+                </form>
+                <form action={removeGuestAction.bind(null, token, g.id)} style={{ marginTop: 10 }}>
+                  <button className="lnk" type="submit" style={{ color: "var(--no)" }}>Bu davetliyi sil</button>
                 </form>
               </details>
             </div>

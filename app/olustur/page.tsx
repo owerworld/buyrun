@@ -22,8 +22,6 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" />
 
-        <ThemePicker />
-
         <h2 style={{ marginTop: 20 }}>Tören bilgileri</h2>
         <div className="grid2">
           <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required /></div>
@@ -61,6 +59,8 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
           <label className="lbl" htmlFor="program">Tören günü programı</label>
           <textarea id="program" name="program" maxLength={600} placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 Nikâh töreni"} />
         </details>
+
+        <ThemePicker />
 
         <label className="tog small" style={{ marginTop: 18 }}>
           <input type="checkbox" name="kvkk" required />

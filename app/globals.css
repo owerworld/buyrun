@@ -147,3 +147,9 @@ details summary{cursor:pointer;font-weight:700}
 /* Davetli arama satırı */
 .ara{display:flex;gap:8px;margin:10px 0 0}
 .ara input{flex:1;min-width:0}
+
+/* Üçlü sayaç dizisi: dar telefonda da tek satırda okunur */
+.stats.uc{grid-template-columns:repeat(3,1fr)}
+.stats.uc .stat{padding:10px 8px}
+.stats.uc .stat b{font-size:1.35rem}
+.stats.uc .stat span{font-size:.75rem}
