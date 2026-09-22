@@ -7,8 +7,8 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
 - `/yonet/[token]` — Çiftin yönetim sayfası: iki aile panelinin linkleri, ortak sayım
 - `/yonet/[token]/duzenle` — Davetiyeyi sonradan düzenleme: isimler, tarih, saat, salon, adres, şehir, servis, program, tema (linkler değişmez)
   · kına gecesi sonradan eklenebilir/kaldırılabilir; yalnızca kınaya çağrılmış davetli varsa kaldırma engellenir
-- `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, adını/günlerini düzelt, silme
-- `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir
+- `/p/[token]` — Aile paneli (kız evi / oğlan evi): davetli ekle, kişiye özel link, WhatsApp mesajı, hatırlatma metni, adını/günlerini düzelt, listeyi Excel'e indir, silme
+- `/d/[token]` — Davetli sayfası: sadece davetli olduğu etkinlikleri görür, hesapsız LCV verir, günleri telefon takvimine ekler
 - `/onizleme/[token]` — Davetiye önizleme
 - `/onizleme/[token]/story` — Instagram hikâyesi ölçüsünde (1080×1920) dikey davetiye görseli, yönetim sayfasından indirilir
 - `/kurtar` — Yönetim linkini kaybeden çift, kurtarma koduyla geri döner
@@ -23,6 +23,13 @@ Kına ve düğün tek linkte. Üyeliksiz LCV, iki aile paneli, otomatik veri sil
   Telefon/e-posta istemediğimiz için tek kurtarma yolu budur.
 - **Erişilebilirlik**: 320px genişlikte yatay kaydırma yok, dokunma hedefleri ≥24px,
   metin kontrastları WCAG 2.1 AA (açık ve koyu mod, üç tema) — axe-core ile doğrulandı.
+
+## Takvim ve liste dosyaları
+- `.ics` (`/d/[token]/takvim`, `/onizleme/[token]/takvim`): saatler UTC'ye çevrilerek yazılır —
+  Türkiye 2016'dan beri sabit UTC+3 olduğu için VTIMEZONE bloğu gerekmez. Satırlar 75 bayta katlanır,
+  Türkçe karakterler bozulmaz.
+- `.csv` (`/p/[token]/liste`): ailenin kendi listesi. Türkçe Excel için BOM + noktalı virgül ayracı.
+  "=" ile başlayan hücreler formül sanılmasın diye kesme işaretiyle korunur.
 
 ## Program
 Her etkinliğin kendi günlük programı olabilir (ana tören `invitations.program`,

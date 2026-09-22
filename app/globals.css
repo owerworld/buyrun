@@ -97,7 +97,7 @@ textarea{min-height:76px;resize:vertical}
 .head{flex:1;min-width:120px;border:1.5px solid var(--gold);border-radius:12px;padding:8px 10px;font-size:.85rem}
 .head.kina{border-color:var(--kina)}
 .head b{font-size:1.2rem;font-variant-numeric:tabular-nums}
-.guest{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:11px 0;border-top:1px solid var(--line)}
+.guest{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:11px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
 .guest:first-child{border-top:0}
 .guest .n{font-weight:700}
 .tags{display:flex;gap:4px;flex-wrap:wrap}

@@ -27,7 +27,7 @@ export default async function Onizleme({ params }: { params: Promise<{ token: st
       <ThemeStyle theme={data.inv.theme} />
       <p className="info" style={{ marginTop: 0 }}>Önizleme: davetlileriniz bunu kendi adlarıyla görür. <Link href={`/yonet/${token}`}>Yönetime dön</Link></p>
       <Hero inv={data.inv} greeting={<>Sevgili <b>misafirimiz</b>, bu mutlu günümüzde sizi aramızda görmek istiyoruz.</>} />
-      <EventsCard inv={data.inv} events={data.events} title="Etkinlikler" />
+      <EventsCard inv={data.inv} events={data.events} title="Etkinlikler" calendarHref={`/onizleme/${token}/takvim`} />
       <SiteFooter />
     </main>
   );

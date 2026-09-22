@@ -34,7 +34,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
     <main className="wrap">
       <ThemeStyle theme={inv.theme} />
       <Hero inv={inv} greeting={<>Sevgili <b>{g.name}</b>, {greet} sizi aramızda görmek istiyoruz.</>} />
-      <EventsCard inv={inv} events={events} />
+      <EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} />
 
       {answered ? (
         <section className="card done" aria-live="polite">

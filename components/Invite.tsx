@@ -22,7 +22,9 @@ export function Hero({ inv, greeting }: { inv: Invitation; greeting: React.React
 
 const mapsUrl = (e: EventRow) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${e.venue} ${e.address}`)}`;
 
-export function EventsCard({ inv, events, title = "Davetli olduğunuz günler" }: { inv: Invitation; events: EventRow[]; title?: string }) {
+export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", calendarHref }: {
+  inv: Invitation; events: EventRow[]; title?: string; calendarHref?: string;
+}) {
   /** "19:00 Nikâh töreni" satırlarını saat ve metin olarak ayırır. */
   const parseProgram = (text: string) =>
     text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
@@ -59,6 +61,11 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler" }
           </div>
         );
       })}
+      {calendarHref && (
+        <p style={{ margin: "14px 0 0" }}>
+          <a className="btn ghost full" href={calendarHref}>Takvime ekle</a>
+        </p>
+      )}
     </section>
   );
 }

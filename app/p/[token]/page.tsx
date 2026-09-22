@@ -111,6 +111,11 @@ export default async function Panel({ params, searchParams }: {
             </div>
           ))}
         </div>
+        {mine.length > 0 && (
+          <p style={{ marginTop: 12 }}>
+            <a className="btn ghost full" href={`/p/${token}/liste`} download>Listeyi indir (Excel)</a>
+          </p>
+        )}
         {waiting.length > 0 && (
           <div style={{ marginTop: 12 }}>
             <CopyButton
