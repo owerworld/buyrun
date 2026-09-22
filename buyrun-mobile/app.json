@@ -2,6 +2,7 @@
   "expo": {
     "name": "Buyrun",
     "slug": "buyrun-mobile",
+    "owner": "owerworlds-team",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -37,6 +38,11 @@
         }
       ]
     ],
-    "scheme": "buyrun"
+    "scheme": "buyrun",
+    "extra": {
+      "eas": {
+        "projectId": "4944b7f5-fae5-4e6f-9ae4-356e4a7d13fa"
+      }
+    }
   }
 }
