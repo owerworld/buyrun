@@ -94,7 +94,7 @@ export default function Invitation({event,inviteToken,initialGuestToken}: {
             {saved&&<p role="status" className={styles.success}>✓ Yanıtın kaydedildi. Fikrin değişirse buradan güncelleyebilirsin.</p>}
             <button className={styles.submit} disabled={busy} type="submit">{busy?"Kaydediliyor…":guestToken?"Yanıtımı güncelle":"Yanıtımı gönder"}<span>↗</span></button>
           </fieldset>
-          <p className={styles.privacy}>Adın ve yanıtın yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir.</p>
+          <p className={styles.privacy}>Adın ve yanıtın yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir. Bu davet senden para göndermeni asla istemez; isteyen olursa dikkat et.</p>
         </form>
       </section>
       <footer className={styles.footer}>Buluşmaya bir <b>buyrun</b> yeter. ✳</footer>

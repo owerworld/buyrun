@@ -74,6 +74,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <b>Buyrun</b> ile hazırlandı. Katılım için üyelik gerekmez.<br />
+      Bu davetiye sizden <b>para göndermenizi</b> asla istemez; isteyen olursa dikkat edin.<br />
       <a href="/gizlilik">Gizlilik ve KVKK</a>
     </footer>
   );
