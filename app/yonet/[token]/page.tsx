@@ -71,6 +71,8 @@ export default async function Yonet({ params, searchParams }: {
         <div className="stats">
           <div className="stat"><b>{sum.people}</b><span>Gelecek kişi</span></div>
           <div className="stat"><b>{sum.waiting}</b><span>Yanıt bekleyen davet</span></div>
+          <div className="stat"><b>{sum.invites}</b><span>Gönderilen davet</span></div>
+          <div className="stat"><b>%{sum.answeredPct}</b><span>Yanıt oranı</span></div>
         </div>
         <div className="heads">{sum.perEvent.map((e) => <div key={e.id} className={`head ${e.kind}`}>{e.title}<br /><b>{e.people}</b> kişi</div>)}</div>
       </section>

@@ -270,11 +270,16 @@ export async function cleanupExpired(today: string) {
 /** Ortak sayım: iki ailenin toplamı. */
 export function summarize(guests: Guest[], events: EventRow[]) {
   const coming = guests.filter((g) => g.status === "geliyor");
+  const waiting = guests.filter((g) => g.status === "bekliyor").length;
+  const answered = guests.length - waiting;
   return {
     people: coming.reduce((s, g) => s + g.count, 0),
     comingInvites: coming.length,
     declined: guests.filter((g) => g.status === "gelmiyor").length,
-    waiting: guests.filter((g) => g.status === "bekliyor").length,
+    waiting,
+    invites: guests.length,
+    /** Yanıt oranı: kaç davetin cevabı geldi. Yüzde olarak, yuvarlanmış. */
+    answeredPct: guests.length ? Math.round((answered / guests.length) * 100) : 0,
     perEvent: events.map((e) => ({
       id: e.id, title: e.title, kind: e.kind,
       people: coming.filter((g) => list(g.attend_ids).includes(e.id)).reduce((s, g) => s + g.count, 0),

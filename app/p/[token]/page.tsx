@@ -15,10 +15,10 @@ function inviteText(inv: Invitation, g: Guest, kinds: string[]) {
 
 export default async function Panel({ params, searchParams }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string }>;
+  searchParams: Promise<{ yeni?: string; hata?: string; guncellendi?: string; sifirlandi?: string; durum?: string }>;
 }) {
   const { token } = await params;
-  const { yeni, hata, guncellendi, sifirlandi } = await searchParams;
+  const { yeni, hata, guncellendi, sifirlandi, durum } = await searchParams;
   const data = await getPanel(token);
   if (!data) notFound();
   const { inv, family, events, guests } = data;
@@ -27,6 +27,15 @@ export default async function Panel({ params, searchParams }: {
   const titleOf = (id: string) => events.find((e) => e.id === id)?.title ?? "";
   const kindsOf = (g: Guest) => list(g.event_ids).map((i) => events.find((e) => e.id === i)?.kind ?? "");
   const waiting = mine.filter((g) => g.status === "bekliyor");
+  const sayilar = {
+    "": mine.length,
+    bekliyor: waiting.length,
+    geliyor: mine.filter((g) => g.status === "geliyor").length,
+    gelmiyor: mine.filter((g) => g.status === "gelmiyor").length,
+  };
+  const suzgec = durum && durum in STATUS ? durum : "";
+  const gosterilen = suzgec ? mine.filter((g) => g.status === suzgec) : mine;
+  const FILTRELER: [string, string][] = [["", "Tümü"], ["bekliyor", "Bekleyen"], ["geliyor", "Geliyor"], ["gelmiyor", "Gelemiyor"]];
   const fresh = yeni ? mine.find((g) => g.token === yeni) : undefined;
   const add = addGuestAction.bind(null, token);
 
@@ -63,6 +72,8 @@ export default async function Panel({ params, searchParams }: {
           <div className="stat"><b>{sum.waiting}</b><span>Yanıt bekleyen davet</span></div>
           <div className="stat"><b>{sum.comingInvites}</b><span>Geliyorum diyen davet</span></div>
           <div className="stat"><b>{sum.declined}</b><span>Gelemiyorum diyen</span></div>
+          <div className="stat"><b>%{sum.answeredPct}</b><span>Yanıt oranı</span></div>
+          <div className="stat"><b>{sum.invites}</b><span>Gönderilen davet</span></div>
         </div>
         <div className="heads">{sum.perEvent.map((e) => <div key={e.id} className={`head ${e.kind}`}>{e.title}<br /><b>{e.people}</b> kişi</div>)}</div>
       </section>
@@ -70,8 +81,25 @@ export default async function Panel({ params, searchParams }: {
       <section className="card">
         <h2>{SIDE_LABEL[family.side]} davetlileri ({mine.length})</h2>
         {mine.length === 0 && <p className="muted">Henüz davetli yok. Aşağıdan ilk davetliyi ekleyin.</p>}
+        {mine.length > 0 && (
+          <nav className="filtre" aria-label="Davetlileri duruma göre süz">
+            {FILTRELER.map(([deger, etiket]) => (
+              <Link
+                key={deger || "tumu"}
+                href={deger ? `/p/${token}?durum=${deger}` : `/p/${token}`}
+                aria-current={suzgec === deger ? "page" : undefined}
+                className={suzgec === deger ? "secili" : undefined}
+              >
+                {etiket} ({sayilar[(deger || "") as keyof typeof sayilar]})
+              </Link>
+            ))}
+          </nav>
+        )}
+        {mine.length > 0 && gosterilen.length === 0 && (
+          <p className="muted" style={{ marginTop: 12 }}>Bu durumda davetli yok.</p>
+        )}
         <div>
-          {mine.map((g) => (
+          {gosterilen.map((g) => (
             <div className="guest" key={g.id}>
               <div>
                 <div className="n">{g.name}</div>

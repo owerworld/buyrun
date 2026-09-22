@@ -135,3 +135,9 @@ details summary{cursor:pointer;font-weight:700}
 .secenek{display:flex;align-items:center;justify-content:center;height:100%;min-height:48px;padding:10px 6px;text-align:center;border:1.5px solid var(--line);border-radius:12px;font-size:.88rem;font-weight:700;cursor:pointer}
 .secenekler input:checked+.secenek{border-color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold)}
 .secenekler input:focus-visible+.secenek{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Davetlileri duruma göre süzme şeridi */
+.filtre{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.filtre a{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1.5px solid var(--line);border-radius:99px;font-size:.85rem;font-weight:700;color:var(--ink);text-decoration:none}
+.filtre a.secili{border-color:var(--gold);background:var(--chip)}
+.filtre a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
