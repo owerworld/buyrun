@@ -333,3 +333,9 @@ details summary{cursor:pointer;font-weight:700}
 .o-deco .frame{padding:62px 44px 52px}
 .hero.kucuk.o-deco .frame{padding:48px 34px 42px}
 .f-modern.kucuk .date{letter-spacing:.16em}
+/* İki ailenin adı: geleneksel davetiyelerde isimlerin üstünde, yan yana */
+.aileler{display:grid;grid-template-columns:1fr 1fr;margin:0 0 16px;font-size:.8rem;line-height:1.4;color:var(--hero-ink,#F7EEDC);opacity:.92}
+.aileler span{padding:0 8px;overflow-wrap:anywhere}
+.aileler span+span{border-left:1px solid color-mix(in srgb,var(--gold) 60%,transparent)}
+.hero.kucuk .aileler{font-size:.62rem;margin-bottom:10px}
+.f-modern .aileler{text-transform:uppercase;letter-spacing:.08em;font-size:.68rem}

@@ -10,7 +10,7 @@ import { fontOf } from "@/lib/design";
 import { themeOf } from "@/lib/themes";
 import {
   answersQuery, nextQuestion, parseAnswers, planFromAnswers, progress, withoutLast,
-  type Answers, type Option, type Question,
+  visibleOptions, type Answers, type Option, type Question,
 } from "@/lib/wizard";
 
 export const metadata: Metadata = {
@@ -19,6 +19,13 @@ export const metadata: Metadata = {
 };
 
 type SP = Record<string, string | string[] | undefined>;
+
+const GRUP_BASLIK: Record<string, string> = {
+  evlilik: "Evlilik yolunda hangi gün?",
+  cocuk: "Hangi kutlama?",
+  manevi: "Hangi gün için?",
+  dostlar: "Ne için toplanıyoruz?",
+};
 
 /** Seçeneğin görsel kısmı. Her kart, o seçeneğin davetiyeye ne yapacağını gösterir. */
 function Gorsel({ q, o, answers }: { q: Question; o: Option; answers: Answers }) {
@@ -66,6 +73,8 @@ export default async function Basla({ searchParams }: { searchParams: Promise<SP
   const geri = done === 0 ? "/" : `/basla?${answersQuery(withoutLast(answers))}`;
   const look = q.look ?? "liste";
   const canli = Boolean(answers.tur);
+  // Grup seçildiyse ikinci soru "Hangisi?" yerine grubun adını taşısın
+  const baslik = q.id === "tur" && answers.grup ? GRUP_BASLIK[answers.grup] ?? q.title : q.title;
 
   return (
     <main className={`sihirbaz${canli ? " canli-var" : ""}`}>
@@ -82,11 +91,11 @@ export default async function Basla({ searchParams }: { searchParams: Promise<SP
 
       <div className="sihirbaz-govde">
         <section className="soru">
-          <h1 className="soru-baslik">{q.title}</h1>
+          <h1 className="soru-baslik">{baslik}</h1>
           {q.lead && <p className="soru-alt">{q.lead}</p>}
 
           <div className={`secimler look-${look}`}>
-            {q.options.map((o) => (
+            {visibleOptions(q, answers).map((o) => (
               <Link key={o.id} className="secim" href={`/basla?${answersQuery({ ...answers, [q.id]: o.id })}`}>
                 <Gorsel q={q} o={o} answers={answers} />
                 <span className="secim-yazi">

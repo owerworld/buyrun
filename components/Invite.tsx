@@ -4,7 +4,12 @@ import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
 import { fontOf, ornamentOf } from "@/lib/design";
 import { Ornament } from "./Ornament";
 
-type HeroInv = Pick<Invitation, "name_a" | "name_b" | "main_date" | "city"> & { font?: string; ornament?: string };
+type HeroInv = Pick<Invitation, "name_a" | "name_b" | "main_date" | "city"> & {
+  font?: string; ornament?: string; opening?: string; family_a?: string; family_b?: string;
+};
+
+/** Eski davetiyelerde üst satır boş; o zaman ilk günden beri kullanılan cümle çıkar. */
+export const DEFAULT_OPENING = "Mutluluğumuza ortak olun";
 
 /** Davetiyenin kapağı. Yazı karakteri ve süsleme davetiyeye kayıtlı tasarımdan gelir. */
 export function Hero({ inv, greeting, compact = false }: { inv: HeroInv; greeting?: React.ReactNode; compact?: boolean }) {
@@ -14,7 +19,13 @@ export function Hero({ inv, greeting, compact = false }: { inv: HeroInv; greetin
       <div className="frame">
         <Ornament kind={ornament} />
         <div className="inner">
-          <p className="pre">Mutluluğumuza ortak olun</p>
+          {(inv.family_a || inv.family_b) && (
+            <p className="aileler">
+              <span>{inv.family_a}</span>
+              <span>{inv.family_b}</span>
+            </p>
+          )}
+          <p className="pre">{inv.opening?.trim() || DEFAULT_OPENING}</p>
           <h1 className="names"><span>{inv.name_a}</span><span className="amp">ile</span><span>{inv.name_b}</span></h1>
           <p className="date">{shortDate(inv.main_date)}</p>
           {inv.city && <p className="city">{inv.city}</p>}

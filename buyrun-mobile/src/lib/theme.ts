@@ -48,6 +48,12 @@ export const categories = [
   "Ev partisi",
   "Mezuniyet",
   "Buluşma",
+  "Sünnet",
+  "Baby shower",
+  "Diş buğdayı",
+  "Mevlid",
+  "İftar",
+  "Asker uğurlaması",
 ];
 export const statusLabels = {
   going: "Geliyor",

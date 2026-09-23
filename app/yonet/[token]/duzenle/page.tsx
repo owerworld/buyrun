@@ -38,6 +38,15 @@ export default async function Duzenle({ params, searchParams }: {
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" defaultValue={inv.city} />
 
+        <div className="grid2">
+          <div><label className="lbl" htmlFor="familyA">Kız tarafı <small className="muted">(isteğe bağlı)</small></label><input type="text" id="familyA" name="familyA" maxLength={60} placeholder="Örn: Ayşe & Ahmet Yılmaz" defaultValue={inv.family_a ?? ""} /></div>
+          <div><label className="lbl" htmlFor="familyB">Erkek tarafı <small className="muted">(isteğe bağlı)</small></label><input type="text" id="familyB" name="familyB" maxLength={60} placeholder="Örn: Fatma & Mehmet Kaya" defaultValue={inv.family_b ?? ""} /></div>
+        </div>
+        <p className="muted small" style={{ marginTop: 6 }}>Doldurursanız ailelerin adı isimlerin üstünde yan yana yazılır. Boş bırakırsanız hiç görünmez.</p>
+
+        <label className="lbl" htmlFor="opening">Üst satır</label>
+        <input type="text" id="opening" name="opening" maxLength={50} defaultValue={inv.opening ?? ""} placeholder="Mutluluğumuza ortak olun" />
+
         <label className="lbl" htmlFor="message">Davet metni</label>
         <textarea id="message" name="message" maxLength={600} rows={3} defaultValue={inv.message ?? ""}
           placeholder="Davetiyede isimlerinizin altında görünen cümle. Boş bırakırsanız hazır metin kullanılır." />

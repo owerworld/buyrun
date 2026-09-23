@@ -92,7 +92,7 @@ export async function posterImage(inv: Invitation, label: string) {
           }}
         >
           <div style={{ display: "flex", fontSize: 24, fontWeight: 500, letterSpacing: 6, color: ACCENT }}>
-            MUTLULUĞUMUZA ORTAK OLUN
+            {(inv.opening?.trim() || "Mutluluğumuza ortak olun").toLocaleUpperCase("tr")}
           </div>
 
           <div
@@ -202,7 +202,7 @@ export async function storyImage(inv: Invitation, events: EventRow[]) {
           }}
         >
           <div style={{ display: "flex", fontSize: 30, fontWeight: 500, letterSpacing: 10, color: t.accent }}>
-            MUTLULUĞUMUZA ORTAK OLUN
+            {(inv.opening?.trim() || "Mutluluğumuza ortak olun").toLocaleUpperCase("tr")}
           </div>
           <div style={{ display: "flex", marginTop: 46 }}><Ornament color={t.frame} /></div>
 

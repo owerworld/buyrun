@@ -59,6 +59,7 @@ export async function wizardAction(f: FormData) {
       venue: toren.venue,
       city: s(f, "city", 40),
       greeting: greetingFor(events),
+      families: plan.families ? [s(f, "familyA", 60), s(f, "familyB", 60)].filter(Boolean).join(" ve ") : "",
     });
 
     const admin = await createInvitation({
@@ -69,6 +70,9 @@ export async function wizardAction(f: FormData) {
       program: plan.wantsProgram ? s(f, "program", 600) : "",
       extraProgram: plan.wantsProgram ? s(f, "k_program", 600) : "",
       theme: plan.theme, font: plan.font, ornament: plan.ornament, message: text,
+      opening: plan.opening,
+      familyA: plan.families ? s(f, "familyA", 60) : "",
+      familyB: plan.families ? s(f, "familyB", 60) : "",
     });
     redirect(`/yonet/${admin}`);
   }

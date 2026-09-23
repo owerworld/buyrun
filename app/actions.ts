@@ -76,6 +76,8 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
     program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
     message: s(f, "message", 600),
     font: isFont(s(f, "font", 20)) ? s(f, "font", 20) : undefined,
+    opening: s(f, "opening", 50),
+    familyA: s(f, "familyA", 60), familyB: s(f, "familyB", 60),
     ornament: isOrnament(s(f, "ornament", 20)) ? s(f, "ornament", 20) : undefined,
   });
   redirect(`/yonet/${adminToken}?guncellendi=1`);

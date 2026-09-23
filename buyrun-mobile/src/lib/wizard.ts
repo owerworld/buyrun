@@ -30,6 +30,8 @@ export interface Question {
  *  kalmalı: davet metnini yazan sunucu cevapları web'in listesine göre doğruluyor. */
 const TOREN = ["dugun"];
 export const isToren = (a: Answers) => TOREN.includes(a.tur ?? "");
+/** Renkli, coşkulu kapağın yakışmadığı günler: "hava" sorulmaz. */
+const MANEVI = ["mevlid", "iftar"];
 
 export const QUESTIONS: Question[] = [
   {
@@ -44,6 +46,12 @@ export const QUESTIONS: Question[] = [
       { id: "evpartisi", label: "Ev partisi" },
       { id: "mezuniyet", label: "Mezuniyet" },
       { id: "bulusma", label: "Buluşma" },
+      { id: "sunnet", label: "Sünnet düğünü" },
+      { id: "babyshower", label: "Baby shower" },
+      { id: "disbugdayi", label: "Diş buğdayı" },
+      { id: "mevlid", label: "Mevlid" },
+      { id: "iftar", label: "İftar yemeği" },
+      { id: "asker", label: "Asker uğurlaması" },
     ],
   },
   {
@@ -67,6 +75,11 @@ export const QUESTIONS: Question[] = [
       { id: "zarif", label: "Zarif ve ölçülü" },
       { id: "sicak", label: "Sıcak ve içten" },
       { id: "neseli", label: "Neşeli ve esprili" },
+      {
+        id: "manevi",
+        label: "Manevi ve dualı",
+        hint: "“Allah'ın izniyle… Hayır dualarınızı bekleriz.”",
+      },
     ],
   },
   {
@@ -82,7 +95,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "hava",
     title: "Nasıl bir hava olsun?",
-    when: (a) => !isToren(a),
+    when: (a) => !isToren(a) && !MANEVI.includes(a.tur ?? ""),
     options: [
       { id: "cosku", label: "Coşkulu ve renkli" },
       { id: "sicakhava", label: "Küçük ve samimi" },
@@ -127,6 +140,12 @@ const CATEGORY_OF: Record<string, string> = {
   kina: "Kına gecesi",
   evpartisi: "Ev partisi",
   mezuniyet: "Mezuniyet",
+  sunnet: "Sünnet",
+  babyshower: "Baby shower",
+  disbugdayi: "Diş buğdayı",
+  mevlid: "Mevlid",
+  iftar: "İftar",
+  asker: "Asker uğurlaması",
   bulusma: "Buluşma",
 };
 
@@ -145,6 +164,8 @@ export function planFromAnswers(a: Answers): {
         : a.stil === "klasik"
           ? "cherry"
           : "bloom";
+  else if (a.tur === "iftar") coverId = "midnight";
+  else if (a.tur === "mevlid") coverId = "bloom";
   else if (a.hava === "cosku") coverId = "cherry";
   else if (a.hava === "sik") coverId = "midnight";
   else if (a.hava === "sicakhava") coverId = "bloom";

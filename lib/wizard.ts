@@ -17,6 +17,8 @@ export interface Option {
   label: string;
   /** Seçeneğin altında küçük açıklama */
   hint?: string;
+  /** Seçenek yalnızca koşul sağlanırsa gösterilir (ör. mevlid için "neşeli" dil yok) */
+  when?: (a: Answers) => boolean;
 }
 
 /**
@@ -42,22 +44,75 @@ export interface Question {
 export const TOREN = ["dugun", "nisan", "soz"];
 export const isToren = (a: Answers) => TOREN.includes(a.tur ?? "");
 
+/** Neşeli dilin ve renkli kapağın yakışmadığı günler. */
+export const MANEVI = ["mevlid", "iftar", "hac"];
+/** "Manevi ve dualı" dilin sunulduğu türler. */
+const DUALI = [...TOREN, "kina", "sunnet", "disbugdayi", "babyshower", "mevlid", "iftar", "hac", "asker", "evpartisi"];
+
+/** Her türün ilk grubu: ana sayfadan türle gelen kullanıcıda grup kendiliğinden dolar. */
+const GRUP_OF: Record<string, string> = {
+  dugun: "evlilik", nisan: "evlilik", soz: "evlilik", kina: "evlilik", bekarlik: "evlilik",
+  sunnet: "cocuk", babyshower: "cocuk", cinsiyet: "cocuk", disbugdayi: "cocuk", dogumgunu: "cocuk",
+  mevlid: "manevi", iftar: "manevi", hac: "manevi",
+  evpartisi: "dostlar", yemek: "dostlar", mezuniyet: "dostlar", asker: "dostlar", bulusma: "dostlar",
+};
+
+/** Tür listesini seçilen gruba göre süzer. Grup sorulmadıysa (ana sayfadan türle gelindiyse) hepsi geçerli. */
+function grupta(...gruplar: string[]) {
+  return (a: Answers) => !a.grup || gruplar.includes(a.grup);
+}
+
+/** Bir sorunun bu cevaplarla gösterilecek seçenekleri. */
+export const visibleOptions = (q: Question, a: Answers) => q.options.filter((o) => !o.when || o.when(a));
+
 export const QUESTIONS: Question[] = [
   {
-    id: "tur",
+    id: "grup",
     title: "Ne kutluyoruz?",
     lead: "Buradan sonrası size göre şekillenecek.",
     look: "kutular",
     options: [
-      { id: "dugun", label: "Düğün", hint: "Nikâh ve düğün" },
-      { id: "nisan", label: "Nişan" },
-      { id: "soz", label: "Söz" },
-      { id: "kina", label: "Kına gecesi", hint: "Tek başına kına daveti" },
-      { id: "dogumgunu", label: "Doğum günü" },
-      { id: "mezuniyet", label: "Mezuniyet" },
-      { id: "evpartisi", label: "Ev partisi" },
-      { id: "yemek", label: "Akşam yemeği" },
-      { id: "bulusma", label: "Buluşma" },
+      { id: "evlilik", label: "Evlilik yolunda", hint: "Düğün, nişan, söz, kına" },
+      { id: "cocuk", label: "Çocuk ve bebek", hint: "Sünnet, baby shower, diş buğdayı" },
+      { id: "manevi", label: "Manevi günler", hint: "Mevlid, iftar, hac uğurlaması" },
+      { id: "dostlar", label: "Dostlarla", hint: "Ev, yemek, mezuniyet, asker" },
+    ],
+  },
+  {
+    id: "tur",
+    title: "Hangisi?",
+    look: "kutular",
+    options: [
+      { id: "dugun", label: "Düğün", hint: "Nikâh ve düğün", when: grupta("evlilik") },
+      { id: "nisan", label: "Nişan", when: grupta("evlilik") },
+      { id: "soz", label: "Söz", when: grupta("evlilik") },
+      { id: "kina", label: "Kına gecesi", hint: "Tek başına kına daveti", when: grupta("evlilik") },
+      { id: "bekarlik", label: "Bekârlığa veda", hint: "Bride party", when: grupta("evlilik") },
+      { id: "sunnet", label: "Sünnet düğünü", when: grupta("cocuk") },
+      { id: "babyshower", label: "Baby shower", when: grupta("cocuk") },
+      { id: "cinsiyet", label: "Cinsiyet partisi", when: grupta("cocuk") },
+      { id: "disbugdayi", label: "Diş buğdayı", when: grupta("cocuk") },
+      { id: "dogumgunu", label: "Doğum günü", when: grupta("cocuk", "dostlar") },
+      { id: "mevlid", label: "Mevlid", when: grupta("manevi") },
+      { id: "iftar", label: "İftar yemeği", when: grupta("manevi") },
+      { id: "hac", label: "Hac / umre uğurlaması", when: grupta("manevi") },
+      { id: "evpartisi", label: "Yeni ev", hint: "Ev partisi, ev hayırlısı", when: grupta("dostlar") },
+      { id: "yemek", label: "Akşam yemeği", when: grupta("dostlar") },
+      { id: "mezuniyet", label: "Mezuniyet", when: grupta("dostlar") },
+      { id: "asker", label: "Asker uğurlaması", when: grupta("dostlar") },
+      { id: "bulusma", label: "Buluşma", when: grupta("dostlar") },
+    ],
+  },
+  {
+    id: "vesile",
+    title: "Mevlid ne vesilesiyle okunacak?",
+    lead: "Davet metni buna göre yazılacak.",
+    when: (a) => a.tur === "mevlid",
+    options: [
+      { id: "bebek", label: "Bebeğimiz için" },
+      { id: "ev", label: "Yeni evimiz için" },
+      { id: "rahmetli", label: "Rahmetlimizin anısına" },
+      { id: "sukur", label: "Şükür için", hint: "Hayırlı bir iş, sağlık, kavuşma" },
     ],
   },
   {
@@ -76,7 +131,18 @@ export const QUESTIONS: Question[] = [
     options: [
       { id: "zarif", label: "Zarif ve ölçülü", hint: "“Sizleri aramızda görmekten onur duyarız.”" },
       { id: "sicak", label: "Sıcak ve içten", hint: "“Bu güzel günde yanımızda olmanızı çok isteriz.”" },
-      { id: "neseli", label: "Neşeli ve esprili", hint: "“Pistte yeriniz hazır, kaçmak yok!”" },
+      { id: "neseli", label: "Neşeli ve esprili", hint: "“Pistte yeriniz hazır, kaçmak yok!”", when: (a) => !MANEVI.includes(a.tur ?? "") },
+      { id: "manevi", label: "Manevi ve dualı", hint: "“Allah'ın izniyle… Hayır dualarınızı bekleriz.”", when: (a) => DUALI.includes(a.tur ?? "") },
+    ],
+  },
+  {
+    id: "aile",
+    title: "Davetiyede ailelerinizin adı yer alsın mı?",
+    lead: "Türkiye'de davetlilerin çoğu çifti aileleri üzerinden tanır; büyükler de bunu bekler.",
+    when: isToren,
+    options: [
+      { id: "evet", label: "Evet, iki ailenin adıyla", hint: "Geleneksel: “Ayşe & Ahmet Yılmaz” gibi" },
+      { id: "hayir", label: "Hayır, sadece bizim adımız", hint: "Modern ve sade" },
     ],
   },
   {
@@ -103,11 +169,11 @@ export const QUESTIONS: Question[] = [
     look: "susleme",
     when: isToren,
     options: [
-      { id: "klasik", label: "Geleneksel ve görkemli", hint: "Sırma işi" },
-      { id: "romantik", label: "Romantik ve yumuşak", hint: "Çiçek dalları" },
-      { id: "sade", label: "Sade ve zarif", hint: "İnce çizgi" },
-      { id: "modern", label: "Modern ve şık", hint: "Art deco" },
-      { id: "bohem", label: "Doğal ve bohem", hint: "Defne dalı" },
+      { id: "klasik", label: "Klasik ve görkemli", hint: "Sırma işi, varak havası" },
+      { id: "romantik", label: "Romantik", hint: "Çiçek dalları" },
+      { id: "sade", label: "Minimal", hint: "İnce çizgi, süssüz" },
+      { id: "modern", label: "Modern lüks", hint: "Art deco" },
+      { id: "bohem", label: "Rustik ve doğal", hint: "Defne dalı" },
       { id: "bilmiyorum", label: "Karar veremedim", hint: "Siz seçin" },
     ],
   },
@@ -130,7 +196,7 @@ export const QUESTIONS: Question[] = [
     title: "Nasıl bir hava olsun?",
     lead: "Davetinizin kapağı buna göre seçilecek.",
     look: "kapak",
-    when: (a) => !isToren(a),
+    when: (a) => !isToren(a) && !MANEVI.includes(a.tur ?? ""),
     options: [
       { id: "cosku", label: "Coşkulu ve renkli" },
       { id: "sicakhava", label: "Küçük ve samimi" },
@@ -182,10 +248,13 @@ export const QUESTIONS: Question[] = [
     title: "Kaç kişilik bir davet?",
     lead: "Kesin olması gerekmiyor, kabaca yeter.",
     options: [
-      { id: "kucuk", label: "20 kişiye kadar" },
-      { id: "orta", label: "20 – 100 kişi" },
+      { id: "kucuk", label: "20 kişiye kadar", when: (a) => !isToren(a) },
+      { id: "orta", label: "20 – 100 kişi", when: (a) => !isToren(a) },
+      { id: "yuz", label: "100 kişiye kadar", when: isToren },
       { id: "buyuk", label: "100 – 300 kişi" },
-      { id: "cokbuyuk", label: "300 kişiden fazla" },
+      { id: "ucyuz", label: "300 – 500 kişi", when: isToren },
+      { id: "cokbuyuk", label: "300 kişiden fazla", when: (a) => !isToren(a) },
+      { id: "besyuz", label: "500 kişiden fazla", when: isToren },
     ],
   },
 ];
@@ -238,12 +307,18 @@ export interface Plan {
   wantsProgram: boolean;
   /** Davetlilerden bir istek var mı? "", "getir" ya da "kiyafet" */
   request: string;
+  /** Tören dalı: iki ailenin adı davetiyede yazılsın mı? */
+  families: boolean;
+  /** Tören dalı: isimlerin üstündeki açılış satırı */
+  opening: string;
 }
 
 const CATEGORY_OF: Record<string, string> = {
   dugun: "Düğün", nisan: "Düğün", soz: "Düğün",
-  kina: "Kına gecesi", dogumgunu: "Doğum günü", mezuniyet: "Mezuniyet",
+  kina: "Kına gecesi", bekarlik: "Bekârlığa veda", dogumgunu: "Doğum günü", mezuniyet: "Mezuniyet",
   evpartisi: "Ev partisi", yemek: "Akşam yemeği", bulusma: "Buluşma",
+  sunnet: "Sünnet", babyshower: "Baby shower", cinsiyet: "Cinsiyet partisi", disbugdayi: "Diş buğdayı",
+  mevlid: "Mevlid", iftar: "İftar", hac: "Hac uğurlaması", asker: "Asker uğurlaması",
 };
 
 const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci"];
@@ -258,6 +333,7 @@ function themeFor(a: Answers) {
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
   if (a.ton === "zarif") return "krem";
   if (a.ton === "neseli") return "lal";
+  if (a.ton === "manevi") return "zumrut";
   return "klasik";
 }
 
@@ -280,9 +356,23 @@ function coverFor(a: Answers) {
   if (a.hava === "cosku") return "cherry";
   if (a.hava === "sik") return "midnight";
   if (a.hava === "sicakhava") return "bloom";
-  if (a.tur === "dogumgunu" || a.tur === "evpartisi") return "cherry";
+  if (a.tur === "iftar") return "midnight";
+  if (MANEVI.includes(a.tur ?? "")) return "bloom";
+  if (["dogumgunu", "evpartisi", "bekarlik", "sunnet", "asker"].includes(a.tur ?? "")) return "cherry";
   if (a.tur === "yemek" || a.tur === "bulusma") return "midnight";
   return "bloom";
+}
+
+/** Kapağın en üstündeki kısa satır; dilin tonunu ilk bakışta verir. */
+export function openingFor(a: Answers) {
+  if (a.ton === "manevi") return "Allah'ın izniyle";
+  if (a.ton === "sicak") return "Bu mutlu günümüzde";
+  if (a.ton === "neseli") {
+    if (a.tur === "nisan") return "Sonunda nişanlanıyoruz!";
+    if (a.tur === "soz") return "Söz kesildi!";
+    return "Sonunda evleniyoruz!";
+  }
+  return "Mutluluğumuza ortak olun";
 }
 
 export function planFromAnswers(a: Answers): Plan {
@@ -300,6 +390,8 @@ export function planFromAnswers(a: Answers): Plan {
     wantsBus: toren && a.servis === "var",
     wantsProgram: toren && a.program === "var",
     request: !toren && a.istek && a.istek !== "yok" ? a.istek : "",
+    families: toren && a.aile === "evet",
+    opening: openingFor(a),
   };
 }
 
@@ -325,6 +417,8 @@ export function parseAnswers(src: Record<string, string | string[] | undefined>)
     const value = Array.isArray(raw) ? raw[0] : raw;
     if (value && isValidAnswer(q.id, value)) out[q.id] = value;
   }
+  // Tür biliniyor ama grup yoksa (ana sayfa linki, mobil uygulama) grubu türden çıkar
+  if (out.tur && !out.grup && GRUP_OF[out.tur]) out.grup = GRUP_OF[out.tur];
   return out;
 }
 

@@ -20,6 +20,9 @@ const SCHEMA = [
     theme TEXT NOT NULL DEFAULT 'klasik',
     font TEXT NOT NULL DEFAULT 'klasik',
     ornament TEXT NOT NULL DEFAULT 'sirma',
+    opening TEXT NOT NULL DEFAULT '',
+    family_a TEXT NOT NULL DEFAULT '',
+    family_b TEXT NOT NULL DEFAULT '',
     recovery_code TEXT NOT NULL DEFAULT '',
     delete_after TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -69,6 +72,10 @@ const SCHEMA = [
   // Tasarım eksenleri: isimlerin yazı karakteri ve çerçeve süslemesi
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS font TEXT NOT NULL DEFAULT 'klasik'`,
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS ornament TEXT NOT NULL DEFAULT 'sirma'`,
+  // Kapağın üst satırı ve iki ailenin adı ("Ayşe & Ahmet Yılmaz")
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS opening TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS family_a TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS family_b TEXT NOT NULL DEFAULT ''`,
   `CREATE UNIQUE INDEX IF NOT EXISTS invitations_recovery_idx ON invitations(recovery_code) WHERE recovery_code <> ''`,
   `CREATE INDEX IF NOT EXISTS guests_family_idx ON guests(family_id)`,
   `CREATE INDEX IF NOT EXISTS guests_invitation_idx ON guests(invitation_id)`,

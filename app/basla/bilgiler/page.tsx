@@ -15,6 +15,21 @@ export const metadata: Metadata = { title: "Son bilgiler – Buyrun" };
 
 type SP = Record<string, string | string[] | undefined>;
 
+/** Etkinlik dalında başlık ve ev sahibi alanları, davet türünün Türkiye'deki alışkanlığına göre adlandırılır. */
+const ALANLAR: Record<string, [baslik: string, baslikOrnek: string, ev: string, evOrnek: string]> = {
+  sunnet: ["Davetin başlığı", "Mert'in sünnet düğünü", "Anne ve baba", "Ayşe & Ahmet Yılmaz"],
+  babyshower: ["Davetin başlığı", "Zeynep'in baby shower'ı", "Düzenleyen", "Zeynep'in arkadaşları"],
+  cinsiyet: ["Davetin başlığı", "Kız mı, erkek mi?", "Anne ve baba adayı", "Zeynep & Can"],
+  disbugdayi: ["Davetin başlığı", "Ela'nın diş buğdayı", "Anne ve baba", "Zeynep & Can Demir"],
+  mevlid: ["Davetin başlığı", "Mevlid-i Şerif", "Davet eden", "Yılmaz ailesi"],
+  iftar: ["Davetin başlığı", "İftar soframıza buyrun", "Davet eden", "Yılmaz ailesi"],
+  hac: ["Davetin başlığı", "Hacı adayımızı uğurluyoruz", "Davet eden", "Yılmaz ailesi"],
+  asker: ["Davetin başlığı", "Emre'yi askere uğurluyoruz", "Davet eden", "Kaya ailesi"],
+  bekarlik: ["Davetin başlığı", "Elif'e bekârlığa veda", "Düzenleyen", "Nazlı ve Ece"],
+  kina: ["Davetin başlığı", "Zeynep'in kına gecesi", "Davet eden", "Zeynep'in ailesi"],
+};
+const VARSAYILAN_ALAN: [string, string, string, string] = ["Etkinliğin adı", "İyi ki doğdun, Ece!", "Ev sahibi", "Ece ya da Bilgisayar Kulübü"];
+
 /**
  * Sihirbazın son sayfası: yazı isteyen tek yer.
  *
@@ -32,6 +47,11 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
   const plan = planFromAnswers(answers);
   const query = answersQuery(answers);
   const main = plan.toren ? kindOf(plan.mainKind) : null;
+  const aday = plan.mainKind === "dugun" ? "" : " adayının";
+  const [baslikEtiket, baslikOrnek, evEtiket, evOrnek] =
+    answers.tur === "mevlid" && answers.vesile === "rahmetli"
+      ? ["Davetin başlığı", "Rahmetli Hasan Yılmaz'ın anısına", "Davet eden", "Yılmaz ailesi"]
+      : ALANLAR[answers.tur ?? ""] ?? VARSAYILAN_ALAN;
   const extra = plan.extraKind ? kindOf(plan.extraKind) : null;
   const ozet = plan.toren
     ? `${themeOf(plan.theme).label} renkler, ${ornamentOf(plan.ornament).label.toLocaleLowerCase("tr")} ve ${fontOf(plan.font).label.toLocaleLowerCase("tr")} isimler`
@@ -63,9 +83,20 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
         {plan.toren ? (
           <>
             <div className="grid2">
-              <div><label className="lbl" htmlFor="nameA">Gelinin adı</label><input type="text" id="nameA" name="nameA" required maxLength={40} autoComplete="off" /></div>
-              <div><label className="lbl" htmlFor="nameB">Damadın adı</label><input type="text" id="nameB" name="nameB" required maxLength={40} autoComplete="off" /></div>
+              <div><label className="lbl" htmlFor="nameA">Gelin{aday} adı</label><input type="text" id="nameA" name="nameA" required maxLength={40} autoComplete="off" /></div>
+              <div><label className="lbl" htmlFor="nameB">Damat{aday} adı</label><input type="text" id="nameB" name="nameB" required maxLength={40} autoComplete="off" /></div>
             </div>
+            {plan.families && (
+              <>
+                <div className="grid2">
+                  <div><label className="lbl" htmlFor="familyA">Kız tarafı</label><input type="text" id="familyA" name="familyA" maxLength={60} placeholder="Örn: Ayşe & Ahmet Yılmaz" /></div>
+                  <div><label className="lbl" htmlFor="familyB">Erkek tarafı</label><input type="text" id="familyB" name="familyB" maxLength={60} placeholder="Örn: Fatma & Mehmet Kaya" /></div>
+                </div>
+                <p className="muted small" style={{ marginTop: 6 }}>
+                  Anne ve babanın adı, sonra soyadı. Vefat eden için adın başına “Merhum” ya da “Merhume” yazabilirsiniz.
+                </p>
+              </>
+            )}
             <label className="lbl" htmlFor="city">Şehir</label>
             <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" />
 
@@ -121,10 +152,10 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
           </>
         ) : (
           <>
-            <label className="lbl" htmlFor="title">Etkinliğin adı</label>
-            <input type="text" id="title" name="title" required maxLength={100} placeholder="Örn: İyi ki doğdun, Ece!" />
-            <label className="lbl" htmlFor="hostName">Ev sahibi</label>
-            <input type="text" id="hostName" name="hostName" required maxLength={80} placeholder="Örn: Ece ya da Bilgisayar Kulübü" />
+            <label className="lbl" htmlFor="title">{baslikEtiket}</label>
+            <input type="text" id="title" name="title" required maxLength={100} placeholder={`Örn: ${baslikOrnek}`} />
+            <label className="lbl" htmlFor="hostName">{evEtiket}</label>
+            <input type="text" id="hostName" name="hostName" required maxLength={80} placeholder={`Örn: ${evOrnek}`} />
 
             <div className="grid2">
               <div><label className="lbl" htmlFor="date">Tarih</label><input type="date" id="date" name="date" required min={todayIso()} /></div>
