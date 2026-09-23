@@ -174,6 +174,28 @@ export const THEMES: Theme[] = [
     },
     og: { bg: "#123E6B", bg2: "#1B5486", frame: "#8AD9DA", text: "#F2FAFB", accent: "#8AD9DA" },
   },
+  {
+    id: "pastel",
+    label: "Pastel",
+    hint: "Latte, vizon & adaçayı",
+    // Bebek kutlamalarında 2026'nın cinsiyetsiz toprak/pastel tonları; açık zeminli kapak
+    swatch: ["#F4ECE4", "#8A6A55", "#A8BBA3"],
+    light: {
+      "--bg": "#F7F2EE", "--card": "#FFFFFF", "--ink": "#2F2621", "--muted": "#6B5D54",
+      "--line": "#EADFD6", "--chip": "#F1E8E0",
+      "--velvet": "#F4ECE4", "--velvet2": "#FBF7F2", "--gold": "#7D5F4A", "--gold-ink": "#7D5F4A",
+      "--kina": "#B0584A", "--btn": "#6F5443", "--btn-ink": "#FFFFFF",
+      "--hero-ink": "#3B2E26", "--hero-edge": "#EADFD6",
+    },
+    dark: {
+      "--bg": "#16120F", "--card": "#201A16", "--ink": "#F3ECE6", "--muted": "#BFB0A5",
+      "--line": "#352C25", "--chip": "#2A221D",
+      "--velvet": "#2A211C", "--velvet2": "#3A2E27", "--gold": "#E0C9B5", "--gold-ink": "#E0C9B5",
+      "--kina": "#E99A8C", "--btn": "#E0C9B5", "--btn-ink": "#2A211C",
+      "--hero-ink": "#F4ECE4", "--hero-edge": "#352C25",
+    },
+    og: { bg: "#F4ECE4", bg2: "#FBF7F2", frame: "#8A6A55", text: "#3B2E26", accent: "#7D5F4A" },
+  },
 ];
 
 export const DEFAULT_THEME = THEMES[0].id;

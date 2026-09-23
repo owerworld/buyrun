@@ -150,7 +150,6 @@ export const QUESTIONS: Question[] = [
     title: "Hangi renkler size daha yakın?",
     lead: "İçinizden geleni seçin; davetiye bu renklere bürünecek.",
     look: "renk",
-    when: isToren,
     options: [
       { id: "lal", label: "Kına kırmızısı", hint: "Al & altın" },
       { id: "klasik", label: "Bordo", hint: "Bordo & altın" },
@@ -160,6 +159,7 @@ export const QUESTIONS: Question[] = [
       { id: "krem", label: "Toprak", hint: "Kum & zeytin" },
       { id: "inci", label: "İnci", hint: "Fildişi & siyah" },
       { id: "turkuaz", label: "İznik", hint: "Kobalt, turkuaz & mercan" },
+      { id: "pastel", label: "Pastel", hint: "Latte, vizon & adaçayı" },
       { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre" },
     ],
   },
@@ -196,13 +196,13 @@ export const QUESTIONS: Question[] = [
   {
     id: "hava",
     title: "Nasıl bir hava olsun?",
-    lead: "Davetinizin kapağı buna göre seçilecek.",
-    look: "kapak",
+    lead: "Çerçevenin süslemesi buna göre değişecek.",
+    look: "susleme",
     when: (a) => !isToren(a) && !MANEVI.includes(a.tur ?? ""),
     options: [
-      { id: "cosku", label: "Coşkulu ve renkli" },
-      { id: "sicakhava", label: "Küçük ve samimi" },
-      { id: "sik", label: "Şık ve sakin" },
+      { id: "cosku", label: "Coşkulu ve renkli", hint: "Art deco" },
+      { id: "sicakhava", label: "Küçük ve samimi", hint: "Çiçek dalları" },
+      { id: "sik", label: "Şık ve sakin", hint: "İnce çizgi" },
     ],
   },
   {
@@ -318,7 +318,15 @@ const CATEGORY_OF: Record<string, string> = {
   mevlid: "Mevlid", iftar: "İftar", hac: "Hac uğurlaması", asker: "Asker uğurlaması",
 };
 
-const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "turkuaz"];
+const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "turkuaz", "pastel"];
+
+/** Etkinlik dalında "siz seçin" denirse türün Türkiye'de alışılmış rengi. */
+const TUR_RENK: Record<string, string> = {
+  sunnet: "turkuaz", babyshower: "pastel", cinsiyet: "pastel", disbugdayi: "pastel",
+  mevlid: "zumrut", hac: "zumrut", iftar: "gece", asker: "lal", kina: "lal", bekarlik: "gul",
+  dogumgunu: "gul", mezuniyet: "gece", evpartisi: "krem", yemek: "gece", bulusma: "krem",
+};
+const BEBEK = ["babyshower", "cinsiyet", "disbugdayi"];
 
 /**
  * Tören dalında üç eksen ayrı ayrı seçilir. Açık cevap her zaman kazanır;
@@ -326,6 +334,7 @@ const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "tur
  */
 function themeFor(a: Answers) {
   if (PALETLER.includes(a.renk ?? "")) return a.renk;
+  if (!isToren(a) && TUR_RENK[a.tur ?? ""]) return TUR_RENK[a.tur ?? ""];
   const fromStil: Record<string, string> = { klasik: "klasik", romantik: "gul", sade: "inci", modern: "gece", bohem: "krem", cini: "turkuaz" };
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
   if (a.ton === "zarif") return "krem";
@@ -335,6 +344,14 @@ function themeFor(a: Answers) {
 }
 
 function ornamentFor(a: Answers, theme: string) {
+  if (!isToren(a)) {
+    // Manevi günlerde hava sorulmaz: çini lale. Diğerlerinde istenen hava süslemeyi seçer.
+    if (MANEVI.includes(a.tur ?? "")) return "cini";
+    const fromHava: Record<string, string> = { cosku: "deco", sicakhava: "cicek", sik: "cizgi" };
+    if (fromHava[a.hava ?? ""]) return fromHava[a.hava ?? ""];
+    if (a.tur === "sunnet" || a.tur === "kina") return "sirma";
+    if (BEBEK.includes(a.tur ?? "")) return "cicek";
+  }
   const fromStil: Record<string, string> = { klasik: "sirma", romantik: "cicek", sade: "cizgi", modern: "deco", bohem: "yaprak", cini: "cini" };
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
   const fromTheme: Record<string, string> = { lal: "sirma", klasik: "sirma", gul: "cicek", zumrut: "deco", gece: "deco", krem: "yaprak", inci: "cizgi", turkuaz: "cini" };
@@ -344,6 +361,12 @@ function ornamentFor(a: Answers, theme: string) {
 function fontFor(a: Answers, ornament: string) {
   if (["kaligrafi", "klasik", "gorkemli", "siir", "modern"].includes(a.yazi ?? "")) return a.yazi;
   const fromOrnament: Record<string, string> = { sirma: "gorkemli", cicek: "kaligrafi", cizgi: "klasik", deco: "modern", yaprak: "siir", cini: "gorkemli" };
+  if (a.ton === "manevi") return "gorkemli";
+  if (!isToren(a)) {
+    if (["mezuniyet", "bulusma", "yemek"].includes(a.tur ?? "") && a.ton !== "neseli") return "modern";
+    const fromTon: Record<string, string> = { neseli: "kaligrafi", zarif: "klasik", sicak: "siir" };
+    if (fromTon[a.ton ?? ""]) return fromTon[a.ton ?? ""];
+  }
   if (a.ton === "neseli" && ornament !== "deco") return "kaligrafi";
   return fromOrnament[ornament] ?? "klasik";
 }

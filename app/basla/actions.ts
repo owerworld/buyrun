@@ -104,7 +104,9 @@ export async function wizardAction(f: FormData) {
         coverId: plan.coverId, coverData: null,
         capacity: kapasite ? Number(kapasite) : null,
       }),
-      siteUrl()
+      siteUrl(),
+      // Uygulama fotoğraflı kapağı gösterir; web davet sayfası bu tasarımı
+      { theme: plan.theme, font: plan.font, ornament: plan.ornament }
     );
     token = event.manageToken;
   } catch (e) {

@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { Workspace } from "@/components/Workspace";
 import { longDate } from "@/lib/format";
-import { managedEvent, mobileEventByToken, mobileSummary, MOBILE_STATUS_LABEL, type MobileStatus } from "@/lib/mobile";
+import { EventHero } from "@/components/EventHero";
+import { themeScope } from "@/components/Theme";
+import { designOf, managedEvent, mobileEventByToken, mobileSummary, MOBILE_STATUS_LABEL, type MobileStatus } from "@/lib/mobile";
 import { siteUrl } from "@/lib/format";
 import { addEventGuestAction, removeEventGuestAction, setEventGuestAction } from "../actions";
 
@@ -132,6 +134,12 @@ export default async function EtkinlikPaneli({ params, searchParams }: {
 
       {active === "etkinlik" && (
         <div className="stack">
+          {designOf(row) && (
+            <div className="yonet-kapak" style={themeScope(designOf(row)!.theme)}>
+              <EventHero title={event.title} category={event.category} date={event.date} time={event.time}
+                venue={event.venue} font={designOf(row)!.font} ornament={designOf(row)!.ornament} />
+            </div>
+          )}
           <section className="surface">
             <p className="eyebrow">Herkese açık davet linki</p>
             <h2>Paylaşmaya hazır</h2>

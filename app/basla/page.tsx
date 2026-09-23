@@ -78,7 +78,7 @@ export default async function Basla({ searchParams }: { searchParams: Promise<SP
 
   return (
     <main className={`sihirbaz${canli ? " canli-var" : ""}`}>
-      {plan.toren && <ThemeStyle theme={plan.theme} />}
+      {answers.tur && <ThemeStyle theme={plan.theme} />}
       <div className="brand">
         <Link href="/">Buyrun</Link>
         <Link className="back-link" href={geri}>← Geri</Link>

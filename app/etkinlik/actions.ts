@@ -3,8 +3,10 @@
 import { redirect } from "next/navigation";
 import {
   createMobileEvent, createMobileGuest, editMobileEvent, editMobileGuest, eventInput,
-  mobileEventByToken, MobileError, removeMobileGuest, validateEvent,
+  designOf, mobileEventByToken, MobileError, removeMobileGuest, setMobileDesign, validateEvent,
 } from "@/lib/mobile";
+import { isFont, isOrnament } from "@/lib/design";
+import { isTheme } from "@/lib/themes";
 import { siteUrl } from "@/lib/format";
 import { allow } from "@/lib/ratelimit";
 
@@ -45,6 +47,16 @@ export async function updateEventAction(manageToken: string, f: FormData) {
   if (!(await allow(`mobile-edit:${row.id}`, 120, 3600))) fail("Çok fazla düzenleme yapıldı. Biraz sonra deneyin.");
   try {
     await editMobileEvent(row, validateEvent(formEvent(f), eventInput(row)), siteUrl());
+    // Tasarımlı davette seçiciler formda; geçersiz değer gelirse eski tasarım korunur
+    const design = designOf(row);
+    if (design) {
+      const theme = s(f, "theme", 20), font = s(f, "font", 20), ornament = s(f, "ornament", 20);
+      await setMobileDesign(row, {
+        theme: isTheme(theme) ? theme : design.theme,
+        font: isFont(font) ? font : design.font,
+        ornament: isOrnament(ornament) ? ornament : design.ornament,
+      });
+    }
   } catch (e) {
     fail(mesaj(e));
   }

@@ -348,3 +348,7 @@ details summary{cursor:pointer;font-weight:700}
 .hero.kucuk .orn.lale{width:96px;height:36px}
 .orn-ornek .orn.lale{width:52px;height:20px}
 .orn-ornek .orn.lale.t{top:6px}.orn-ornek .orn.lale.b{bottom:6px}
+/* Etkinlik kapağı: başlık iki isimden uzun olabilir, yazı küçülür */
+.etkinlik-kapak .names{--k:.64;line-height:1.1}
+.etkinlik-kapak.kucuk .names{--k:.46}
+.etkinlik-kapak.f-modern .names{line-height:1.35}

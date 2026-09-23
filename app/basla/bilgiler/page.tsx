@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { COVERS } from "@/components/CoverPicker";
 import { ThemeStyle } from "@/components/Theme";
 import { WizardPreview } from "@/components/WizardPreview";
 import { fontOf, ornamentOf } from "@/lib/design";
@@ -61,11 +60,11 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
   const extra = plan.extraKind ? kindOf(plan.extraKind) : null;
   const ozet = plan.toren
     ? `${themeOf(plan.theme).label} renkler, ${ornamentOf(plan.ornament).label.toLocaleLowerCase("tr")} ve ${fontOf(plan.font).label.toLocaleLowerCase("tr")} isimler`
-    : `${COVERS.find((c) => c.id === plan.coverId)?.label ?? "Kapak"} kapağı · ${plan.category}`;
+    : `${themeOf(plan.theme).label} renkler, ${ornamentOf(plan.ornament).label.toLocaleLowerCase("tr")} ve ${fontOf(plan.font).label.toLocaleLowerCase("tr")} başlık`;
 
   return (
     <main className="wrap form-wrap bilgiler">
-      {plan.toren && <ThemeStyle theme={plan.theme} />}
+      <ThemeStyle theme={plan.theme} />
       <div className="brand">
         <Link href="/">Buyrun</Link>
         <Link className="back-link" href={`/basla?${answersQuery(withoutLast(answers))}`}>← Geri</Link>
