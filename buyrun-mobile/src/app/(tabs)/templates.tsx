@@ -130,7 +130,7 @@ export default function TemplatesScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Kendi görselinle bir davet oluştur"
-              onPress={() => router.push("/create")}
+              onPress={() => router.push("/wizard")}
               style={({ pressed }) => [
                 styles.customCard,
                 { opacity: pressed ? 0.8 : 1 },

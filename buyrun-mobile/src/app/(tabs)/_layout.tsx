@@ -40,7 +40,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
             accessibilityState={{ selected: active }}
             onPress={() =>
               item.route === "create"
-                ? router.push("/create")
+                ? router.push("/wizard")
                 : navigation.navigate(item.route)
             }
             style={{

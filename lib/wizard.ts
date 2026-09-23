@@ -43,6 +43,7 @@ export const QUESTIONS: Question[] = [
       { id: "dugun", label: "Düğün", hint: "Nikâh ve düğün" },
       { id: "nisan", label: "Nişan" },
       { id: "soz", label: "Söz" },
+      { id: "kina", label: "Kına gecesi", hint: "Tek başına kına daveti" },
       { id: "dogumgunu", label: "Doğum günü" },
       { id: "mezuniyet", label: "Mezuniyet" },
       { id: "evpartisi", label: "Ev partisi" },
@@ -192,7 +193,7 @@ export interface Plan {
 
 const CATEGORY_OF: Record<string, string> = {
   dugun: "Düğün", nisan: "Düğün", soz: "Düğün",
-  dogumgunu: "Doğum günü", mezuniyet: "Mezuniyet",
+  kina: "Kına gecesi", dogumgunu: "Doğum günü", mezuniyet: "Mezuniyet",
   evpartisi: "Ev partisi", yemek: "Akşam yemeği", bulusma: "Buluşma",
 };
 
@@ -209,7 +210,7 @@ function themeFor(a: Answers) {
 function coverFor(a: Answers) {
   if (a.tur === "dogumgunu") return "cherry";
   if (a.tur === "yemek") return "midnight";
-  if (a.tur === "mezuniyet") return "bloom";
+  if (a.tur === "mezuniyet" || a.tur === "kina") return "bloom";
   if (a.hava === "cosku") return "cherry";
   if (a.hava === "sik") return "midnight";
   return "bloom";

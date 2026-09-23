@@ -180,14 +180,21 @@ export default function Home() {
               <Txt
                 style={{ color: C.muted, textAlign: "center", lineHeight: 23 }}
               >
-                Bir kapak seç, ayrıntıları ekle ve davetini paylaş.
+                Birkaç soruya cevap ver, gerisini birlikte hazırlayalım.
               </Txt>
               <Button
-                onPress={() => router.push("/create")}
+                onPress={() => router.push("/wizard")}
                 tone="lime"
-                icon="add"
+                icon="sparkles-outline"
               >
                 İlk planını oluştur
+              </Button>
+              <Button
+                onPress={() => router.push("/create")}
+                tone="white"
+                icon="create-outline"
+              >
+                Formu kendim dolduracağım
               </Button>
             </View>
           )}

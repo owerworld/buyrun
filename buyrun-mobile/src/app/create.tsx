@@ -28,9 +28,11 @@ import {
 } from "../components/ui";
 import { CalendarSheet, localDate } from "../components/CalendarSheet";
 import { C, F, categories, covers, type CoverId } from "../lib/theme";
+import { ANSWERS_KEY, DRAFT_KEY } from "../lib/wizardStore";
+import { api, ApiError } from "../lib/api";
 import { dateText, type EventInput } from "../lib/model";
 import { useStore } from "../lib/store";
-const DRAFT = "buyrun.mobile.create.draft";
+const DRAFT = DRAFT_KEY;
 const titles = ["Havasını seç.", "Planı güzelleştir.", "Davetiyen hazır."];
 export default function Create() {
   const store = useStore();
@@ -91,7 +93,9 @@ function CreateForm() {
     [picking, setPicking] = useState(false),
     [calendar, setCalendar] = useState(false),
     [draftReady, setDraftReady] = useState(editing),
-    [restored, setRestored] = useState(false);
+    [restored, setRestored] = useState(false),
+    [answers, setAnswers] = useState<Record<string, string> | null>(null),
+    [writing, setWriting] = useState(false);
   const completed = useRef(false);
   const draftWrite = useRef(Promise.resolve());
   const scroll = useRef<ScrollView>(null);
@@ -124,6 +128,46 @@ function CreateForm() {
       alive = false;
     };
   }, [editing, params.cover, selected]);
+  useEffect(() => {
+    let alive = true;
+    AsyncStorage.getItem(ANSWERS_KEY)
+      .then((raw) => {
+        if (raw && alive) setAnswers(JSON.parse(raw) as Record<string, string>);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  /** Sihirbazdan geldiyse davet metnini sunucuya yazdırır. Hata olursa not elle yazılır. */
+  async function writeNote() {
+    if (!answers) return;
+    setError("");
+    if (!data.title.trim() || !data.venue.trim() || !data.date) {
+      setError("Metni yazabilmemiz için önce adı, tarihi ve mekânı doldur.");
+      return;
+    }
+    setWriting(true);
+    try {
+      const { text } = await api.wizardText({
+        answers,
+        title: data.title.trim(),
+        hostName: data.hostName.trim(),
+        date: data.date,
+        venue: data.venue.trim(),
+        request: data.description.trim().slice(0, 160),
+      });
+      patch({ description: text });
+    } catch (e) {
+      setError(
+        e instanceof ApiError
+          ? e.message
+          : "Metin yazılamadı. Notu kendin yazabilirsin.",
+      );
+    } finally {
+      setWriting(false);
+    }
+  }
   useEffect(() => {
     if (!draftReady || editing || saving || completed.current) return;
     const timer = setTimeout(() => {
@@ -234,6 +278,8 @@ function CreateForm() {
       if (!editing) {
         await draftWrite.current;
         await AsyncStorage.removeItem(DRAFT).catch(() => {});
+        // Sihirbaz cevapları bu davete aitti; bir sonraki davet sıfırdan başlasın
+        await AsyncStorage.removeItem(ANSWERS_KEY).catch(() => {});
       }
       router.replace({ pathname: "/event/[id]", params: { id: event.id } });
     } catch (e) {
@@ -518,6 +564,24 @@ function CreateForm() {
                 maxLength={2000}
                 style={{ minHeight: 110, textAlignVertical: "top" }}
               />
+              {!!answers && (
+                <View style={{ marginTop: -8, marginBottom: 18, gap: 7 }}>
+                  <Button
+                    tone="white"
+                    icon="sparkles-outline"
+                    loading={writing}
+                    onPress={writeNote}
+                  >
+                    {data.description.trim()
+                      ? "Metni yeniden yaz"
+                      : "Davet metnini benim için yaz"}
+                  </Button>
+                  <Txt style={{ color: C.muted, fontSize: 13 }}>
+                    Sihirbazdaki cevaplarına göre yazıyoruz. Yazdıktan sonra
+                    istediğin gibi değiştirebilirsin.
+                  </Txt>
+                </View>
+              )}
               <Field
                 label="KAÇ KİŞİLİK PLAN? · İSTEĞE BAĞLI"
                 placeholder="Örn. 25"

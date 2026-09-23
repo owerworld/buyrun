@@ -84,6 +84,20 @@ async function request<T>(
 }
 
 export const api = {
+  /** Sihirbaz cevaplarından davet metni. Anahtar sunucuda durur, uygulamaya gömülmez. */
+  wizardText: (body: {
+    answers: Record<string, string>;
+    title: string;
+    hostName: string;
+    date: string;
+    venue: string;
+    request: string;
+  }) =>
+    request<{ text: string; source: "ai" | "hazir" }>(
+      "/api/wizard/metin",
+      "POST",
+      body,
+    ),
   create: (data: EventInput) =>
     request<Party>("/api/mobile/events", "POST", data),
   get: (token: string) =>
