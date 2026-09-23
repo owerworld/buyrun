@@ -372,3 +372,18 @@ details summary{cursor:pointer;font-weight:700}
 .yol-diger{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:8px 0 0;font-size:.82rem}
 .yol-diger span{color:var(--muted)}
 .yol-diger a{display:inline-flex;align-items:center;min-height:32px}
+/* Düğün günü bandı */
+.gun-bandi{margin:4px 0 14px;padding:16px 16px 14px;border-radius:18px;background:var(--card);border:1.5px solid var(--gold-ink);box-shadow:0 8px 24px #1a0a1212}
+.gun-baslik{margin:0;font:500 1.7rem/1.1 var(--disp);color:var(--ink)}
+.gun-alt{margin:6px 0 0;font-size:.95rem}
+.gun-yer{margin:10px 0 0;font-weight:600;font-size:.92rem}
+.gun-bandi .yol{margin-top:4px}
+.gun-cip{display:inline-block;margin:0 0 10px;padding:6px 12px;border-radius:99px;background:var(--chip);font-size:.85rem}
+/* Hava tahmini */
+.hava{margin:6px 0 0;font-size:.88rem;line-height:1.5}
+.hava b{font-weight:600}
+.hava-gun{color:var(--muted)}
+.hava-uyari{display:block;color:var(--gold-ink);font-weight:600}
+.hava-kaynak{display:block;margin-top:2px;font-size:.7rem;color:var(--muted)}
+/* QR kartı: QR her zaman beyaz zeminde (koyu temada da okunabilsin) */
+.qr-kart img{display:block;margin:6px 0 12px;padding:6px;background:#fff;border-radius:10px;border:1px solid var(--line)}

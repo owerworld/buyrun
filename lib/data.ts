@@ -10,7 +10,7 @@ export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
   bus_from: string; bus_time: string; bus_note: string; program: string; extra_program: string; message: string; theme: string;
   font: string; ornament: string; opening: string; family_a: string; family_b: string;
-  bus_lat: number | null; bus_lng: number | null; bus_place: string; recovery_code: string; delete_after: string;
+  bus_lat: number | null; bus_lng: number | null; bus_place: string; public_token: string; recovery_code: string; delete_after: string;
 }
 export interface EventRow {
   id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number;
@@ -147,6 +147,27 @@ export async function ensureRecoveryCode(adminToken: string) {
   await q(`UPDATE invitations SET recovery_code = $1 WHERE id = $2 AND recovery_code = ''`, [code, inv.id]);
   const [fresh] = await q<Invitation>(`SELECT recovery_code FROM invitations WHERE id = $1`, [inv.id]);
   return fresh?.recovery_code ?? code;
+}
+
+/**
+ * Basılı davetiye için herkese açık link. Yönetim linkinden türetilmez, ayrı ve rastgeledir;
+ * ilk istendiğinde oluşur. Sayfa davetli listesini ya da kişisel bir yanıtı asla göstermez.
+ */
+export async function ensurePublicToken(adminToken: string) {
+  const [inv] = await q<Invitation>(`SELECT * FROM invitations WHERE admin_token = $1`, [adminToken]);
+  if (!inv) return "";
+  if (inv.public_token) return inv.public_token;
+  await q(`UPDATE invitations SET public_token = $1 WHERE id = $2 AND public_token = ''`, [token(12), inv.id]);
+  const [fresh] = await q<Invitation>(`SELECT public_token FROM invitations WHERE id = $1`, [inv.id]);
+  return fresh?.public_token ?? "";
+}
+
+/** Herkese açık davetiye: yalnızca davetiye ve etkinlikler, davetli bilgisi yok. */
+export async function getPublic(publicToken: string) {
+  if (!/^[A-Za-z0-9_-]{16}$/.test(publicToken)) return null;
+  const [inv] = await q<Invitation>(`SELECT * FROM invitations WHERE public_token = $1`, [publicToken]);
+  if (!inv) return null;
+  return { inv, events: await eventsOf(inv.id) };
 }
 
 /** Kurtarma kodundan yönetim linkini bulur. Kod yanlışsa null döner. */

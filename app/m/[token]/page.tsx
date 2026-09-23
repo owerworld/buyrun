@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { designOf, mobileEventByToken, placeOf, publicEvent } from "@/lib/mobile";
 import { ThemeStyle } from "@/components/Theme";
+import { dayStatus, todayTr } from "@/lib/eventday";
+import { forecastFor } from "@/lib/weather";
 import Invitation from "./invitation";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -19,8 +21,12 @@ export default async function MobileInvitation({params,searchParams}: {
   let event;
   try { event = await publicEvent(row,guestToken); } catch { notFound(); }
   const design = designOf(row);
+  const place = placeOf(row);
+  // Gün yaklaşınca üstte bant, 9 gün içindeyse hava tahmini (sunucuda hesaplanır)
+  const dayState = dayStatus([{ title: row.title, date: row.event_date, time: row.event_time, place }]);
+  const forecast = await forecastFor(row.lat, row.lng, row.event_date, row.event_time, todayTr());
   return <>
     {design && <ThemeStyle theme={design.theme} />}
-    <Invitation event={event} design={design} place={placeOf(row)} inviteToken={token} initialGuestToken={guestToken || null} />
+    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} />
   </>;
 }

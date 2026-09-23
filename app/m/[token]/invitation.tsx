@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import styles from "./invitation.module.css";
 import { EventHero } from "@/components/EventHero";
 import { Directions } from "@/components/Directions";
+import { DayBanner, type BannerItem } from "@/components/DayBanner";
+import { WeatherLine } from "@/components/WeatherLine";
+import type { DayStatus } from "@/lib/eventday";
+import type { Forecast } from "@/lib/weather";
 import type { PlaceRef } from "@/lib/directions";
 import type { EventDesign } from "@/lib/mobile";
 type Status = "pending" | "going" | "maybe" | "declined";
@@ -32,8 +36,9 @@ const SIZ: typeof SEN = {
   chooseFirst:"Önce katılım durumunuzu seçin.",
   privacy:"Adınız ve yanıtınız yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir. Bu davet sizden para göndermenizi asla istemez; isteyen olursa dikkat edin.",
 };
-export default function Invitation({event,design,place,inviteToken,initialGuestToken}: {
-  event:InvitationEvent;design:EventDesign|null;place:PlaceRef&{directions?:string};inviteToken:string;initialGuestToken:string|null
+export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken}: {
+  event:InvitationEvent;design:EventDesign|null;place:PlaceRef&{directions?:string};
+  dayState:DayStatus<BannerItem>|null;forecast:Forecast|null;inviteToken:string;initialGuestToken:string|null
 }) {
   const [guestToken,setGuestToken]=useState(initialGuestToken);
   const [name,setName]=useState(event.guest?.name || "");
@@ -95,6 +100,7 @@ export default function Invitation({event,design,place,inviteToken,initialGuestT
   return <main className={`${styles.page}${design?` ${styles.tasarimli}`:""}`}>
     <div className={styles.shell}>
       <header className={styles.brand}><a href="#invitation" aria-label="Buyrun davetiye">buyrun<span>✳</span></a><span>Güzel şeyler birlikte.</span></header>
+      <DayBanner status={dayState} forecast={forecast}/>
       {design ? <EventHero title={event.title} category={event.category} font={design.font} ornament={design.ornament}/> :
       <section className={`${styles.cover} ${styles[cover]}`} aria-label="Etkinlik kapağı">
         {/* Local generated artwork or an explicitly selected photo. No external tracking requests. */}
@@ -104,7 +110,7 @@ export default function Invitation({event,design,place,inviteToken,initialGuestT
       </section>}
       <section id="invitation" className={styles.details}>
         <div className={styles.host}><span className={styles.avatar}>{event.hostName.slice(0,1).toLocaleUpperCase("tr")}</span><div><span>{t.host}</span><strong>{event.hostName}</strong></div><span className={styles.star}>✳</span></div>
-        <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p></div></div>
+        <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p>{forecast&&<WeatherLine forecast={forecast} credit/>}</div></div>
         <div className={styles.infoRow}><span className={styles.infoIcon}>⌖</span><div><strong>{event.venue}</strong>{event.address&&<p>{event.address}</p>}<Directions place={place}/></div></div>
         {event.description&&<div className={styles.description}><h2>{t.descTitle}</h2><p>{event.description}</p></div>}
       </section>

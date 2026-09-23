@@ -6,6 +6,8 @@ import { inviteLabel } from "@/lib/events";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, MessageCard, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";
+import { DayBanner } from "@/components/DayBanner";
+import { weddingExtras } from "@/lib/extras";
 
 /** Çift önizleme linkini paylaştığında da aynı poster görünür. */
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
@@ -22,13 +24,15 @@ export default async function Onizleme({ params }: { params: Promise<{ token: st
   const { token } = await params;
   const data = await getAdmin(token);
   if (!data) notFound();
+  const extras = await weddingExtras(data.events);
   return (
     <main className="wrap">
       <ThemeStyle theme={data.inv.theme} />
       <p className="info" style={{ marginTop: 0 }}>Önizleme: davetlileriniz bunu kendi adlarıyla görür. <Link href={`/yonet/${token}`}>Yönetime dön</Link></p>
+      <DayBanner status={extras.status} forecast={extras.bannerForecast} />
       <Hero inv={data.inv} greeting={<>Sevgili <b>misafirimiz</b>, bu mutlu günümüzde sizi aramızda görmek istiyoruz.</>} />
       <MessageCard inv={data.inv} />
-      <EventsCard inv={data.inv} events={data.events} title="Etkinlikler" calendarHref={`/onizleme/${token}/takvim`} />
+      <EventsCard inv={data.inv} events={data.events} title="Etkinlikler" calendarHref={`/onizleme/${token}/takvim`} weather={extras.forecasts} />
       <section className="card">
         <h2>Paylaşım görseli</h2>
         <p className="muted small">

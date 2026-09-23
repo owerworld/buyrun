@@ -12,3 +12,11 @@
 .page :global(.yol-ana){background:var(--m-btn,#314a2c);color:var(--m-btn-ink,#f6ffd5);border-radius:12px;font-size:13px;min-height:40px;margin-top:10px}
 .page :global(.yol-diger) a{color:var(--m-accent,#3c583b);width:auto;display:inline-flex;margin:0}
 .page :global(.yol-diger) span,.page :global(.yol-not){color:var(--m-muted,#6a6e64);font-size:12px}
+
+/* Etkinlik günü bandı ve hava tahmini sayfanın renklerini alır */
+.page :global(.gun-bandi){background:var(--m-card,#fffef8);border-color:var(--m-accent,#3c583b);color:var(--m-ink,#21251e)}
+.page :global(.gun-baslik){color:var(--m-ink,#21251e)}
+.page :global(.gun-cip){background:var(--m-soft,#e7e8da)}
+.page :global(.hava){font-size:12px;color:var(--m-muted,#6a6e64)}
+.page :global(.hava-uyari){color:var(--m-accent,#3c583b)}
+.page :global(.hava-kaynak){color:var(--m-muted,#6a6e64)}

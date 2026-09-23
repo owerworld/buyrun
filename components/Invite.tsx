@@ -4,6 +4,8 @@ import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
 import { fontOf, ornamentOf } from "@/lib/design";
 import { Ornament } from "./Ornament";
 import { Directions } from "./Directions";
+import { WeatherLine } from "./WeatherLine";
+import type { Forecast } from "@/lib/weather";
 
 type HeroInv = Pick<Invitation, "name_a" | "name_b" | "main_date" | "city"> & {
   font?: string; ornament?: string; opening?: string; family_a?: string; family_b?: string;
@@ -48,9 +50,12 @@ export function MessageCard({ inv }: { inv: Invitation }) {
 }
 
 
-export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", calendarHref }: {
+export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", calendarHref, weather = {} }: {
   inv: Invitation; events: EventRow[]; title?: string; calendarHref?: string;
+  /** Etkinlik 9 gün içindeyse hava tahmini (etkinlik kimliğine göre) */
+  weather?: Record<string, Forecast | null>;
 }) {
+  const sonHava = [...events].reverse().find((e) => weather[e.id])?.id;
   /** "19:00 Nikâh töreni" satırlarını saat ve metin olarak ayırır. */
   const parseProgram = (text: string) =>
     text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
@@ -69,6 +74,7 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", 
           <div>
             <h3>{e.title}</h3>
             <p>{longDate(e.event_date)} · {e.event_time}</p>
+            {weather[e.id] && <WeatherLine forecast={weather[e.id]!} credit={e.id === sonHava} />}
             <p className="muted">{e.venue}{e.address ? `, ${e.address}` : ""}</p>
             <Directions hotels={!isExtraKind(e.kind)}
               place={{ venue: e.venue, address: e.address, lat: e.lat, lng: e.lng, placeId: e.place_id, directions: e.directions }} />

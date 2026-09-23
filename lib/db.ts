@@ -84,6 +84,9 @@ const SCHEMA = [
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS bus_lat DOUBLE PRECISION`,
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS bus_lng DOUBLE PRECISION`,
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS bus_place TEXT NOT NULL DEFAULT ''`,
+  // Basılı davetiyedeki QR kodun açtığı, herkese aynı ve kişisel bilgi içermeyen sayfa
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS public_token TEXT NOT NULL DEFAULT ''`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS invitations_public_idx ON invitations(public_token) WHERE public_token <> ''`,
   `CREATE UNIQUE INDEX IF NOT EXISTS invitations_recovery_idx ON invitations(recovery_code) WHERE recovery_code <> ''`,
   `CREATE INDEX IF NOT EXISTS guests_family_idx ON guests(family_id)`,
   `CREATE INDEX IF NOT EXISTS guests_invitation_idx ON guests(invitation_id)`,

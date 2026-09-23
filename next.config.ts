@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const privatePaths = ["/d/:path*", "/m/:path*", "/p/:path*", "/yonet/:path*", "/onizleme/:path*", "/etkinlik/:path+"];
+const privatePaths = ["/d/:path*", "/g/:path*", "/m/:path*", "/p/:path*", "/yonet/:path*", "/onizleme/:path*", "/etkinlik/:path+"];
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite"],

@@ -6,6 +6,8 @@ import { greetingFor, inviteLabel } from "@/lib/events";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, MessageCard, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";
+import { DayBanner } from "@/components/DayBanner";
+import { weddingExtras } from "@/lib/extras";
 import { respondAction } from "../../actions";
 
 /** WhatsApp/Telegram link önizlemesi: çiftin adları, tarih ve şehir. Davetlinin adı paylaşılmaz. */
@@ -29,14 +31,17 @@ export default async function Davet({ params, searchParams }: { params: Promise<
   const answered = g.status !== "bekliyor" && sp.duzenle !== "1";
   const attended = list(g.attend_ids);
   const act = respondAction.bind(null, token);
+  // Davetli yalnızca çağrıldığı günleri görür; bant ve hava da o günlere göre
+  const extras = await weddingExtras(events);
 
   return (
     <main className="wrap invite-wrap">
       <ThemeStyle theme={inv.theme} />
+      <DayBanner status={extras.status} forecast={extras.bannerForecast} />
       <Hero inv={inv} greeting={<>Sevgili <b>{g.name}</b>, {greet} sizi aramızda görmek istiyoruz.</>} />
       <MessageCard inv={inv} />
       <nav className="invite-shortcuts" aria-label="Davetiye bölümleri"><a href="#gunler">Etkinlik bilgileri</a><a href="#katilim">{answered ? "Yanıtınız" : "Katılım bildir"}<span aria-hidden="true">↓</span></a></nav>
-      <div id="gunler"><EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} /></div>
+      <div id="gunler"><EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} weather={extras.forecasts} /></div>
 
       {answered ? (
         <section id="katilim" className="card done" aria-live="polite">

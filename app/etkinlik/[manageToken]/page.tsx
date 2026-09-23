@@ -151,6 +151,14 @@ export default async function EtkinlikPaneli({ params, searchParams }: {
               <a className="lnk" href={event.shareUrl} target="_blank" rel="noopener noreferrer">Daveti önizle</a>
             </div>
           </section>
+          <section className="surface qr-kart">
+            <p className="eyebrow">Afiş ya da basılı davet</p>
+            <h2>QR kod</h2>
+            <img src={`${root}/qr?bicim=svg`} alt="Davet QR kodu" width={132} height={132} />
+            <p className="muted small">Okutan kişi davet sayfasını açar, adını yazıp yanıt verebilir.</p>
+            <a className="btn ghost full" href={`${root}/qr`} download>QR kodu indir (PNG)</a>
+            <a className="lnk spaced" href={`${root}/qr?bicim=svg`} download="buyrun-etkinlik-qr.svg" style={{ display: "inline-block" }}>Matbaa için vektörel (SVG)</a>
+          </section>
           <section className="surface">
             <h2>Etkinlik bilgileri</h2>
             <p className="muted small">{event.category} · {longDate(event.date)} · {event.time}</p>
