@@ -1,5 +1,5 @@
 import { allow } from "@/lib/ratelimit";
-import { looksLikeMapLink, parseNear, placeDetails, placesProvider, resolveMapLink, searchPlaces } from "@/lib/places";
+import { looksLikeMapLink, parseNear, placeDetails, resolveMapLink, searchPlaces } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -33,5 +33,5 @@ export async function GET(req: Request) {
   }
 
   // Kaynak, listenin altında belirtilir (OpenStreetMap ve Google lisansları bunu ister)
-  return json({ suggestions: await searchPlaces(u.searchParams.get("q") || "", session, parseNear(u.searchParams.get("near"))), provider: placesProvider() });
+  return json(await searchPlaces(u.searchParams.get("q") || "", session, parseNear(u.searchParams.get("near"))));
 }

@@ -5,9 +5,11 @@
  * kendiliğinden dolar. Davetli tek dokunuşla telefonundaki harita uygulamasında,
  * bulunduğu yerden arabayla yol tarifi alır.
  *
- * Sağlayıcılar:
- *  - GOOGLE_MAPS_API_KEY varsa Google Places (Türkiye'de en geniş kapsam)
- *  - yoksa OpenStreetMap / Photon (anahtarsız, ücretsiz; kapsamı daha dar)
+ * Sağlayıcılar, sırayla (biri sonuç vermezse ya da hata verirse sonrakine geçilir):
+ *  - GOOGLE_MAPS_API_KEY varsa Google Places (Türkiye'de en geniş kapsam, kart ister)
+ *  - TOMTOM_API_KEY varsa TomTom (günde 2.500 arama ücretsiz, kart istemez;
+ *    kota dolunca ücret kesilmez, istek reddedilir)
+ *  - her zaman OpenStreetMap / Photon (anahtarsız, ücretsiz; kapsamı daha dar)
  * Aramalar sunucu üzerinden gider: davetlinin ya da ev sahibinin IP adresi
  * Google'a veya OpenStreetMap'e hiç ulaşmaz.
  */
@@ -85,6 +87,32 @@ async function googleDetails(placeId: string, session: string): Promise<Place | 
 }
 
 /* ------------------------------------------------------------------ */
+/* TomTom                                                              */
+/* ------------------------------------------------------------------ */
+
+const tomtomKey = () => process.env.TOMTOM_API_KEY?.trim() || "";
+
+async function tomtomSearch(q: string, near?: Near): Promise<PlaceSuggestion[]> {
+  const params = new URLSearchParams({
+    key: tomtomKey(), typeahead: "true", limit: "6", countrySet: "TR", language: "tr-TR",
+    idxSet: "POI,PAD,Addr,Str,Geo",
+  });
+  if (near) { params.set("lat", String(near.lat)); params.set("lon", String(near.lng)); }
+  const data = await getJson(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json?${params}`);
+  type R = { type: string; poi?: { name?: string }; address?: Record<string, string | undefined>; position?: { lat: number; lon: number } };
+  return ((data.results ?? []) as R[]).flatMap((r) => {
+    const lat = Number(r.position?.lat), lng = Number(r.position?.lon);
+    const a = r.address ?? {};
+    const name = r.poi?.name || [a.streetName, a.streetNumber].filter(Boolean).join(" No:") || a.freeformAddress || "";
+    if (!name || !tamam(lat, lng)) return [];
+    const sokak = [a.streetName, a.streetNumber].filter(Boolean).join(" No:");
+    const address = [sokak !== name ? sokak : "", a.municipalitySubdivision, a.municipality, a.countrySubdivision]
+      .filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(", ");
+    return [{ id: `o:${lat.toFixed(6)},${lng.toFixed(6)}`, name, address, lat, lng }];
+  });
+}
+
+/* ------------------------------------------------------------------ */
 /* OpenStreetMap / Photon                                              */
 /* ------------------------------------------------------------------ */
 
@@ -116,23 +144,28 @@ async function osmSearch(q: string, near?: Near): Promise<PlaceSuggestion[]> {
 /* Dışarıya açık işlemler                                              */
 /* ------------------------------------------------------------------ */
 
-export const placesProvider = () => (googleKey() ? "google" : "osm");
+export type Provider = "google" | "tomtom" | "osm";
 
-/** Yazılan metne göre öneriler. Hata olursa boş liste; form elle doldurulabilir. */
-export async function searchPlaces(q: string, session: string, near?: Near): Promise<PlaceSuggestion[]> {
+/**
+ * Yazılan metne göre öneriler ve hangi kaynaktan geldikleri (listenin altında
+ * kaynak belirtilir). Hiçbiri sonuç vermezse boş liste; form elle doldurulabilir.
+ */
+export async function searchPlaces(q: string, session: string, near?: Near): Promise<{ suggestions: PlaceSuggestion[]; provider: Provider }> {
   const text = q.trim().slice(0, 120);
-  if (text.length < 3) return [];
-  try {
-    if (googleKey()) return await googleSearch(text, session, near);
-  } catch (e) {
-    console.error("[yer] google arama:", e instanceof Error ? e.message : e);
+  if (text.length < 3) return { suggestions: [], provider: "osm" };
+  const chain: [Provider, () => Promise<PlaceSuggestion[]>][] = [];
+  if (googleKey()) chain.push(["google", () => googleSearch(text, session, near)]);
+  if (tomtomKey()) chain.push(["tomtom", () => tomtomSearch(text, near)]);
+  chain.push(["osm", () => osmSearch(text, near)]);
+  for (const [provider, run] of chain) {
+    try {
+      const suggestions = await run();
+      if (suggestions.length) return { suggestions, provider };
+    } catch (e) {
+      console.error(`[yer] ${provider} arama:`, e instanceof Error ? e.message : e);
+    }
   }
-  try {
-    return await osmSearch(text, near);
-  } catch (e) {
-    console.error("[yer] osm arama:", e instanceof Error ? e.message : e);
-    return [];
-  }
+  return { suggestions: [], provider: "osm" };
 }
 
 /** Google önerisinin koordinatı seçim anında alınır (oturum fiyatlandırması için). */

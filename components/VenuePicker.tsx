@@ -182,7 +182,7 @@ export function VenuePicker({
               </li>
             ))}
             <li className="yer-kaynak" aria-hidden="true">
-              {provider === "google" ? "Google ile" : "Harita verisi © OpenStreetMap katkıcıları"}
+              {provider === "google" ? "Google ile" : provider === "tomtom" ? "Harita verisi © TomTom" : "Harita verisi © OpenStreetMap katkıcıları"}
             </li>
           </ul>
         )}
