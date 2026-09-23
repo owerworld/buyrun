@@ -33,6 +33,7 @@ export interface Place {
 }
 
 export { directionLinks, type PlaceRef } from "./directions";
+import { searchFold } from "./format";
 
 const TIMEOUT = 6000;
 const UA = "Buyrun/1.0 (dijital davetiye; https://buyrun.vercel.app)";
@@ -144,7 +145,36 @@ async function osmSearch(q: string, near?: Near): Promise<PlaceSuggestion[]> {
 /* Dışarıya açık işlemler                                              */
 /* ------------------------------------------------------------------ */
 
-export type Provider = "google" | "tomtom" | "osm";
+export type Provider = "google" | "tomtom" | "osm" | "karma";
+
+/** Sorgudaki kelimelerin kaçı yerin adında geçiyor; ad sorguyla başlıyorsa ek puan. */
+function uyum(q: string, name: string) {
+  const qf = searchFold(q), nf = searchFold(name);
+  const words = qf.split(/\s+/).filter((w) => w.length > 1);
+  if (!words.length) return 0;
+  const hit = words.filter((w) => nf.includes(w)).length / words.length;
+  return hit + (nf.startsWith(qf) ? 0.5 : 0) + (nf === qf ? 0.5 : 0);
+}
+
+/** Aynı ad ve 300 metreden yakınsa aynı yer sayılır. */
+function ayniYer(a: PlaceSuggestion, b: PlaceSuggestion) {
+  if (searchFold(a.name) !== searchFold(b.name) || a.lat == null || b.lat == null) return false;
+  const dLat = (a.lat - b.lat) * 111_000, dLng = (a.lng! - b.lng!) * 85_000;
+  return Math.hypot(dLat, dLng) < 300;
+}
+
+/**
+ * TomTom ve OpenStreetMap birbirini tamamlıyor: biri "Kent Düğün Salonu"nu, öbürü
+ * "Çırağan Sarayı"nı buluyor. İkisine birden sorulur, sonuçlar ada uyuma göre sıralanır.
+ */
+function birlestir(q: string, lists: PlaceSuggestion[][]) {
+  const all: { s: PlaceSuggestion; score: number; order: number }[] = [];
+  lists.forEach((list, li) => list.forEach((s, i) => all.push({ s, score: uyum(q, s.name), order: i * 2 + li })));
+  all.sort((a, b) => b.score - a.score || a.order - b.order);
+  const out: PlaceSuggestion[] = [];
+  for (const { s } of all) if (!out.some((o) => ayniYer(o, s))) out.push(s);
+  return out.slice(0, 6);
+}
 
 /**
  * Yazılan metne göre öneriler ve hangi kaynaktan geldikleri (listenin altında
@@ -153,19 +183,22 @@ export type Provider = "google" | "tomtom" | "osm";
 export async function searchPlaces(q: string, session: string, near?: Near): Promise<{ suggestions: PlaceSuggestion[]; provider: Provider }> {
   const text = q.trim().slice(0, 120);
   if (text.length < 3) return { suggestions: [], provider: "osm" };
-  const chain: [Provider, () => Promise<PlaceSuggestion[]>][] = [];
-  if (googleKey()) chain.push(["google", () => googleSearch(text, session, near)]);
-  if (tomtomKey()) chain.push(["tomtom", () => tomtomSearch(text, near)]);
-  chain.push(["osm", () => osmSearch(text, near)]);
-  for (const [provider, run] of chain) {
-    try {
-      const suggestions = await run();
-      if (suggestions.length) return { suggestions, provider };
-    } catch (e) {
-      console.error(`[yer] ${provider} arama:`, e instanceof Error ? e.message : e);
-    }
+  const hata = (p: string) => (e: unknown) => {
+    console.error(`[yer] ${p} arama:`, e instanceof Error ? e.message : e);
+    return [] as PlaceSuggestion[];
+  };
+  if (googleKey()) {
+    const g = await googleSearch(text, session, near).catch(hata("google"));
+    if (g.length) return { suggestions: g, provider: "google" };
   }
-  return { suggestions: [], provider: "osm" };
+  const [t, o] = await Promise.all([
+    tomtomKey() ? tomtomSearch(text, near).catch(hata("tomtom")) : Promise.resolve([] as PlaceSuggestion[]),
+    osmSearch(text, near).catch(hata("osm")),
+  ]);
+  const suggestions = birlestir(text, [t, o]);
+  const kaynaklar = new Set(suggestions.map((s) => (t.includes(s) ? "tomtom" : "osm")));
+  const provider: Provider = kaynaklar.size > 1 ? "karma" : kaynaklar.has("tomtom") ? "tomtom" : "osm";
+  return { suggestions, provider };
 }
 
 /** Google önerisinin koordinatı seçim anında alınır (oturum fiyatlandırması için). */
