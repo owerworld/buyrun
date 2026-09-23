@@ -1,14 +1,14 @@
 import type { EventRow, Invitation } from "@/lib/data";
 import { isExtraKind, mainOf, programTitle } from "@/lib/events";
 import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
-import { fontOf, ornamentOf } from "@/lib/design";
+import { fontOf, ornamentOf, patternOf } from "@/lib/design";
 import { Ornament } from "./Ornament";
 import { Directions } from "./Directions";
 import { WeatherLine } from "./WeatherLine";
 import type { Forecast } from "@/lib/weather";
 
 type HeroInv = Pick<Invitation, "name_a" | "name_b" | "main_date" | "city"> & {
-  font?: string; ornament?: string; opening?: string; family_a?: string; family_b?: string;
+  font?: string; ornament?: string; pattern?: string; opening?: string; family_a?: string; family_b?: string;
 };
 
 /** Eski davetiyelerde üst satır boş; o zaman ilk günden beri kullanılan cümle çıkar. */
@@ -16,9 +16,9 @@ export const DEFAULT_OPENING = "Mutluluğumuza ortak olun";
 
 /** Davetiyenin kapağı. Yazı karakteri ve süsleme davetiyeye kayıtlı tasarımdan gelir. */
 export function Hero({ inv, greeting, compact = false }: { inv: HeroInv; greeting?: React.ReactNode; compact?: boolean }) {
-  const font = fontOf(inv.font).id, ornament = ornamentOf(inv.ornament).id;
+  const font = fontOf(inv.font).id, ornament = ornamentOf(inv.ornament).id, pattern = patternOf(inv.pattern).id;
   return (
-    <section className={`hero f-${font} o-${ornament}${compact ? " kucuk" : ""}`} aria-label="Davetiye">
+    <section className={`hero f-${font} o-${ornament} d-${pattern}${compact ? " kucuk" : ""}`} aria-label="Davetiye">
       <div className="frame">
         <Ornament kind={ornament} />
         <div className="inner">

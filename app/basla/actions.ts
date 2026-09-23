@@ -72,7 +72,7 @@ export async function wizardAction(f: FormData) {
       busNote: plan.wantsBus ? s(f, "busNote", 160) : "",
       program: plan.wantsProgram ? s(f, "program", 600) : "",
       extraProgram: plan.wantsProgram ? s(f, "k_program", 600) : "",
-      theme: plan.theme, font: plan.font, ornament: plan.ornament, message: text,
+      theme: plan.theme, font: plan.font, ornament: plan.ornament, pattern: plan.pattern, message: text,
       bus: plan.wantsBus ? placeFromForm(f, "bus") : undefined,
       opening: plan.opening,
       familyA: plan.families ? s(f, "familyA", 60) : "",
@@ -108,7 +108,7 @@ export async function wizardAction(f: FormData) {
       }),
       siteUrl(),
       // Uygulama fotoğraflı kapağı gösterir; web davet sayfası bu tasarımı
-      { theme: plan.theme, font: plan.font, ornament: plan.ornament },
+      { theme: plan.theme, font: plan.font, ornament: plan.ornament, pattern: plan.pattern },
       placeFromForm(f, "")
     );
     token = event.manageToken;

@@ -5,7 +5,7 @@ import { CoverPicker } from "@/components/CoverPicker";
 import { CATEGORIES } from "@/lib/categories";
 import { designOf, mobileEventByToken } from "@/lib/mobile";
 import { ThemePicker, ThemeStyle } from "@/components/Theme";
-import { FontPicker, OrnamentPicker } from "@/components/DesignPickers";
+import { FontPicker, OrnamentPicker, PatternPicker } from "@/components/DesignPickers";
 import { updateEventAction } from "../../actions";
 
 export default async function EtkinlikDuzenle({ params, searchParams }: {
@@ -67,6 +67,7 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
             <ThemePicker current={design.theme} />
             <FontPicker current={design.font} names={row.title} />
             <OrnamentPicker current={design.ornament} />
+            <PatternPicker current={design.pattern} />
           </>
         ) : (
           <CoverPicker current={row.cover_id} />

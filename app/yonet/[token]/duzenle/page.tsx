@@ -4,7 +4,7 @@ import { getAdmin, onlyGuestsOf } from "@/lib/data";
 import { EXTRA_KINDS, extraOf, isExtraKind } from "@/lib/events";
 import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
-import { FontPicker, OrnamentPicker } from "@/components/DesignPickers";
+import { FontPicker, OrnamentPicker, PatternPicker } from "@/components/DesignPickers";
 import { VenuePicker } from "@/components/VenuePicker";
 import { addExtraEventAction, removeExtraEventAction, updateInvitationAction } from "../../../actions";
 
@@ -93,6 +93,7 @@ export default async function Duzenle({ params, searchParams }: {
         <ThemePicker current={inv.theme} />
         <FontPicker current={inv.font} names={`${inv.name_a} & ${inv.name_b}`} />
         <OrnamentPicker current={inv.ornament} />
+        <PatternPicker current={inv.pattern} />
         <div className="btns" style={{ marginTop: 18 }}>
           <button className="btn" type="submit">Değişiklikleri kaydet</button>
           <Link className="btn ghost" href={`/yonet/${token}`}>Vazgeç</Link>

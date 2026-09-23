@@ -10,7 +10,7 @@ export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
   bus_from: string; bus_time: string; bus_note: string; program: string; extra_program: string; message: string; theme: string;
   font: string; ornament: string; opening: string; family_a: string; family_b: string;
-  bus_lat: number | null; bus_lng: number | null; bus_place: string; public_token: string; recovery_code: string; delete_after: string;
+  bus_lat: number | null; bus_lng: number | null; bus_place: string; public_token: string; pattern: string; recovery_code: string; delete_after: string;
 }
 export interface EventRow {
   id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number;
@@ -34,7 +34,7 @@ export interface NewInvitation {
   /** Sihirbazın yazdığı davet metni. Boşsa davetiye eskisi gibi hazır cümleyi kullanır. */
   message?: string;
   /** Tasarım eksenleri (lib/design.ts). Boşsa klasik görünüm. */
-  font?: string; ornament?: string;
+  font?: string; ornament?: string; pattern?: string;
   /** Kapağın üst satırı ("Allah'ın izniyle"); boşsa varsayılan cümle */
   opening?: string;
   /** İki ailenin adı; boşsa davetiyede aile satırı çıkmaz */
@@ -61,6 +61,7 @@ export async function createInvitation(input: NewInvitation) {
      input.opening ?? "", input.familyA ?? "", input.familyB ?? "", recovery, deleteAfter]
   );
   if (input.bus) await setBusPlace(inv, input.bus);
+  if (input.pattern) await q(`UPDATE invitations SET pattern = $1 WHERE id = $2`, [input.pattern, inv]);
   let i = 0;
   for (const e of input.events) {
     await q(
@@ -79,7 +80,7 @@ export interface EditEvent extends PlaceInput { id: string; date: string; time: 
 export interface EditInvitation {
   nameA: string; nameB: string; city: string;
   events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string; extraProgram: string; theme: string;
-  message?: string; font?: string; ornament?: string;
+  message?: string; font?: string; ornament?: string; pattern?: string;
   opening?: string; familyA?: string; familyB?: string;
   /** Servis kalkış yerinin konumu */
   bus?: PlaceInput;
@@ -116,6 +117,7 @@ export async function updateInvitation(adminToken: string, input: EditInvitation
      input.opening ?? inv.opening ?? "", input.familyA ?? inv.family_a ?? "", input.familyB ?? inv.family_b ?? "", deleteAfter, inv.id]
   );
   if (input.bus) await setBusPlace(inv.id, input.bus);
+  if (input.pattern) await q(`UPDATE invitations SET pattern = $1 WHERE id = $2`, [input.pattern, inv.id]);
 }
 
 /** Servis kalkış yerinin konumu; kalkış yeri silinirse konum da silinir. */

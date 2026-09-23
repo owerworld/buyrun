@@ -21,7 +21,7 @@ export function WizardPreview({ answers, plan, names, families, title, date }: {
         compact
         inv={{
           name_a: names?.[0] || "Defne", name_b: names?.[1] || "Mert",
-          main_date: date || "2027-06-19", city: "", font: plan.font, ornament: plan.ornament,
+          main_date: date || "2027-06-19", city: "", font: plan.font, ornament: plan.ornament, pattern: plan.pattern,
           opening: answers.ton ? plan.opening : undefined,
           family_a: plan.families ? families?.[0] || "Ayşe & Ahmet Yılmaz" : "",
           family_b: plan.families ? families?.[1] || "Fatma & Mehmet Kaya" : "",
@@ -37,6 +37,7 @@ export function WizardPreview({ answers, plan, names, families, title, date }: {
       date={date || "2027-06-19"}
       font={plan.font}
       ornament={plan.ornament}
+      pattern={plan.pattern}
     />
   );
 }

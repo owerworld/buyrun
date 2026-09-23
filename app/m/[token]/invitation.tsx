@@ -101,7 +101,7 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
     <div className={styles.shell}>
       <header className={styles.brand}><a href="#invitation" aria-label="Buyrun davetiye">buyrun<span>✳</span></a><span>Güzel şeyler birlikte.</span></header>
       <DayBanner status={dayState} forecast={forecast}/>
-      {design ? <EventHero title={event.title} category={event.category} font={design.font} ornament={design.ornament}/> :
+      {design ? <EventHero title={event.title} category={event.category} font={design.font} ornament={design.ornament} pattern={design.pattern}/> :
       <section className={`${styles.cover} ${styles[cover]}`} aria-label="Etkinlik kapağı">
         {/* Local generated artwork or an explicitly selected photo. No external tracking requests. */}
         <img src={event.coverData || `/mobile-covers/${cover}.png`} alt="" className={styles.coverImage}/>

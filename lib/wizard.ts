@@ -25,7 +25,7 @@ export interface Option {
  * Sorunun nasıl gösterileceği. Metin listesi yerine görsel seçim kartları:
  * renk örnekleri, süsleme örneği, yazı karakteri örneği ya da kapak görseli.
  */
-export type Look = "liste" | "kutular" | "renk" | "susleme" | "yazi" | "kapak";
+export type Look = "liste" | "kutular" | "renk" | "susleme" | "yazi" | "kapak" | "desen";
 
 export interface Question {
   id: string;
@@ -60,6 +60,32 @@ const GRUP_OF: Record<string, string> = {
 /** Tür listesini seçilen gruba göre süzer. Grup sorulmadıysa (ana sayfadan türle gelindiyse) hepsi geçerli. */
 function grupta(...gruplar: string[]) {
   return (a: Answers) => !a.grup || gruplar.includes(a.grup);
+}
+
+/**
+ * Hangi doku hangi günde sunulur. Her günün Türkiye'de oturmuş bir görsel dili var:
+ * kınada bindallının sırması, sünnette nazar ve mavi çini, iftarda hilal ve fener.
+ * Uymayan doku hiç gösterilmez (mevlide altın varak ya da disko havası sunulmaz).
+ */
+const DESEN_UYGUN: Record<string, string[]> = {
+  toren: ["cicekli", "mermer", "varak", "dantel", "cini", "yildiz", "nar", "ebru"],
+  kina: ["bindalli", "varak", "dantel", "cicekli", "nar", "cini"],
+  bekarlik: ["varak", "cicekli", "mermer", "ebru"],
+  sunnet: ["nazar", "cini", "yildiz", "varak"],
+  bebek: ["cicekli", "dantel", "nazar", "ebru"],
+  mevlid: ["cini", "yildiz", "ebru"],
+  hac: ["cini", "yildiz", "ebru"],
+  iftar: ["fener", "yildiz", "cini"],
+  diger: ["varak", "cicekli", "mermer", "ebru", "yildiz"],
+};
+function desenGrubu(a: Answers) {
+  const t = a.tur ?? "";
+  if (TOREN.includes(t)) return "toren";
+  if (["babyshower", "cinsiyet", "disbugdayi"].includes(t)) return "bebek";
+  return DESEN_UYGUN[t] ? t : "diger";
+}
+function uygun(id: string) {
+  return (a: Answers) => DESEN_UYGUN[desenGrubu(a)].includes(id);
 }
 
 /** Bir sorunun bu cevaplarla gösterilecek seçenekleri. */
@@ -206,6 +232,27 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "desen",
+    title: "Arka planda hangi doku olsun?",
+    lead: "Türkiye'de davetiyelerde en sevilen dokular; her birinin bir anlamı var.",
+    look: "desen",
+    options: [
+      { id: "cicekli", label: "Çiçekli", hint: "Romantik, en çok sevilen", when: uygun("cicekli") },
+      { id: "mermer", label: "Mermer", hint: "Modern ve şık", when: uygun("mermer") },
+      { id: "varak", label: "Altın varak", hint: "Görkemli, ışıltılı", when: uygun("varak") },
+      { id: "dantel", label: "Dantel ve oya", hint: "Gelinliğin, çeyizin inceliği", when: uygun("dantel") },
+      { id: "bindalli", label: "Bindallı sırması", hint: "Kınanın altın işlemesi", when: uygun("bindalli") },
+      { id: "nazar", label: "Nazar", hint: "Maşallah, nazardan korusun", when: uygun("nazar") },
+      { id: "fener", label: "Hilal ve fener", hint: "Ramazan'ın ışığı", when: uygun("fener") },
+      { id: "cini", label: "Çini", hint: "Lale ve karanfil", when: uygun("cini") },
+      { id: "yildiz", label: "Selçuklu yıldızı", hint: "Mutluluk ve sonsuzluk", when: uygun("yildiz") },
+      { id: "nar", label: "Nar", hint: "Bereket ve bolluk", when: uygun("nar") },
+      { id: "ebru", label: "Ebru", hint: "UNESCO mirası Türk sanatı", when: uygun("ebru") },
+      { id: "sade", label: "Sade", hint: "Dokusuz, yalnızca renk" },
+      { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre" },
+    ],
+  },
+  {
     id: "ikinci",
     title: "Tek gün mü, iki gün mü?",
     lead: "Kına gecesi, ayrı günde nikâh ya da after party ekleyebilirsiniz.",
@@ -294,6 +341,8 @@ export interface Plan {
   font: string;
   /** Tören dalı: çerçeve süslemesi (lib/design.ts) */
   ornament: string;
+  /** Arka plan dokusu (lib/design.ts) */
+  pattern: string;
   /** Etkinlik dalı: kapak (components/CoverPicker.tsx) */
   coverId: string;
   /** Etkinlik dalı: kategori (lib/categories.ts) */
@@ -358,6 +407,17 @@ function ornamentFor(a: Answers, theme: string) {
   return fromTheme[theme] ?? "sirma";
 }
 
+/** "Siz seçin" denirse türün ve seçilen ruhun doğal dokusu. */
+function patternFor(a: Answers) {
+  const secim = a.desen ?? "";
+  if (secim && secim !== "sizsecin") return secim;
+  const tur: Record<string, string> = { kina: "bindalli", sunnet: "nazar", iftar: "fener", mevlid: "cini", hac: "cini", bekarlik: "varak", dogumgunu: "varak" };
+  if (tur[a.tur ?? ""]) return tur[a.tur ?? ""];
+  if (["babyshower", "cinsiyet", "disbugdayi"].includes(a.tur ?? "")) return "dantel";
+  const stil: Record<string, string> = { klasik: "varak", romantik: "cicekli", sade: "sade", modern: "mermer", bohem: "nar", cini: "cini" };
+  return stil[a.stil ?? ""] ?? "sade";
+}
+
 function fontFor(a: Answers, ornament: string) {
   if (["kaligrafi", "klasik", "gorkemli", "siir", "modern"].includes(a.yazi ?? "")) return a.yazi;
   const fromOrnament: Record<string, string> = { sirma: "gorkemli", cicek: "kaligrafi", cizgi: "klasik", deco: "modern", yaprak: "siir", cini: "gorkemli" };
@@ -403,7 +463,7 @@ export function planFromAnswers(a: Answers): Plan {
     toren,
     mainKind: toren ? a.tur : "",
     extraKind: ["kina", "nikah", "after"].includes(a.ikinci ?? "") ? a.ikinci : "",
-    theme, ornament,
+    theme, ornament, pattern: patternFor(a),
     font: fontFor(a, ornament),
     coverId: coverFor(a),
     category: CATEGORY_OF[a.tur ?? ""] ?? "Buluşma",

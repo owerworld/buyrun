@@ -1,5 +1,5 @@
-import { FONTS, ORNAMENTS, fontOf, ornamentOf } from "@/lib/design";
-import { OrnamentSwatch } from "./Ornament";
+import { FONTS, ORNAMENTS, PATTERNS, fontOf, ornamentOf, patternOf } from "@/lib/design";
+import { OrnamentSwatch, PatternSwatch } from "./Ornament";
 
 /** Düzenleme formunda isimlerin yazı karakteri. */
 export function FontPicker({ current, names }: { current?: string; names: string }) {
@@ -35,6 +35,27 @@ export function OrnamentPicker({ current }: { current?: string }) {
             <span className="tasarim-kart">
               <OrnamentSwatch kind={o.id} />
               {o.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+/** Düzenleme formunda arka plan dokusu. Tüm dokular burada sunulur; seçim ev sahibinin. */
+export function PatternPicker({ current }: { current?: string }) {
+  const selected = patternOf(current).id;
+  return (
+    <fieldset style={{ marginTop: 18 }}>
+      <legend className="lbl" style={{ margin: 0 }}>Arka plan dokusu</legend>
+      <div className="tasarim-secim">
+        {PATTERNS.map((d) => (
+          <label key={d.id}>
+            <input type="radio" name="pattern" value={d.id} defaultChecked={d.id === selected} />
+            <span className="tasarim-kart" title={d.hint}>
+              <PatternSwatch kind={d.id} />
+              {d.label}
             </span>
           </label>
         ))}

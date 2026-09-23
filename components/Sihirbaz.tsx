@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { COVERS } from "@/components/CoverPicker";
-import { OrnamentSwatch } from "@/components/Ornament";
+import { OrnamentSwatch, PatternSwatch } from "@/components/Ornament";
 import { ThemeStyle } from "@/components/Theme";
 import { WizardPreview } from "@/components/WizardPreview";
-import { fontOf, ornamentOf } from "@/lib/design";
+import { fontOf, ornamentOf, patternOf } from "@/lib/design";
 import { themeOf } from "@/lib/themes";
 import {
   answersQuery, nextQuestion, parseAnswers, planFromAnswers, progress, visibleOptions, withoutLast,
@@ -34,6 +34,10 @@ function tepki(qid: string, v: string, a: Answers): string {
     case "aile": return v === "evet" ? "Ailelerinizin adı en üstte yer alacak." : "Sade ve modern, sadece sizin adınız.";
     case "renk": return `${themeOf(plan.theme).label} renkler davetiyenize işlendi.`;
     case "stil": case "hava": return `${ornamentOf(plan.ornament).label} çerçeveye yerleşti.`;
+    case "desen": {
+      const d = patternOf(plan.pattern);
+      return d.id === "sade" ? "Sade bir zemin, renkler öne çıkacak." : `${d.label} arka plana işlendi: ${d.hint.toLocaleLowerCase("tr")}.`;
+    }
     case "yazi": return `İsimleriniz ${fontOf(plan.font).label.toLocaleLowerCase("tr")} yazıyla yazıldı.`;
     case "ikinci": return v === "tek" ? "Tek gün, not aldık." : "İkinci gün de davetiyede yer alacak.";
     case "vesile": return v === "rahmetli" ? "Allah rahmet eylesin. Metni buna uygun, sade yazacağız." : "Not aldık.";
@@ -52,6 +56,8 @@ function Gorsel({ q, o, answers }: { q: Question; o: Option; answers: Answers })
     }
     case "susleme":
       return <OrnamentSwatch kind={plan.ornament} />;
+    case "desen":
+      return <PatternSwatch kind={plan.pattern} />;
     case "yazi":
       return <span className="yazi-ornek" aria-hidden="true" style={fontOf(plan.font).sample}>Defne &amp; Mert</span>;
     case "kapak": {
@@ -72,6 +78,7 @@ function degisim(once: Answers, sonra: Answers) {
   if (a.theme !== b.theme) return `Renk: ${themeOf(b.theme).label}`;
   if (a.ornament !== b.ornament) return `Süsleme: ${ornamentOf(b.ornament).label}`;
   if (a.font !== b.font) return `Yazı: ${fontOf(b.font).label}`;
+  if (a.pattern !== b.pattern) return `Doku: ${patternOf(b.pattern).label}`;
   return "";
 }
 
@@ -224,7 +231,7 @@ export function Sihirbaz({ initial }: { initial: Answers }) {
         {canli && (
           <aside className="canli" aria-label="Davetiyenizin önizlemesi">
             <p className="canli-etiket">Davetiyeniz şekilleniyor</p>
-            <div className="onizleme-kutu" key={`${plan.ornament}-${plan.font}-${plan.coverId}`}>
+            <div className="onizleme-kutu" key={`${plan.ornament}-${plan.font}-${plan.pattern}`}>
               <WizardPreview answers={answers} plan={plan} />
             </div>
             <p className={`degisim${not ? " gorunur" : ""}`} aria-live="polite">{not && <>✓ {not}</>}</p>

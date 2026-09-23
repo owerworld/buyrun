@@ -128,3 +128,8 @@ export function OrnamentSwatch({ kind }: { kind: string }) {
     </span>
   );
 }
+
+/** Sihirbaz ve düzenleme ekranı için küçük arka plan dokusu örneği. */
+export function PatternSwatch({ kind }: { kind: string }) {
+  return <span className={`desen-ornek d-${kind}`} aria-hidden="true" />;
+}

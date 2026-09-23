@@ -50,3 +50,39 @@ export const isFont = (v: string) => FONTS.some((f) => f.id === v);
 export const isOrnament = (v: string) => ORNAMENTS.some((o) => o.id === v);
 export const fontOf = (id: string | undefined) => FONTS.find((f) => f.id === id) ?? FONTS[0];
 export const ornamentOf = (id: string | undefined) => ORNAMENTS.find((o) => o.id === id) ?? ORNAMENTS[0];
+
+/* ------------------------------------------------------------------ */
+/* Arka plan dokusu                                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Kapağın arkasındaki doku. Türkiye'de davetiyelerde sevilen dokular ve geleneksel
+ * motifler; her birinin halk arasında bilinen bir anlamı var, seçim kartında yazar.
+ * Desenler public/desen altında tek renkli SVG; renklerini temadan (--gold) alırlar.
+ * "tile" doku tekrar eden boyut (px); yoksa kapağı bir kez kaplar.
+ */
+export interface Pattern {
+  id: string;
+  label: string;
+  hint: string;
+  tile?: number;
+}
+
+export const PATTERNS: Pattern[] = [
+  { id: "sade", label: "Sade", hint: "Dokusuz, yalnızca renk" },
+  { id: "mermer", label: "Mermer", hint: "Modern ve şık" },
+  { id: "varak", label: "Altın varak", hint: "Görkemli, ışıltılı", tile: 160 },
+  { id: "cicekli", label: "Çiçekli", hint: "Romantik, en çok sevilen", tile: 180 },
+  { id: "dantel", label: "Dantel ve oya", hint: "Gelinliğin, çeyizin inceliği", tile: 56 },
+  { id: "cini", label: "Çini", hint: "Lale ve karanfil", tile: 84 },
+  { id: "yildiz", label: "Selçuklu yıldızı", hint: "Mutluluk, bereket, sonsuzluk", tile: 70 },
+  { id: "nar", label: "Nar", hint: "Bereket ve bolluk", tile: 130 },
+  { id: "ebru", label: "Ebru", hint: "UNESCO mirası Türk sanatı" },
+  { id: "bindalli", label: "Bindallı sırması", hint: "Kına gecesinin altın işlemesi", tile: 120 },
+  { id: "nazar", label: "Nazar", hint: "Maşallah, nazardan korusun", tile: 60 },
+  { id: "fener", label: "Hilal ve fener", hint: "Ramazan'ın ışığı", tile: 130 },
+];
+
+export const DEFAULT_PATTERN = "sade";
+export const isPattern = (v: string) => PATTERNS.some((p) => p.id === v);
+export const patternOf = (id: string | undefined) => PATTERNS.find((p) => p.id === id) ?? PATTERNS[0];

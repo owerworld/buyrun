@@ -5,7 +5,7 @@ import {
   createMobileEvent, createMobileGuest, editMobileEvent, editMobileGuest, eventInput,
   designOf, mobileEventByToken, MobileError, removeMobileGuest, setMobileDesign, validateEvent,
 } from "@/lib/mobile";
-import { isFont, isOrnament } from "@/lib/design";
+import { isFont, isOrnament, isPattern } from "@/lib/design";
 import { isTheme } from "@/lib/themes";
 import { placeFromForm } from "@/lib/places";
 import { setMobilePlace } from "@/lib/mobile";
@@ -53,11 +53,12 @@ export async function updateEventAction(manageToken: string, f: FormData) {
     // Tasarımlı davette seçiciler formda; geçersiz değer gelirse eski tasarım korunur
     const design = designOf(row);
     if (design) {
-      const theme = s(f, "theme", 20), font = s(f, "font", 20), ornament = s(f, "ornament", 20);
+      const theme = s(f, "theme", 20), font = s(f, "font", 20), ornament = s(f, "ornament", 20), pattern = s(f, "pattern", 20);
       await setMobileDesign(row, {
         theme: isTheme(theme) ? theme : design.theme,
         font: isFont(font) ? font : design.font,
         ornament: isOrnament(ornament) ? ornament : design.ornament,
+        pattern: isPattern(pattern) ? pattern : design.pattern,
       });
     }
   } catch (e) {
