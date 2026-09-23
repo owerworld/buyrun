@@ -352,6 +352,15 @@ details summary{cursor:pointer;font-weight:700}
 .etkinlik-kapak .names{--k:.64;line-height:1.1}
 .etkinlik-kapak.kucuk .names{--k:.46}
 .etkinlik-kapak.f-modern .names{line-height:1.35}
+/* Kapak fotoğrafı: çerçevenin üstünde, kadifenin içinde; alt kenarı zemine erir */
+.etkinlik-kapak .kapak-foto{position:relative;margin:0 0 12px;border-radius:12px;overflow:hidden;aspect-ratio:3/2;max-height:300px;width:100%;background:var(--velvet)}
+.etkinlik-kapak .kapak-foto img{display:block;width:100%;height:100%;object-fit:cover}
+.etkinlik-kapak .kapak-foto::after{content:"";position:absolute;inset:auto 0 0;height:38%;background:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--velvet) 70%,transparent));pointer-events:none}
+.etkinlik-kapak .kapak-foto figcaption{position:absolute;right:8px;bottom:6px;z-index:1;font-size:.66rem;letter-spacing:.02em;color:#fff;opacity:.85;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.etkinlik-kapak .kapak-foto figcaption a{color:inherit}
+.etkinlik-kapak.kucuk .kapak-foto{max-height:150px;margin-bottom:8px;border-radius:10px}
+@media (prefers-reduced-motion:no-preference){.etkinlik-kapak .kapak-foto img{animation:foto-gel .5s ease both}}
+@keyframes foto-gel{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
 /* Mekân seçici */
 .yer-kutu{position:relative}
 .yer-liste{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px #1a0a1224;max-height:320px;overflow:auto}
@@ -493,3 +502,18 @@ details summary{cursor:pointer;font-weight:700}
 .desen-ornek.d-fener,.hero.kucuk.d-fener{--desen-boyut:65px}
 .d-mermer{--desen-opak:.22}.d-ebru{--desen-opak:.2}.d-varak{--desen-opak:.3}
 .desen-ornek.d-ebru,.desen-ornek.d-mermer{--desen-opak:.42}
+
+/* Kapak fotoğrafı seçici (sihirbazın son sayfası, etkinlik düzenleme) */
+.foto-secici{border:0;padding:0;margin:14px 0 0;min-width:0}
+.foto-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:6px}
+.foto-kart{position:relative;display:block;aspect-ratio:3/2;border-radius:10px;overflow:hidden;cursor:pointer;background:var(--card-2,rgba(127,127,127,.12));box-shadow:inset 0 0 0 1px var(--line,rgba(127,127,127,.25))}
+.foto-kart img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s ease}
+.foto-kart input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.foto-kart:has(input:checked){box-shadow:0 0 0 3px var(--gold)}
+.foto-kart:has(input:checked) img{transform:scale(1.04)}
+.foto-kart:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:3px}
+.foto-kart.yok{display:grid;place-items:center;font-size:.8rem;text-align:center}
+
+/* "Başka metin öner" satırı */
+.metin-oneri{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:8px}
+.metin-oneri .btn{min-height:40px;padding:8px 14px;font-size:.9rem}

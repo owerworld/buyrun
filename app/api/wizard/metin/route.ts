@@ -34,6 +34,8 @@ export async function POST(req: Request) {
       plan: planFromAnswers(answers), answers, heading,
       host: metin(b.hostName, 80), dateLabel: longDate(date), venue,
       request: metin(b.request, 160),
+      // "Başka metin" dendikçe artar; her basışta sıradaki öneri gelir
+      variant: typeof b.variant === "number" && Number.isInteger(b.variant) ? Math.max(0, Math.min(b.variant, 50)) : 0,
     });
     return mobileJson({ text, source });
   });

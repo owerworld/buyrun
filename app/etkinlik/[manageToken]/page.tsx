@@ -137,7 +137,7 @@ export default async function EtkinlikPaneli({ params, searchParams }: {
           {designOf(row) && (
             <div className="yonet-kapak" style={themeScope(designOf(row)!.theme)}>
               <EventHero title={event.title} category={event.category} date={event.date} time={event.time}
-                venue={event.venue} font={designOf(row)!.font} ornament={designOf(row)!.ornament} pattern={designOf(row)!.pattern} />
+                venue={event.venue} font={designOf(row)!.font} ornament={designOf(row)!.ornament} pattern={designOf(row)!.pattern} photo={row.photo_id} />
             </div>
           )}
           <section className="surface">

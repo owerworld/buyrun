@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getGuest, list } from "@/lib/data";
 import { greetingFor, inviteLabel } from "@/lib/events";
+import { cevaplarOf, davetCumlesi, hitap } from "@/lib/sozler";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, MessageCard, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";
@@ -28,6 +29,8 @@ export default async function Davet({ params, searchParams }: { params: Promise<
   if (!data) notFound();
   const { guest: g, inv, events } = data;
   const greet = greetingFor(events);
+  // Sihirbazda seçilen dil: zarif "Değerli…", manevi "Kıymetli…", diğerleri "Sevgili…"
+  const ton = cevaplarOf(inv.answers).ton;
   const answered = g.status !== "bekliyor" && sp.duzenle !== "1";
   const attended = list(g.attend_ids);
   const act = respondAction.bind(null, token);
@@ -38,7 +41,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
     <main className="wrap invite-wrap">
       <ThemeStyle theme={inv.theme} />
       <DayBanner status={extras.status} forecast={extras.bannerForecast} />
-      <Hero inv={inv} greeting={<>Sevgili <b>{g.name}</b>, {greet} sizi aramızda görmek istiyoruz.</>} />
+      <Hero inv={inv} greeting={<>{hitap(ton)} <b>{g.name}</b>, {davetCumlesi(ton, greet)}</>} />
       <MessageCard inv={inv} />
       <nav className="invite-shortcuts" aria-label="Davetiye bölümleri"><a href="#gunler">Etkinlik bilgileri</a><a href="#katilim">{answered ? "Yanıtınız" : "Katılım bildir"}<span aria-hidden="true">↓</span></a></nav>
       <div id="gunler"><EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} weather={extras.forecasts} /></div>

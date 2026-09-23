@@ -1,11 +1,14 @@
 import { q } from "./db";
 import { id, token } from "./tokens";
 import { addDays, todayIso } from "./format";
+import { isFoto } from "./fotolar";
 
 export type MobileStatus = "pending" | "going" | "maybe" | "declined";
 export type MobileInput = {
   title: string; category: string; hostName: string; date: string; time: string;
   venue: string; address: string; description: string; coverId: string; coverData: string | null; capacity: number | null;
+  /** Hazır kapak fotoğrafı (lib/fotolar.ts); boşsa çizim kapak ya da kullanıcının kendi görseli */
+  photoId?: string;
 };
 type EventRow = {
   id: string; manage_token: string; invite_token: string; title: string; category: string;
@@ -14,6 +17,7 @@ type EventRow = {
   /** Web sihirbazının tasarımı. Boşsa (uygulamadan oluşturulan etkinlik) fotoğraflı kapak kullanılır. */
   theme: string; font: string; ornament: string; pattern: string;
   lat: number | null; lng: number | null; place_id: string; directions: string;
+  photo_id: string; answers: string;
 };
 
 /** Etkinliğin tasarım eksenleri; değerler lib/themes.ts ve lib/design.ts listelerinden gelir. */
@@ -49,6 +53,9 @@ export async function mobileReady() {
       await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
       await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS place_id TEXT NOT NULL DEFAULT ''`);
       await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS directions TEXT NOT NULL DEFAULT ''`);
+      // Türe uygun, telifsiz kapak fotoğrafı (lib/fotolar.ts) ve sihirbaz cevapları (metin önerileri, hitap)
+      await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS photo_id TEXT NOT NULL DEFAULT ''`);
+      await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS answers TEXT NOT NULL DEFAULT ''`);
       await q(`CREATE TABLE IF NOT EXISTS mobile_guests (
         id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES mobile_events(id) ON DELETE CASCADE,
         name TEXT NOT NULL, token TEXT UNIQUE NOT NULL,
@@ -87,6 +94,11 @@ export function validateCoverData(value: unknown): string | null {
   if (!valid || bytes.length < 24 || bytes.toString("base64") !== match[2]) throw new MobileError("Görsel dosyası okunamadı. Başka bir görsel seç.");
   return value;
 }
+function photoField(value: unknown) {
+  if (value == null || value === "") return "";
+  if (!isFoto(value)) throw new MobileError("Geçerli bir kapak fotoğrafı seç.");
+  return value;
+}
 export function validateEvent(body: unknown, existing?: MobileInput): MobileInput {
   if (!body || typeof body !== "object" || Array.isArray(body)) throw new MobileError("Etkinlik bilgileri geçersiz.");
   const b = { ...existing, ...body } as Record<string, unknown>;
@@ -108,6 +120,7 @@ export function validateEvent(body: unknown, existing?: MobileInput): MobileInpu
     hostName: textField(b.hostName, "Ev sahibi", 80), date, time,
     venue: textField(b.venue, "Mekân", 160), address: textField(b.address, "Adres", 400, false),
     description: textField(b.description, "Açıklama", 2000, false), coverId, coverData: validateCoverData(b.coverData), capacity,
+    photoId: photoField(b.photoId),
   };
 }
 export function validateGuest(body: unknown, existing?: Partial<GuestRow>, publicResponse = false) {
@@ -126,7 +139,8 @@ export async function mobileEventByToken(value: string, mode: "manage" | "invite
 function publicFields(row: EventRow) {
   return { id: row.id, title: row.title, category: row.category, hostName: row.host_name,
     date: row.event_date, time: row.event_time, venue: row.venue, address: row.address,
-    description: row.description, coverId: row.cover_id, coverData: row.cover_data, capacity: row.capacity };
+    description: row.description, coverId: row.cover_id, coverData: row.cover_data, capacity: row.capacity,
+    photoId: row.photo_id || "" };
 }
 /** Davet sayfasının tasarımı. Uygulama bu alanları tanımaz; API yanıtına bu yüzden eklenmez. */
 /** Davet sayfasındaki yol tarifi için mekânın konumu. */
@@ -155,23 +169,24 @@ export async function publicEvent(row: EventRow, guestToken?: string) {
   if (!guest) throw new MobileError("Bu kişisel davet bağlantısı geçersiz.", 404);
   return { ...result, guest: { name: guest.name, status: guest.status, count: guest.count, note: guest.note } };
 }
-export async function createMobileEvent(data: MobileInput, origin: string, design?: EventDesign, place?: EventPlace) {
+export async function createMobileEvent(data: MobileInput, origin: string, design?: EventDesign, place?: EventPlace, answers = "") {
   await mobileReady();
   const rows = await q<EventRow>(`INSERT INTO mobile_events
-    (id,manage_token,invite_token,title,category,host_name,event_date,event_time,venue,address,description,cover_id,cover_data,capacity,delete_after,theme,font,ornament,lat,lng,place_id,directions,pattern)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *`,
+    (id,manage_token,invite_token,title,category,host_name,event_date,event_time,venue,address,description,cover_id,cover_data,capacity,delete_after,theme,font,ornament,lat,lng,place_id,directions,pattern,photo_id,answers)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25) RETURNING *`,
     [id(), token(24), token(24), data.title, data.category, data.hostName, data.date, data.time, data.venue,
       data.address, data.description, data.coverId, data.coverData, data.capacity, addDays(data.date, 90),
       design?.theme ?? "", design?.font ?? "", design?.ornament ?? "",
-      place?.lat ?? null, place?.lng ?? null, place?.placeId ?? "", place?.directions ?? "", design?.pattern ?? ""]);
+      place?.lat ?? null, place?.lng ?? null, place?.placeId ?? "", place?.directions ?? "", design?.pattern ?? "",
+      data.photoId ?? "", answers]);
   return managedEvent(rows[0], origin);
 }
 export async function editMobileEvent(row: EventRow, data: MobileInput, origin: string) {
   const updated = (await q<EventRow>(`UPDATE mobile_events SET title=$1,category=$2,host_name=$3,event_date=$4,
-    event_time=$5,venue=$6,address=$7,description=$8,cover_id=$9,cover_data=$10,capacity=$11,delete_after=$12,
+    event_time=$5,venue=$6,address=$7,description=$8,cover_id=$9,cover_data=$10,capacity=$11,delete_after=$12,photo_id=$14,
     lat=CASE WHEN venue=$6 THEN lat END, lng=CASE WHEN venue=$6 THEN lng END,
     place_id=CASE WHEN venue=$6 THEN place_id ELSE '' END WHERE id=$13 RETURNING *`,
-    [data.title,data.category,data.hostName,data.date,data.time,data.venue,data.address,data.description,data.coverId,data.coverData,data.capacity,addDays(data.date,90),row.id]))[0];
+    [data.title,data.category,data.hostName,data.date,data.time,data.venue,data.address,data.description,data.coverId,data.coverData,data.capacity,addDays(data.date,90),row.id,data.photoId ?? row.photo_id ?? ""]))[0];
   return managedEvent(updated, origin);
 }
 export const eventInput = (row: EventRow): MobileInput => publicFields(row);

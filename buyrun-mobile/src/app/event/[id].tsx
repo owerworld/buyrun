@@ -1,3 +1,4 @@
+import { coverSource } from "../../lib/cover";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -262,7 +263,7 @@ export default function EventScreen() {
       (filter === "all" || guest.status === filter) &&
       (!search.trim() || fold(guest.name).includes(fold(search.trim()))),
   );
-  const source = event.coverData ? { uri: event.coverData } : cover.image;
+  const source = coverSource(event);
   const publicLink = !event.demo ? event.shareUrl : undefined;
   const capacity = event.capacity && event.capacity > 0 ? event.capacity : null;
 

@@ -10,7 +10,7 @@ export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
   bus_from: string; bus_time: string; bus_note: string; program: string; extra_program: string; message: string; theme: string;
   font: string; ornament: string; opening: string; family_a: string; family_b: string;
-  bus_lat: number | null; bus_lng: number | null; bus_place: string; public_token: string; pattern: string; recovery_code: string; delete_after: string;
+  bus_lat: number | null; bus_lng: number | null; bus_place: string; public_token: string; pattern: string; answers: string; recovery_code: string; delete_after: string;
 }
 export interface EventRow {
   id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number;
@@ -41,6 +41,8 @@ export interface NewInvitation {
   familyA?: string; familyB?: string;
   /** Servis kalkış yerinin konumu */
   bus?: PlaceInput;
+  /** Sihirbaz cevapları (tür, ton, davetliler); hitap ve "başka metin öner" için saklanır */
+  answers?: string;
 }
 
 /** Veri saklama kuralı: son etkinlikten 90 gün sonra her şey silinir. */
@@ -62,6 +64,7 @@ export async function createInvitation(input: NewInvitation) {
   );
   if (input.bus) await setBusPlace(inv, input.bus);
   if (input.pattern) await q(`UPDATE invitations SET pattern = $1 WHERE id = $2`, [input.pattern, inv]);
+  if (input.answers) await q(`UPDATE invitations SET answers = $1 WHERE id = $2`, [input.answers, inv]);
   let i = 0;
   for (const e of input.events) {
     await q(

@@ -20,9 +20,13 @@ import {
   nextQuestion,
   planFromAnswers,
   progress,
+  tonOrnegi,
+  TUR_TEPKI,
+  visibleOptions,
   type Answers,
   type Option,
 } from "../lib/wizard";
+import { API_URL } from "../lib/api";
 import { ANSWERS_KEY, DRAFT_KEY } from "../lib/wizardStore";
 
 /**
@@ -48,18 +52,18 @@ function ton(hex: string, oran = 0.12) {
 function tepki(qid: string, v: string, a: Answers) {
   const kapak = covers[planFromAnswers(a).coverId].label;
   switch (qid) {
+    case "tur":
+      return TUR_TEPKI[v] ?? "";
     case "kim":
       return v === "buyukler"
         ? "Büyüklere yakışan, saygılı bir dil kuracağız."
         : v === "arkadaslar"
           ? "Samimi ve rahat bir dil, anlaşıldı."
           : "Herkese uyan bir dil kuracağız.";
-    case "ton":
-      return v === "manevi"
-        ? "Dualarla dolu bir davet olacak."
-        : v === "neseli"
-          ? "Neşeli bir dil, güzel seçim!"
-          : "Not aldık.";
+    case "ton": {
+      const ornek = tonOrnegi(a.tur, v);
+      return ornek ? `Metnin bu havada olacak: ${ornek}` : "Not aldık.";
+    }
     case "stil":
     case "hava":
       return `“${kapak}” kapağı sana çok yakışacak.`;
@@ -182,9 +186,12 @@ function Secenek({
 function KapakOnizleme({
   coverId,
   category,
+  photoId,
 }: {
   coverId: CoverId;
   category: string;
+  /** Türe uygun telifsiz fotoğraf; sunucudan çekilir, yüklenemezse çizim kapak görünür */
+  photoId?: string;
 }) {
   const g = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -195,8 +202,14 @@ function KapakOnizleme({
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }, [coverId, g]);
+  }, [coverId, photoId, g]);
   const c = covers[coverId];
+  // Yüklenemeyen fotoğrafın adı; tür değişince yeni fotoğraf yeniden denenir
+  const [hataliFoto, setHataliFoto] = useState("");
+  const foto =
+    photoId && API_URL && photoId !== hataliFoto
+      ? { uri: `${API_URL}/foto/${photoId}.jpg` }
+      : null;
   return (
     <Animated.View
       style={{
@@ -221,6 +234,15 @@ function KapakOnizleme({
         style={{ position: "absolute", width: "100%", height: "100%" }}
         resizeMode="cover"
       />
+      {foto && (
+        <Image
+          source={foto}
+          onError={() => setHataliFoto(photoId ?? "")}
+          style={{ position: "absolute", width: "100%", height: "100%" }}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+        />
+      )}
       {/* Yazı her kapakta okunsun: alttan koyu geçiş */}
       <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.62)"]}
@@ -251,7 +273,7 @@ function KapakOnizleme({
             marginTop: 4,
           }}
         >
-          {c.label}
+          {foto ? "Kapak fotoğrafın hazır" : c.label}
         </Txt>
       </View>
     </Animated.View>
@@ -371,6 +393,7 @@ export default function Wizard() {
             category: plan.category,
             coverId: plan.coverId,
             coverData: null,
+            photoId: plan.photoId,
           }),
         );
       } catch {
@@ -408,7 +431,7 @@ export default function Wizard() {
         <SafeAreaView
           style={{ flex: 1, padding: 22, justifyContent: "center" }}
         >
-          <KapakOnizleme coverId={coverId} category={plan.category} />
+          <KapakOnizleme coverId={coverId} category={plan.category} photoId={plan.photoId} />
           <Heading style={{ marginTop: 28 }}>Davetin hazırlanıyor</Heading>
           <View style={{ marginTop: 18, gap: 14 }}>
             {adimlar.map((m, i) => (
@@ -493,7 +516,7 @@ export default function Wizard() {
           keyboardShouldPersistTaps="handled"
         >
           {!!answers.tur && (
-            <KapakOnizleme coverId={coverId} category={plan.category} />
+            <KapakOnizleme coverId={coverId} category={plan.category} photoId={plan.photoId} />
           )}
           <Animated.View
             key={question.id}
@@ -531,7 +554,7 @@ export default function Wizard() {
             )}
 
             <View style={{ gap: 10, marginTop: 22 }}>
-              {question.options.map((o, i) => (
+              {visibleOptions(question, answers).map((o, i) => (
                 <Secenek
                   key={o.id}
                   o={o}

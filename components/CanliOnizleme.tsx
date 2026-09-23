@@ -19,12 +19,20 @@ export function CanliOnizleme({ answers, plan }: { answers: Answers; plan: Plan 
         const el = document.getElementById(id) as HTMLInputElement | null;
         if (el?.value.trim()) next[id] = el.value.trim();
       }
+      const foto = document.querySelector<HTMLInputElement>('input[name="photoId"]:checked');
+      if (foto) next.photo = foto.value || "yok";
       setV(next);
     };
     const els = ALANLAR.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
     els.forEach((el) => { el.addEventListener("input", oku); el.addEventListener("change", oku); });
+    // Kapak fotoğrafı seçimi radyo düğmeleriyle; hepsini tek tek dinlemek yerine formu dinle
+    const form = els[0]?.closest("form");
+    form?.addEventListener("change", oku);
     oku();
-    return () => els.forEach((el) => { el.removeEventListener("input", oku); el.removeEventListener("change", oku); });
+    return () => {
+      els.forEach((el) => { el.removeEventListener("input", oku); el.removeEventListener("change", oku); });
+      form?.removeEventListener("change", oku);
+    };
   }, []);
   const tarih = v.d_date || v.date;
   return (
@@ -35,6 +43,7 @@ export function CanliOnizleme({ answers, plan }: { answers: Answers; plan: Plan 
       families={[v.familyA ?? "", v.familyB ?? ""]}
       title={v.title}
       date={/^\d{4}-\d{2}-\d{2}$/.test(tarih ?? "") ? tarih : undefined}
+      photo={v.photo === "yok" ? "" : v.photo}
     />
   );
 }

@@ -6,6 +6,8 @@ import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
 import { FontPicker, OrnamentPicker, PatternPicker } from "@/components/DesignPickers";
 import { VenuePicker } from "@/components/VenuePicker";
+import { MetinOneri } from "@/components/MetinOneri";
+import { acilisSecenekleri, cevaplarOf, oneriler } from "@/lib/sozler";
 import { addExtraEventAction, removeExtraEventAction, updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
@@ -21,6 +23,11 @@ export default async function Duzenle({ params, searchParams }: {
   const save = updateInvitationAction.bind(null, token);
   const extra = extraOf(events);
   const yalnizExtra = extra ? onlyGuestsOf(guests, extra.id).length : 0;
+  // Öneriler davetin türüne ve sihirbazda seçilen dile göre (eski davetlerde tür etkinlikten)
+  const anaTur = events.find((e) => !isExtraKind(e.kind))?.kind ?? "dugun";
+  const cevaplar = cevaplarOf(inv.answers);
+  const metinler = oneriler(inv.answers, anaTur, [inv.name_a, inv.name_b], Boolean(inv.family_a && inv.family_b));
+  const acilislar = acilisSecenekleri({ tur: anaTur, ...cevaplar });
 
   return (
     <main className="wrap form-wrap">
@@ -46,12 +53,14 @@ export default async function Duzenle({ params, searchParams }: {
         <p className="muted small" style={{ marginTop: 6 }}>Doldurursanız ailelerin adı isimlerin üstünde yan yana yazılır. Boş bırakırsanız hiç görünmez.</p>
 
         <label className="lbl" htmlFor="opening">Üst satır</label>
-        <input type="text" id="opening" name="opening" maxLength={50} defaultValue={inv.opening ?? ""} placeholder="Mutluluğumuza ortak olun" />
+        <input type="text" id="opening" name="opening" maxLength={50} defaultValue={inv.opening ?? ""} placeholder={acilislar[0]} list="acilis-onerileri" />
+        <datalist id="acilis-onerileri">{acilislar.map((a) => <option key={a} value={a} />)}</datalist>
 
         <label className="lbl" htmlFor="message">Davet metni</label>
         <textarea id="message" name="message" maxLength={600} rows={3} defaultValue={inv.message ?? ""}
           placeholder="Davetiyede isimlerinizin altında görünen cümle. Boş bırakırsanız hazır metin kullanılır." />
-        <p className="muted small" style={{ marginTop: 6 }}>Sihirbaz sizin için yazdı; dilediğiniz gibi değiştirin.</p>
+        <MetinOneri hedef="message" oneriler={metinler} />
+        <p className="muted small" style={{ marginTop: 6 }}>Sihirbaz seçtiğiniz dile göre yazdı; dilediğiniz gibi değiştirin.</p>
 
         {events.map((e) => (
           <div key={e.id}>

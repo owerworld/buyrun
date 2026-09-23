@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
         ],
       },
+      // Kapak fotoğrafları değişmez; dosya adı değişirse yeni fotoğraf demektir
+      { source: "/foto/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=604800, s-maxage=31536000" }] },
       // Kişisel linkler arama motorlarında asla görünmez
       ...privatePaths.map((source) => ({
         source,

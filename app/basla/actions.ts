@@ -63,6 +63,8 @@ export async function wizardAction(f: FormData) {
       city: s(f, "city", 40),
       greeting: greetingFor(events),
       families: plan.families ? [s(f, "familyA", 60), s(f, "familyB", 60)].filter(Boolean).join(" ve ") : "",
+      // Aileler yazıldıysa metin ailelerin ağzından kurulur ("Evlatlarımız Defne ile Mert…")
+      names: plan.families && s(f, "familyA", 60) && s(f, "familyB", 60) ? [nameA, nameB] : undefined,
     });
 
     const admin = await createInvitation({
@@ -77,6 +79,7 @@ export async function wizardAction(f: FormData) {
       opening: plan.opening,
       familyA: plan.families ? s(f, "familyA", 60) : "",
       familyB: plan.families ? s(f, "familyB", 60) : "",
+      answers: answersQuery(answers),
     });
     redirect(`/yonet/${admin}`);
   }
@@ -105,11 +108,14 @@ export async function wizardAction(f: FormData) {
         address: s(f, "address", 400), description: text,
         coverId: plan.coverId, coverData: null,
         capacity: kapasite ? Number(kapasite) : null,
+        // Kullanıcı "fotoğrafsız" seçebilir; seçmediyse türün ilk fotoğrafı
+        photoId: f.has("photoId") ? s(f, "photoId", 40) : plan.photo,
       }),
       siteUrl(),
       // Uygulama fotoğraflı kapağı gösterir; web davet sayfası bu tasarımı
       { theme: plan.theme, font: plan.font, ornament: plan.ornament, pattern: plan.pattern },
-      placeFromForm(f, "")
+      placeFromForm(f, ""),
+      answersQuery(answers)
     );
     token = event.manageToken;
   } catch (e) {

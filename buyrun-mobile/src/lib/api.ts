@@ -92,6 +92,8 @@ export const api = {
     date: string;
     venue: string;
     request: string;
+    /** Kaçıncı öneri; her basışta bir artar */
+    variant?: number;
   }) =>
     request<{ text: string; source: "ai" | "hazir" }>(
       "/api/wizard/metin",

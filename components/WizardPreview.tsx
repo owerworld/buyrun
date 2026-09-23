@@ -14,7 +14,7 @@ const ORNEK_BASLIK: Record<string, string> = {
  * Sihirbazın sağındaki canlı önizleme. Her cevapla yeniden çizilir; kullanıcı
  * verdiği kararın davetiyeye ne yaptığını anında görür.
  */
-export function WizardPreview({ answers, plan, names, families, title, date }: { answers: Answers; plan: Plan; names?: [string, string]; families?: [string, string]; title?: string; date?: string }) {
+export function WizardPreview({ answers, plan, names, families, title, date, photo }: { answers: Answers; plan: Plan; names?: [string, string]; families?: [string, string]; title?: string; date?: string; photo?: string }) {
   if (plan.toren) {
     return (
       <Hero
@@ -38,6 +38,7 @@ export function WizardPreview({ answers, plan, names, families, title, date }: {
       font={plan.font}
       ornament={plan.ornament}
       pattern={plan.pattern}
+      photo={photo ?? plan.photo}
     />
   );
 }

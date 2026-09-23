@@ -17,6 +17,10 @@ export interface Option {
   id: string;
   label: string;
   hint?: string;
+  /** Seçenek yalnızca koşul sağlanırsa gösterilir */
+  when?: (a: Answers) => boolean;
+  /** Açıklama türe göre değişiyorsa (ton örnekleri) */
+  hintOf?: (a: Answers) => string | undefined;
 }
 export interface Question {
   id: string;
@@ -30,8 +34,62 @@ export interface Question {
  *  kalmalı: davet metnini yazan sunucu cevapları web'in listesine göre doğruluyor. */
 const TOREN = ["dugun"];
 export const isToren = (a: Answers) => TOREN.includes(a.tur ?? "");
-/** Renkli, coşkulu kapağın yakışmadığı günler: "hava" sorulmaz. */
+/** Renkli, coşkulu kapağın yakışmadığı günler: "hava" sorulmaz, neşeli dil sunulmaz. */
 const MANEVI = ["mevlid", "iftar"];
+/** "Manevi ve dualı" dilin sunulduğu türler (web'deki listeyle aynı). */
+const DUALI = ["dugun", "kina", "sunnet", "disbugdayi", "babyshower", "mevlid", "iftar", "asker", "evpartisi"];
+
+type Ton = "zarif" | "sicak" | "neseli" | "manevi";
+/**
+ * Ton seçeneklerinin altındaki örnek, davetin türüne göre (web'deki lib/sozler.ts
+ * ile aynı cümleler): mezuniyette "kepler havaya uçacak", askerde "yolu açık olsun".
+ */
+const TON_ORNEK: Record<string, Partial<Record<Ton, string>>> = {
+  dugun: { zarif: "Sizleri aramızda görmekten onur duyarız.", sicak: "Bu güzel günde yanımızda olmanızı çok isteriz.", neseli: "Pistte yeriniz hazır, kaçmak yok!", manevi: "Allah'ın izniyle… Hayır dualarınızı bekleriz." },
+  kina: { zarif: "Gelinimizin kınası yakılacak.", sicak: "Kınalar yakılacak, türküler söylenecek.", neseli: "Çalsın davullar, oynasın kızlar!", manevi: "Allah'ın izniyle kınamız yakılacak." },
+  sunnet: { zarif: "Oğlumuzun sünnet düğününe teşriflerinizi bekleriz.", sicak: "Bir sünnet, bir bayram, bir dua…", neseli: "Büyüdüm artık maşallah, çocukluğuma eyvallah!", manevi: "Allah'ın izniyle oğlumuzu sünnet ettiriyoruz." },
+  babyshower: { zarif: "Minik misafirimizi birlikte bekleyelim.", sicak: "Minik ayaklar yolda!", neseli: "Bebek geliyor, parti başlıyor!", manevi: "Allah'ın izniyle minik bir can aramıza katılıyor." },
+  disbugdayi: { zarif: "İlk dişin sevincini paylaşmak isteriz.", sicak: "Minik incimiz göründü!", neseli: "Makas mı, kalem mi? Bebeğimiz mesleğini seçiyor!", manevi: "İlk dişi çıktı, maşallah! Dualarınızı bekleriz." },
+  dogumgunu: { zarif: "Yeni yaşı sevdiklerle karşılayalım.", sicak: "Yeni bir yaş, yeni bir sayfa!", neseli: "Mumları saymayın, sadece gelin!" },
+  mevlid: { zarif: "Mevlid-i Şerif'e teşriflerinizi rica ederiz.", sicak: "Şerbetimiz, lokumumuz sizi bekliyor.", manevi: "Dualarınızla aramızda olmanızı dileriz." },
+  iftar: { zarif: "Sofralarımızı sizinle paylaşmak isteriz.", sicak: "Bir hurma, bir yudum su, bol muhabbet.", manevi: "Oruçlarınız kabul olsun, iftarımıza buyurun." },
+  asker: { zarif: "Yiğidimizi vatan hizmetine uğurluyoruz.", sicak: "Yolu açık, bahtı açık olsun!", neseli: "Tezkereye kadar yok; son halayı birlikte çekelim!", manevi: "Allah'a emanet, dualarla uğurlayalım." },
+  evpartisi: { zarif: "Yeni yuvamızda sizi ağırlamak isteriz.", sicak: "Çayımız demlendi, kapımız açık.", neseli: "Kolileri açtık (çoğunu!), sıra kutlamada!", manevi: "Evimiz hayırlı olsun; dualarınızla buyurun." },
+  yemek: { zarif: "Sofralarımızı sizinle paylaşmak isteriz.", sicak: "Sofra kuruldu, çay demde, muhabbet hazır.", neseli: "Diyetler bir akşamlığına iptal!" },
+  mezuniyet: { zarif: "Yılların emeği bir diplomada buluştu.", sicak: "Okul bitti, hayat başlıyor!", neseli: "Kepler havaya uçacak, siz de orada olun!" },
+  bulusma: { zarif: "Güzel bir buluşmada görüşmek isteriz.", sicak: "Özledik! Bir çay içimi muhabbet.", neseli: "Bahaneler kabul edilmiyor!" },
+};
+export function tonOrnegi(tur: string | undefined, ton: string) {
+  const s = (TON_ORNEK[tur ?? ""] ?? TON_ORNEK.dugun)[ton as Ton];
+  return s ? `“${s}”` : undefined;
+}
+
+/** Tür seçilince görünen karşılık (web'dekiyle aynı). */
+export const TUR_TEPKI: Record<string, string> = {
+  dugun: "Bir ömür mutluluk! Düğününe yakışır bir davet hazırlayalım.",
+  kina: "Kınalar yakılsın! Gecene yakışan bir davet hazırlıyoruz.",
+  sunnet: "Maşallah! Şehzadene yakışan bir davet hazırlayalım.",
+  babyshower: "Minik ayaklar yolda! Tatlı bir davet geliyor.",
+  disbugdayi: "Maşallah, ilk diş! Buğdaylar kaynasın.",
+  dogumgunu: "Nice mutlu yaşlara! Kutlamaya yakışan bir davet hazırlayalım.",
+  mevlid: "Allah kabul etsin. Gül kokulu, sade bir davet hazırlayalım.",
+  iftar: "Hayırlı Ramazanlar! Sofrana yakışan bir davet geliyor.",
+  asker: "Yolu açık olsun! Uğurlamaya yakışan bir davet hazırlayalım.",
+  evpartisi: "Hayırlı olsun! Yeni evine ilk misafirleri çağıralım.",
+  yemek: "Afiyet olsun şimdiden! Sofrana davet hazırlıyoruz.",
+  mezuniyet: "Tebrikler! Emeklerin kutlanacağı bir davet hazırlayalım.",
+  bulusma: "Özlem giderelim! Buluşmaya çağıralım.",
+};
+
+/**
+ * Türün ilk kapak fotoğrafı. Fotoğraflar sunucudan gelir (/foto/<id>.jpg, CC0,
+ * telifsiz); liste web'deki lib/fotolar.ts ile aynı, /api/foto?tur= ile tamamı alınır.
+ */
+const ILK_FOTO: Record<string, string> = {
+  kina: "kina-1", sunnet: "sunnet-1", babyshower: "babyshower-1", disbugdayi: "disbugdayi-1",
+  dogumgunu: "dogumgunu-1", mevlid: "mevlid-1", iftar: "iftar-1", asker: "asker-1",
+  evpartisi: "evpartisi-1", yemek: "yemek-1", mezuniyet: "mezuniyet-1", bulusma: "bulusma-3",
+};
 
 export const QUESTIONS: Question[] = [
   {
@@ -72,13 +130,19 @@ export const QUESTIONS: Question[] = [
     id: "ton",
     title: "Davetin nasıl konuşsun?",
     options: [
-      { id: "zarif", label: "Zarif ve ölçülü" },
-      { id: "sicak", label: "Sıcak ve içten" },
-      { id: "neseli", label: "Neşeli ve esprili" },
+      { id: "zarif", label: "Zarif ve ölçülü", hintOf: (a) => tonOrnegi(a.tur, "zarif") },
+      { id: "sicak", label: "Sıcak ve içten", hintOf: (a) => tonOrnegi(a.tur, "sicak") },
+      {
+        id: "neseli",
+        label: "Neşeli ve esprili",
+        hintOf: (a) => tonOrnegi(a.tur, "neseli"),
+        when: (a) => !MANEVI.includes(a.tur ?? ""),
+      },
       {
         id: "manevi",
         label: "Manevi ve dualı",
-        hint: "“Allah'ın izniyle… Hayır dualarınızı bekleriz.”",
+        hintOf: (a) => tonOrnegi(a.tur, "manevi"),
+        when: (a) => DUALI.includes(a.tur ?? ""),
       },
     ],
   },
@@ -124,6 +188,12 @@ export const QUESTIONS: Question[] = [
   },
 ];
 
+/** Sorunun bu cevaplarla gösterilecek seçenekleri; türe bağlı açıklamalar doldurulmuş. */
+export const visibleOptions = (q: Question, a: Answers) =>
+  q.options
+    .filter((o) => !o.when || o.when(a))
+    .map((o) => (o.hintOf ? { ...o, hint: o.hintOf(a) ?? o.hint } : o));
+
 export const askable = (a: Answers) =>
   QUESTIONS.filter((q) => !q.when || q.when(a));
 export const nextQuestion = (a: Answers) =>
@@ -154,6 +224,8 @@ export function planFromAnswers(a: Answers): {
   coverId: CoverId;
   category: string;
   request: string;
+  /** Türe uygun kapak fotoğrafı; düğünde boş (çizim kapak) */
+  photoId: string;
 } {
   // İstenen hava her zaman kazanır; yoksa türün doğal karşılığı (web'deki kuralla aynı)
   let coverId: CoverId = "bloom";
@@ -175,5 +247,6 @@ export function planFromAnswers(a: Answers): {
     coverId: coverId in covers ? coverId : "cherry",
     category: CATEGORY_OF[a.tur ?? ""] ?? "Buluşma",
     request: a.istek && a.istek !== "yok" ? a.istek : "",
+    photoId: ILK_FOTO[a.tur ?? ""] ?? "",
   };
 }

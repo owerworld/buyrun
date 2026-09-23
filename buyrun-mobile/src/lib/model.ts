@@ -19,6 +19,8 @@ export type EventInput = {
   description: string;
   coverId: string;
   coverData?: string | null;
+  /** Sihirbazın önerdiği telifsiz kapak fotoğrafı (sunucudaki /foto/<id>.jpg) */
+  photoId?: string;
   capacity?: number | null;
 };
 export type Party = EventInput & {

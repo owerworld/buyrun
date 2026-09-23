@@ -1,3 +1,4 @@
+import { coverSource } from "../../lib/cover";
 import React, { useState } from "react";
 import {
   Image,
@@ -226,11 +227,7 @@ export default function ProfileScreen() {
                   <View key={event.id} style={styles.backupCard}>
                     <View style={styles.backupTop}>
                       <Image
-                        source={
-                          event.coverData
-                            ? { uri: event.coverData }
-                            : cover.image
-                        }
+                        source={coverSource(event)}
                         style={styles.thumbnail}
                         accessible={false}
                       />

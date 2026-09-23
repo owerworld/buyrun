@@ -6,6 +6,10 @@ import { CATEGORIES } from "@/lib/categories";
 import { designOf, mobileEventByToken } from "@/lib/mobile";
 import { ThemePicker, ThemeStyle } from "@/components/Theme";
 import { FontPicker, OrnamentPicker, PatternPicker } from "@/components/DesignPickers";
+import { FotoSecici } from "@/components/FotoSecici";
+import { MetinOneri } from "@/components/MetinOneri";
+import { turOfCategory } from "@/lib/fotolar";
+import { cevaplarOf, oneriler } from "@/lib/sozler";
 import { updateEventAction } from "../../actions";
 
 export default async function EtkinlikDuzenle({ params, searchParams }: {
@@ -56,8 +60,11 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
           placeholder="Örn: Moda Teras" defaultVenue={row.venue} defaultAddress={row.address} defaultLat={row.lat} defaultLng={row.lng} defaultPlaceId={row.place_id} defaultNote={row.directions} />
         <label className="lbl" htmlFor="description">Davetliye not</label>
         <textarea id="description" name="description" maxLength={2000} defaultValue={row.description} />
+        <MetinOneri hedef="description" oneriler={oneriler(row.answers, turOfCategory(row.category))} />
         <label className="lbl" htmlFor="capacity">Kontenjan (isteğe bağlı)</label>
         <input type="number" id="capacity" name="capacity" min={1} max={10000} inputMode="numeric" defaultValue={row.capacity ?? ""} style={{ width: 140 }} />
+
+        <FotoSecici tur={cevaplarOf(row.answers).tur || turOfCategory(row.category)} current={row.photo_id} />
 
         {design ? (
           <>

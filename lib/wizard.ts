@@ -10,6 +10,9 @@
  *  2) AI'a verilecek bağlam (davet metnini cevaplara göre yazar)
  */
 
+import { fotolarFor } from "./fotolar";
+import { acilisSecenekleri, tonOrnegi } from "./sozler";
+
 export type Answers = Record<string, string>;
 
 export interface Option {
@@ -19,6 +22,8 @@ export interface Option {
   hint?: string;
   /** Seçenek yalnızca koşul sağlanırsa gösterilir (ör. mevlid için "neşeli" dil yok) */
   when?: (a: Answers) => boolean;
+  /** Açıklama türe göre değişiyorsa: ör. ton örnekleri mezuniyette başka, sünnette başka */
+  hintOf?: (a: Answers) => string | undefined;
 }
 
 /**
@@ -88,8 +93,9 @@ function uygun(id: string) {
   return (a: Answers) => DESEN_UYGUN[desenGrubu(a)].includes(id);
 }
 
-/** Bir sorunun bu cevaplarla gösterilecek seçenekleri. */
-export const visibleOptions = (q: Question, a: Answers) => q.options.filter((o) => !o.when || o.when(a));
+/** Bir sorunun bu cevaplarla gösterilecek seçenekleri; türe bağlı açıklamalar doldurulmuş olarak. */
+export const visibleOptions = (q: Question, a: Answers) =>
+  q.options.filter((o) => !o.when || o.when(a)).map((o) => (o.hintOf ? { ...o, hint: o.hintOf(a) ?? o.hint } : o));
 
 export const QUESTIONS: Question[] = [
   {
@@ -155,10 +161,11 @@ export const QUESTIONS: Question[] = [
     id: "ton",
     title: "Davetiniz nasıl konuşsun?",
     options: [
-      { id: "zarif", label: "Zarif ve ölçülü", hint: "“Sizleri aramızda görmekten onur duyarız.”" },
-      { id: "sicak", label: "Sıcak ve içten", hint: "“Bu güzel günde yanımızda olmanızı çok isteriz.”" },
-      { id: "neseli", label: "Neşeli ve esprili", hint: "“Pistte yeriniz hazır, kaçmak yok!”", when: (a) => !MANEVI.includes(a.tur ?? "") },
-      { id: "manevi", label: "Manevi ve dualı", hint: "“Allah'ın izniyle… Hayır dualarınızı bekleriz.”", when: (a) => DUALI.includes(a.tur ?? "") },
+      // Örnek cümle davetin türüne göre değişir (lib/sozler.ts)
+      { id: "zarif", label: "Zarif ve ölçülü", hintOf: (a) => tonOrnegi(a.tur, "zarif") },
+      { id: "sicak", label: "Sıcak ve içten", hintOf: (a) => tonOrnegi(a.tur, "sicak") },
+      { id: "neseli", label: "Neşeli ve esprili", hintOf: (a) => tonOrnegi(a.tur, "neseli"), when: (a) => !MANEVI.includes(a.tur ?? "") },
+      { id: "manevi", label: "Manevi ve dualı", hintOf: (a) => tonOrnegi(a.tur, "manevi"), when: (a) => DUALI.includes(a.tur ?? "") },
     ],
   },
   {
@@ -357,6 +364,8 @@ export interface Plan {
   families: boolean;
   /** Tören dalı: isimlerin üstündeki açılış satırı */
   opening: string;
+  /** Etkinlik dalı: türe uygun kapak fotoğrafı (lib/fotolar.ts); tören dalında boş */
+  photo: string;
 }
 
 const CATEGORY_OF: Record<string, string> = {
@@ -443,16 +452,9 @@ function coverFor(a: Answers) {
   return "bloom";
 }
 
-/** Kapağın en üstündeki kısa satır; dilin tonunu ilk bakışta verir. */
+/** Kapağın en üstündeki kısa satır; dilin tonunu ilk bakışta verir. Seçenekler lib/sozler.ts'de. */
 export function openingFor(a: Answers) {
-  if (a.ton === "manevi") return "Allah'ın izniyle";
-  if (a.ton === "sicak") return "Bu mutlu günümüzde";
-  if (a.ton === "neseli") {
-    if (a.tur === "nisan") return "Sonunda nişanlanıyoruz!";
-    if (a.tur === "soz") return "Söz kesildi!";
-    return "Sonunda evleniyoruz!";
-  }
-  return "Mutluluğumuza ortak olun";
+  return acilisSecenekleri(a)[0];
 }
 
 export function planFromAnswers(a: Answers): Plan {
@@ -472,6 +474,7 @@ export function planFromAnswers(a: Answers): Plan {
     request: !toren && a.istek && a.istek !== "yok" ? a.istek : "",
     families: toren && a.aile === "evet",
     opening: openingFor(a),
+    photo: toren || !a.tur ? "" : fotolarFor(a.tur)[0].id,
   };
 }
 

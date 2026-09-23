@@ -4,6 +4,7 @@ import { designOf, mobileEventByToken, placeOf, publicEvent } from "@/lib/mobile
 import { ThemeStyle } from "@/components/Theme";
 import { dayStatus, todayTr } from "@/lib/eventday";
 import { forecastFor } from "@/lib/weather";
+import { cevaplarOf } from "@/lib/sozler";
 import Invitation from "./invitation";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -27,6 +28,6 @@ export default async function MobileInvitation({params,searchParams}: {
   const forecast = await forecastFor(row.lat, row.lng, row.event_date, row.event_time, todayTr());
   return <>
     {design && <ThemeStyle theme={design.theme} />}
-    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} />
+    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} samimi={cevaplarOf(row.answers).kim === "arkadaslar"} />
   </>;
 }

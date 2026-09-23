@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublic } from "@/lib/data";
 import { greetingFor, inviteLabel } from "@/lib/events";
+import { cevaplarOf, davetCumlesi } from "@/lib/sozler";
 import { shortDate } from "@/lib/format";
 import { weddingExtras } from "@/lib/extras";
 import { EventsCard, Hero, MessageCard, SiteFooter } from "@/components/Invite";
@@ -21,6 +22,8 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
   return { title, description: [shortDate(data.inv.main_date), data.inv.city].filter(Boolean).join(" · "), robots: { index: false, follow: false } };
 }
 
+const buyukHarf = (s: string) => s.charAt(0).toLocaleUpperCase("tr") + s.slice(1);
+
 export default async function GenelDavetiye({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const data = await getPublic(token);
@@ -32,7 +35,7 @@ export default async function GenelDavetiye({ params }: { params: Promise<{ toke
     <main className="wrap invite-wrap">
       <ThemeStyle theme={inv.theme} />
       <DayBanner status={extras.status} forecast={extras.bannerForecast} />
-      <Hero inv={inv} greeting={<>{selam.charAt(0).toLocaleUpperCase("tr") + selam.slice(1)} sizi aramızda görmek istiyoruz.</>} />
+      <Hero inv={inv} greeting={<>{buyukHarf(davetCumlesi(cevaplarOf(inv.answers).ton, selam))}</>} />
       <MessageCard inv={inv} />
       <EventsCard inv={inv} events={events} title="Etkinlikler" calendarHref={`/g/${token}/takvim`} weather={extras.forecasts} />
       <section className="card">

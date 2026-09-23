@@ -88,6 +88,8 @@ const SCHEMA = [
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS public_token TEXT NOT NULL DEFAULT ''`,
   // Arka plan dokusu (lib/design.ts); eski davetiyelerde boş = sade
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS pattern TEXT NOT NULL DEFAULT ''`,
+  // Sihirbaz cevapları ("tur=dugun&ton=zarif&kim=buyukler"): hitap ve metin önerileri buna göre
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS answers TEXT NOT NULL DEFAULT ''`,
   `CREATE UNIQUE INDEX IF NOT EXISTS invitations_public_idx ON invitations(public_token) WHERE public_token <> ''`,
   `CREATE UNIQUE INDEX IF NOT EXISTS invitations_recovery_idx ON invitations(recovery_code) WHERE recovery_code <> ''`,
   `CREATE INDEX IF NOT EXISTS guests_family_idx ON guests(family_id)`,

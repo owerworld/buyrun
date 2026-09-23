@@ -9,11 +9,12 @@ import type { DayStatus } from "@/lib/eventday";
 import type { Forecast } from "@/lib/weather";
 import type { PlaceRef } from "@/lib/directions";
 import type { EventDesign } from "@/lib/mobile";
+import { fotoSrc } from "@/lib/fotolar";
 type Status = "pending" | "going" | "maybe" | "declined";
 type OwnGuest = {name:string;status:Status;count:number;note:string};
 type InvitationEvent = {
   title:string;category:string;hostName:string;date:string;time:string;venue:string;address:string;
-  description:string;coverId:string;coverData:string|null;capacity:number|null;guest:OwnGuest|null;
+  description:string;coverId:string;coverData:string|null;capacity:number|null;photoId?:string;guest:OwnGuest|null;
 };
 const labels = {going:"Geliyorum",maybe:"Belki",declined:"Gelemiyorum"};
 /**
@@ -36,9 +37,11 @@ const SIZ: typeof SEN = {
   chooseFirst:"Önce katılım durumunuzu seçin.",
   privacy:"Adınız ve yanıtınız yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir. Bu davet sizden para göndermenizi asla istemez; isteyen olursa dikkat edin.",
 };
-export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken}: {
+export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken,samimi=false}: {
   event:InvitationEvent;design:EventDesign|null;place:PlaceRef&{directions?:string};
-  dayState:DayStatus<BannerItem>|null;forecast:Forecast|null;inviteToken:string;initialGuestToken:string|null
+  dayState:DayStatus<BannerItem>|null;forecast:Forecast|null;inviteToken:string;initialGuestToken:string|null;
+  /** Sihirbazda "davetliler arkadaşlar" seçildiyse tasarımlı davette de "sen" denir */
+  samimi?:boolean
 }) {
   const [guestToken,setGuestToken]=useState(initialGuestToken);
   const [name,setName]=useState(event.guest?.name || "");
@@ -48,7 +51,7 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const [saved,setSaved]=useState(false);
-  const t=design?SIZ:SEN;
+  const t=design&&!samimi?SIZ:SEN;
   useEffect(() => {
     if(initialGuestToken) return;
     let active=true;
@@ -101,10 +104,10 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
     <div className={styles.shell}>
       <header className={styles.brand}><a href="#invitation" aria-label="Buyrun davetiye">buyrun<span>✳</span></a><span>Güzel şeyler birlikte.</span></header>
       <DayBanner status={dayState} forecast={forecast}/>
-      {design ? <EventHero title={event.title} category={event.category} font={design.font} ornament={design.ornament} pattern={design.pattern}/> :
+      {design ? <EventHero title={event.title} category={event.category} font={design.font} ornament={design.ornament} pattern={design.pattern} photo={event.photoId} credit/> :
       <section className={`${styles.cover} ${styles[cover]}`} aria-label="Etkinlik kapağı">
         {/* Local generated artwork or an explicitly selected photo. No external tracking requests. */}
-        <img src={event.coverData || `/mobile-covers/${cover}.png`} alt="" className={styles.coverImage}/>
+        <img src={event.coverData || (event.photoId ? fotoSrc(event.photoId) : `/mobile-covers/${cover}.png`)} alt="" className={styles.coverImage}/>
         <div className={styles.coverShade}/><span className={styles.badge}>SEN DE DAVETLİSİN ↗</span>
         <div className={styles.coverBottom}><span>{event.category}</span><h1>{event.title}</h1></div>
       </section>}

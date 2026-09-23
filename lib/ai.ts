@@ -10,6 +10,7 @@
  *     Ürünün hukuki ilkesi bu; modelin iyi niyeti yeterli değil.
  */
 
+import { sozSirasi } from "./sozler";
 import { answerSummary, type Answers, type Plan } from "./wizard";
 
 /** Opus 5 varsayılan. Maliyeti düşürmek isteyen ortam değişkeniyle değiştirir. */
@@ -33,6 +34,10 @@ export interface TextInput {
   request?: string;
   /** Tören dalında iki ailenin adı: "Ayşe & Ahmet Yılmaz ve Fatma & Mehmet Kaya" */
   families?: string;
+  /** Tören dalında çiftin adları; ailelerin ağzından cümle kurmak için */
+  names?: [string, string];
+  /** Kaçıncı öneri: 0 ilk metin, "başka metin öner" dedikçe artar */
+  variant?: number;
 }
 
 /** Davet metninde bulunmaması gerekenler: para, iletişim bilgisi, bağlantı. */
@@ -63,73 +68,17 @@ export function sanitize(text: string) {
 /* ------------------------------------------------------------------ */
 
 // Tarih ve yer davetiyede ayrıca gösteriliyor; metin onları tekrar etmez.
-// Cümleler Türkiye'deki davetiye alışkanlıklarından derlendi: geleneksel, sıcak, neşeli ve manevi dil.
-type Tonlu = Partial<Record<"zarif" | "sicak" | "neseli" | "manevi", string>> & { varsayilan: string };
+// Cümleler lib/sozler.ts'de: her tür ve her ton için birden fazla seçenek.
 
-const TOREN_METNI: Tonlu = {
-  zarif: "Hayatımızın en güzel gününde sizi de yanımızda görmek bizim için ayrı bir mutluluk olacak. Bu anlamlı günü sizinle paylaşmaktan onur duyarız.",
-  sicak: "Bu güzel günü sevdiklerimizle paylaşmak istiyoruz. Sizi de aramızda görmek bizi çok mutlu eder.",
-  neseli: "Uzun zamandır beklediğimiz gün geldi! Bol müzik, bol kahkaha ve sizin de orada olmanızı istiyoruz.",
-  manevi: "Allah'ın izniyle yuvamızı kuruyoruz. Bu mutlu günümüzde hayır dualarınızla aramızda olmanızı dileriz.",
-  varsayilan: "Bu güzel günü sevdiklerimizle paylaşmak istiyoruz. Sizi de aramızda görmek bizi çok mutlu eder.",
-};
-
-const ETKINLIK_METNI: Record<string, Tonlu> = {
-  sunnet: {
-    manevi: "Allah'ın izniyle oğlumuzu sünnet ettiriyoruz. Bu mutlu günümüzde dualarınızla aramızda olmanızı dileriz.",
-    neseli: "Büyüdüm artık maşallah, çocukluğuma eyvallah! Sünnet düğünümde sizi de bekliyorum.",
-    varsayilan: "Oğlumuzun sünnet düğününe davetlisiniz; bu özel gün sizinle daha güzel olacak.",
-  },
-  mevlid: { varsayilan: "Okunacak Mevlid-i Şerif'e teşriflerinizi rica ederiz. Dualarınızla aramızda olmanızı dileriz." },
-  iftar: { varsayilan: "Bu mübarek ayda sofralarımızı sevdiklerimizle paylaşmak istiyoruz. İftarımıza buyurun." },
-  hac: { varsayilan: "Kutsal yolculuğa çıkmadan önce sizlerle helalleşmek ve dualarınızı almak isteriz." },
-  asker: {
-    manevi: "Evladımızı vatani görevine uğurluyoruz. Dualarınızla yanımızda olmanızı isteriz.",
-    varsayilan: "Vatani görevine gidecek evladımızı hep birlikte uğurlamak istiyoruz. Sizi de aramızda görmek isteriz.",
-  },
-  babyshower: { varsayilan: "Minik misafirimizi beklerken bu heyecanı sizinle paylaşmak istiyoruz." },
-  cinsiyet: { neseli: "Kız mı, erkek mi? Cevabı hep birlikte öğrenelim!", varsayilan: "Bebeğimizin cinsiyetini sevdiklerimizle birlikte öğrenmek istiyoruz." },
-  disbugdayi: {
-    manevi: "Bebeğimizin ilk dişi çıktı, maşallah! Diş buğdayımızda dualarınızla aramızda olmanızı isteriz.",
-    varsayilan: "Bebeğimizin ilk dişi çıktı! Diş buğdayı kutlamamızda sizi de aramızda görmek isteriz.",
-  },
-  kina: {
-    manevi: "Allah'ın izniyle gelinimizin kınası yakılacak. Bu güzel gecede aramızda olmanızı isteriz.",
-    varsayilan: "Gelinimizin kınasını birlikte yakmak için sizi de aramızda görmek isteriz.",
-  },
-  bekarlik: { varsayilan: "Bekârlığa son bir kez birlikte veda edelim! Sizi de aramızda görmek isteriz." },
-  evpartisi: {
-    manevi: "Yeni evimiz hayırlı olsun diye sevdiklerimizi ağırlamak istiyoruz. Dualarınızla buyurun.",
-    varsayilan: "Yeni evimizde sizi ağırlamak istiyoruz. Gelirseniz çok seviniriz.",
-  },
-};
-
-const GENEL_ETKINLIK: Tonlu = {
-  zarif: "Sizi aramızda görmek isteriz. Gelmeniz bizim için değerli.",
-  sicak: "Birlikte olalım istedik. Gelirseniz çok seviniriz.",
-  neseli: "Güzel bir gün olacak, sizi de bekliyoruz!",
-  manevi: "Sizleri dualarınızla aramızda görmek isteriz.",
-  varsayilan: "Birlikte olalım istedik. Gelirseniz çok seviniriz.",
-};
-
-/** Mevlidin vesilesine göre cümle; rahmetli için kutlama dili kullanılmaz. */
-const MEVLID_VESILE: Record<string, string> = {
-  bebek: "Bebeğimiz için okunacak Mevlid-i Şerif'e teşriflerinizi rica ederiz. Dualarınızla aramızda olmanızı dileriz.",
-  ev: "Yeni evimizin hayırlı olması için okunacak Mevlid-i Şerif'e teşriflerinizi rica ederiz.",
-  rahmetli: "Rahmetlimizin ruhuna okunacak Mevlid-i Şerif'e teşriflerinizi rica ederiz. Dualarınızla aramızda olmanızı dileriz.",
-  sukur: "Rabbimize şükür vesilesiyle okunacak Mevlid-i Şerif'e teşriflerinizi rica ederiz.",
-};
+/** Aynı davet için sabit sıra; "başka metin" istendikçe bir sonrakine geçilir. */
+function secenekler(i: TextInput) {
+  return sozSirasi({ answers: i.answers, names: i.names, families: Boolean(i.families) }, `${i.heading}|${i.dateLabel}`);
+}
 
 /** AI çalışmadığında kullanılacak metin. */
 export function fallbackText(i: TextInput) {
-  const ton = (i.answers.ton ?? "varsayilan") as keyof Tonlu;
-  const tonlu = i.plan.toren ? TOREN_METNI : ETKINLIK_METNI[i.answers.tur ?? ""] ?? GENEL_ETKINLIK;
-  if (i.plan.toren && ton === "manevi" && i.answers.tur !== "dugun")
-    return sanitize("Allah'ın izniyle hayırlı bir yola çıkıyoruz. Bu mutlu günümüzde hayır dualarınızla aramızda olmanızı dileriz.");
-  const ana =
-    i.answers.tur === "mevlid" && MEVLID_VESILE[i.answers.vesile ?? ""]
-      ? MEVLID_VESILE[i.answers.vesile ?? ""]
-      : tonlu[ton] ?? tonlu.varsayilan;
+  const list = secenekler(i);
+  const ana = list[(i.variant ?? 0) % list.length];
   const parcalar = [ana];
   if (i.request) parcalar.push(/[.!?…]$/.test(i.request) ? i.request : `${i.request}.`);
   return sanitize(parcalar.join(" "));
@@ -154,7 +103,13 @@ Türkiye'ye özgü:
 - "Manevi ve dualı" dil seçildiyse "Allah'ın izniyle", "hayır dualarınızla" gibi yerleşik ifadeler kullan; abartma, ayet yazma.
 - Mevlid, iftar ve hac uğurlamasında neşeli ya da şakacı dil kullanma. Rahmetli anısına mevlidde kutlama sözcükleri (mutlu, kutlama, eğlence) kullanma.
 - Sünnet ve diş buğdayında "maşallah" doğaldır; sünnette çocuğun ağzından yazmak yaygındır.
-- Bekârlığa veda, cinsiyet partisi ve baby shower gibi yeni kutlamalarda rahat, güncel bir dil uygundur.`;
+- Bekârlığa veda, cinsiyet partisi ve baby shower gibi yeni kutlamalarda rahat, güncel bir dil uygundur.
+- Davetliler "büyükler ve akrabalar" ise saygılı ve "siz" diliyle yaz; "arkadaşlar" ise samimi olabilirsin.
+- Dinî ifadeyi yalnızca manevi ton seçildiyse ya da günün kendisi dinîyse (mevlid, iftar, hac) kullan.
+- Bebek davetlerinde anne–baba rolü varsayma; "bebeğimiz", "ailemiz" de.
+- Türkiye'de sevilen imgelerden yararlanabilirsin: tatlı yiyip tatlı konuşmak, bir fincan kahvenin kırk yıl hatırı,
+  kınada türküler, asker uğurlamasında kına ve halay, mevlidde gül ve şerbet, iftarda hurma ve su. Klişeleri üst üste yığma.
+- Sana örnek cümleler verilecek; tonu ve uzunluğu onlardan al ama aynısını yazma, her davet kendine özgü olsun.`;
 
 function istek(i: TextInput) {
   const satirlar = [
@@ -170,6 +125,10 @@ function istek(i: TextInput) {
     "Ev sahibinin sihirbazda verdiği cevaplar:",
     ...answerSummary(i.answers).map((s) => `- ${s}`),
     "",
+    "Bu türde sevilen örnek cümleler (aynısını yazma, ilham al):",
+    ...secenekler(i).slice(0, 3).map((s) => `- ${s}`),
+    "",
+    i.variant ? `Bu ${i.variant + 1}. öneri; öncekilerden farklı bir açıdan yaz.` : "",
     "Bu cevaplara uyan davet metnini yaz.",
   ];
   return satirlar.filter((s) => s !== "").join("\n");

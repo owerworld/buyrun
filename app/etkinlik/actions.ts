@@ -23,6 +23,8 @@ const formEvent = (f: FormData) => ({
   date: s(f, "date", 10), time: s(f, "time", 5), venue: s(f, "venue", 160),
   address: s(f, "address", 400), description: s(f, "description", 2000),
   coverId: s(f, "coverId", 64), capacity: sayi(f, "capacity"), coverData: null,
+  // Fotoğraf seçici formda yoksa alan hiç gönderilmez; kayıtlı fotoğraf korunur
+  ...(f.has("photoId") ? { photoId: s(f, "photoId", 40) } : {}),
 });
 const mesaj = (e: unknown) => (e instanceof MobileError ? e.message : "İşlem tamamlanamadı, tekrar deneyin.");
 

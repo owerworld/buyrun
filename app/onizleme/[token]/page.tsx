@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdmin } from "@/lib/data";
-import { inviteLabel } from "@/lib/events";
+import { greetingFor, inviteLabel } from "@/lib/events";
+import { cevaplarOf, davetCumlesi, hitap } from "@/lib/sozler";
 import { shortDate } from "@/lib/format";
 import { EventsCard, Hero, MessageCard, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";
@@ -25,12 +26,13 @@ export default async function Onizleme({ params }: { params: Promise<{ token: st
   const data = await getAdmin(token);
   if (!data) notFound();
   const extras = await weddingExtras(data.events);
+  const ton = cevaplarOf(data.inv.answers).ton;
   return (
     <main className="wrap">
       <ThemeStyle theme={data.inv.theme} />
       <p className="info" style={{ marginTop: 0 }}>Önizleme: davetlileriniz bunu kendi adlarıyla görür. <Link href={`/yonet/${token}`}>Yönetime dön</Link></p>
       <DayBanner status={extras.status} forecast={extras.bannerForecast} />
-      <Hero inv={data.inv} greeting={<>Sevgili <b>misafirimiz</b>, bu mutlu günümüzde sizi aramızda görmek istiyoruz.</>} />
+      <Hero inv={data.inv} greeting={<>{hitap(ton)} <b>misafirimiz</b>, {davetCumlesi(ton, greetingFor(data.events))}</>} />
       <MessageCard inv={data.inv} />
       <EventsCard inv={data.inv} events={data.events} title="Etkinlikler" calendarHref={`/onizleme/${token}/takvim`} weather={extras.forecasts} />
       <section className="card">

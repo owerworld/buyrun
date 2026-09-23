@@ -9,6 +9,7 @@ import { OrnamentSwatch, PatternSwatch } from "@/components/Ornament";
 import { ThemeStyle } from "@/components/Theme";
 import { WizardPreview } from "@/components/WizardPreview";
 import { fontOf, ornamentOf, patternOf } from "@/lib/design";
+import { TUR_TEPKI, tonOrnegi, type Ton } from "@/lib/sozler";
 import { themeOf } from "@/lib/themes";
 import {
   answersQuery, nextQuestion, parseAnswers, planFromAnswers, progress, visibleOptions, withoutLast,
@@ -29,8 +30,12 @@ const GRUP_BASLIK: Record<string, string> = {
 function tepki(qid: string, v: string, a: Answers): string {
   const plan = planFromAnswers(a);
   switch (qid) {
+    case "tur": return TUR_TEPKI[v] ?? "";
     case "kim": return v === "buyukler" ? "Büyüklere yakışan, saygılı bir dil kuracağız." : v === "arkadaslar" ? "Samimi ve rahat bir dil, anlaşıldı." : "Herkese uyan bir dil kuracağız.";
-    case "ton": return v === "manevi" ? "Dualarla dolu bir davet olacak." : v === "neseli" ? "Neşeli bir dil, güzel seçim!" : v === "zarif" ? "Zarif ve ölçülü, not aldık." : "İçten bir dil, not aldık.";
+    case "ton": {
+      const ornek = tonOrnegi(a.tur, v as Ton);
+      return ornek ? `Metniniz bu havada olacak: ${ornek}` : "Not aldık.";
+    }
     case "aile": return v === "evet" ? "Ailelerinizin adı en üstte yer alacak." : "Sade ve modern, sadece sizin adınız.";
     case "renk": return `${themeOf(plan.theme).label} renkler davetiyenize işlendi.`;
     case "stil": case "hava": return `${ornamentOf(plan.ornament).label} çerçeveye yerleşti.`;

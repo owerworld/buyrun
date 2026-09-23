@@ -14,6 +14,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+import { coverSource } from "../lib/cover";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Button,
@@ -113,6 +114,7 @@ function CreateForm() {
               ? {
                   coverId: selected,
                   coverData: null,
+                  photoId: "",
                   category: covers[selected].category,
                 }
               : {}),
@@ -139,6 +141,8 @@ function CreateForm() {
       alive = false;
     };
   }, []);
+  /** Her basışta sıradaki öneri; son yazdırılan metin isteğe karışmasın diye saklanır. */
+  const oneri = useRef({ sira: 0, son: "" });
   /** Sihirbazdan geldiyse davet metnini sunucuya yazdırır. Hata olursa not elle yazılır. */
   async function writeNote() {
     if (!answers) return;
@@ -149,14 +153,19 @@ function CreateForm() {
     }
     setWriting(true);
     try {
+      const not = data.description.trim();
+      // Kutudaki metin bizim önceki önerimizse istek değildir; kullanıcının kendi notuysa metne eklenir
+      const kendiNotu = not && not !== oneri.current.son ? not.slice(0, 160) : "";
       const { text } = await api.wizardText({
         answers,
         title: data.title.trim(),
         hostName: data.hostName.trim(),
         date: data.date,
         venue: data.venue.trim(),
-        request: data.description.trim().slice(0, 160),
+        request: kendiNotu,
+        variant: oneri.current.sira,
       });
+      oneri.current = { sira: oneri.current.sira + 1, son: text };
       patch({ description: text });
     } catch (e) {
       setError(
@@ -379,7 +388,7 @@ function CreateForm() {
           {step === 0 && (
             <>
               <ImageBackground
-                source={data.coverData ? { uri: data.coverData } : cover.image}
+                source={coverSource(data)}
                 imageStyle={{ width: "100%", height: "100%" }}
                 style={{
                   width: "100%",
@@ -422,7 +431,7 @@ function CreateForm() {
                     accessibilityState={{
                       selected: data.coverId === id && !data.coverData,
                     }}
-                    onPress={() => patch({ coverId: id, coverData: null })}
+                    onPress={() => patch({ coverId: id, coverData: null, photoId: "" })}
                     style={{ flex: 1, gap: 7 }}
                   >
                     <View
@@ -573,7 +582,7 @@ function CreateForm() {
                     onPress={writeNote}
                   >
                     {data.description.trim()
-                      ? "Metni yeniden yaz"
+                      ? "Başka bir metin öner"
                       : "Davet metnini benim için yaz"}
                   </Button>
                   <Txt style={{ color: C.muted, fontSize: 13 }}>
@@ -603,7 +612,7 @@ function CreateForm() {
           {step === 2 && (
             <>
               <ImageBackground
-                source={data.coverData ? { uri: data.coverData } : cover.image}
+                source={coverSource(data)}
                 imageStyle={{ width: "100%", height: "100%" }}
                 style={{
                   width: "100%",

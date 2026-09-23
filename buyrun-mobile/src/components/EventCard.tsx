@@ -1,3 +1,4 @@
+import { coverSource } from "../lib/cover";
 import React from "react";
 import { ImageBackground, View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -32,7 +33,7 @@ export function EventCard({
       })}
     >
       <ImageBackground
-        source={event.coverData ? { uri: event.coverData } : cover.image}
+        source={coverSource(event)}
         imageStyle={{ width: "100%", height: "100%" }}
         style={{ width: "100%", height: compact ? 225 : 355 }}
         resizeMode="cover"
