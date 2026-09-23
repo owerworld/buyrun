@@ -92,7 +92,10 @@ npm run dev        # http://localhost:3000
 1. Kodu GitHub'a yükle, Vercel'de proje olarak içe aktar.
 2. Bir Postgres veritabanı bağla (Vercel Marketplace → Neon ya da Supabase). Sunucu bölgesi KVKK kararına göre seçilmeli.
 3. Ortam değişkenleri: `DATABASE_URL`, `CRON_SECRET` (rastgele uzun metin), `NEXT_PUBLIC_SITE_URL` (örn. https://buyrun.app)
-4. Tablolar ilk istekte otomatik oluşur.
+4. İsteğe bağlı anahtarlar (boşsa site çalışır, özellik yedeğe düşer; ayrıntı `.env.example`'da):
+   - `ANTHROPIC_API_KEY`: davet metnini AI yazar; yoksa hazır metin
+   - `TOMTOM_API_KEY`, `GOOGLE_MAPS_API_KEY`: mekân araması; yoksa OpenStreetMap
+5. Tablolar ilk istekte otomatik oluşur.
 
 > **Dikkat:** Vercel ortam değişkenlerini yayın anında sabitler. Veritabanını var olan bir projeye
 > sonradan bağlarsan **yeniden yayınlaman** gerekir, yoksa `DATABASE_URL` o yayına girmez.
