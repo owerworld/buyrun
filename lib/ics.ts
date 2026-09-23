@@ -62,6 +62,8 @@ export function buildIcs(inv: Invitation, events: EventRow[], siteUrl: string) {
       `DTEND:${utcStamp(e.event_date, e.event_time, DEFAULT_HOURS)}`,
       fold(`SUMMARY:${esc(`${inv.name_a} ile ${inv.name_b} — ${e.title}`)}`),
       fold(`LOCATION:${esc([e.venue, e.address, inv.city].filter(Boolean).join(", "))}`),
+      // Koordinat varsa takvim uygulaması "yol tarifi" düğmesini doğrudan doğru yere açar
+      ...(e.lat != null && e.lng != null ? [`GEO:${e.lat};${e.lng}`] : []),
       fold(`DESCRIPTION:${esc(`Davetiye ve katılım bildirimi: ${siteUrl}`)}`),
       "END:VEVENT"
     );

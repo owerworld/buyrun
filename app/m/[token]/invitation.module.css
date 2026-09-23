@@ -7,3 +7,8 @@
 .tasarimli .description h2,.tasarimli .formHeading h2{font-family:var(--font-display),serif;font-weight:500;letter-spacing:0;font-size:28px}
 .tasarimli .formHeading h2{font-size:30px}
 .tasarimli .host{margin-top:6px}
+
+/* Yol tarifi düğmesi sayfanın kendi renklerini alır */
+.page :global(.yol-ana){background:var(--m-btn,#314a2c);color:var(--m-btn-ink,#f6ffd5);border-radius:12px;font-size:13px;min-height:40px;margin-top:10px}
+.page :global(.yol-diger) a{color:var(--m-accent,#3c583b);width:auto;display:inline-flex;margin:0}
+.page :global(.yol-diger) span,.page :global(.yol-not){color:var(--m-muted,#6a6e64);font-size:12px}

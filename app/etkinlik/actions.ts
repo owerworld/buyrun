@@ -7,6 +7,8 @@ import {
 } from "@/lib/mobile";
 import { isFont, isOrnament } from "@/lib/design";
 import { isTheme } from "@/lib/themes";
+import { placeFromForm } from "@/lib/places";
+import { setMobilePlace } from "@/lib/mobile";
 import { siteUrl } from "@/lib/format";
 import { allow } from "@/lib/ratelimit";
 
@@ -32,7 +34,7 @@ export async function createEventAction(f: FormData) {
 
   let token = "";
   try {
-    const event = await createMobileEvent(validateEvent(formEvent(f)), siteUrl());
+    const event = await createMobileEvent(validateEvent(formEvent(f)), siteUrl(), undefined, placeFromForm(f, ""));
     token = event.manageToken;
   } catch (e) {
     fail(mesaj(e));
@@ -47,6 +49,7 @@ export async function updateEventAction(manageToken: string, f: FormData) {
   if (!(await allow(`mobile-edit:${row.id}`, 120, 3600))) fail("Çok fazla düzenleme yapıldı. Biraz sonra deneyin.");
   try {
     await editMobileEvent(row, validateEvent(formEvent(f), eventInput(row)), siteUrl());
+    await setMobilePlace(row, placeFromForm(f, ""));
     // Tasarımlı davette seçiciler formda; geçersiz değer gelirse eski tasarım korunur
     const design = designOf(row);
     if (design) {

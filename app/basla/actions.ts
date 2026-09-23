@@ -6,6 +6,7 @@ import { createInvitation, type NewEvent } from "@/lib/data";
 import { greetingFor, kindOf } from "@/lib/events";
 import { longDate, siteUrl, todayIso } from "@/lib/format";
 import { createMobileEvent, MobileError, validateEvent } from "@/lib/mobile";
+import { placeFromForm } from "@/lib/places";
 import { allow, LIMITS } from "@/lib/ratelimit";
 import { answersQuery, parseAnswers, planFromAnswers } from "@/lib/wizard";
 
@@ -41,14 +42,14 @@ export async function wizardAction(f: FormData) {
     // Nikâh ayrı gündeyse ana tören yalnızca "Düğün" olarak anılır
     const mainTitle = plan.extraKind === "nikah" ? "Düğün Töreni" : main.title;
     const events: NewEvent[] = [];
-    const toren = { date: s(f, "d_date", 10), time: s(f, "d_time", 5), venue: s(f, "d_venue", 80), address: s(f, "d_address", 120) };
+    const toren = { date: s(f, "d_date", 10), time: s(f, "d_time", 5), venue: s(f, "d_venue", 80), address: s(f, "d_address", 120), ...placeFromForm(f, "d") };
     if (!isDate(toren.date) || !isTime(toren.time) || !toren.venue) fail(`${mainTitle} için tarih, saat ve yer zorunlu.`);
     if (toren.date < todayIso()) fail("Tören tarihi geçmişte olamaz.");
     events.push({ kind: main.id, title: mainTitle, ...toren });
 
     if (plan.extraKind) {
       const extra = kindOf(plan.extraKind);
-      const e = { date: s(f, "k_date", 10), time: s(f, "k_time", 5), venue: s(f, "k_venue", 80), address: s(f, "k_address", 120) };
+      const e = { date: s(f, "k_date", 10), time: s(f, "k_time", 5), venue: s(f, "k_venue", 80), address: s(f, "k_address", 120), ...placeFromForm(f, "k") };
       if (!isDate(e.date) || !isTime(e.time) || !e.venue) fail(`${extra.title} için tarih, saat ve yer zorunlu.`);
       if (e.date < todayIso()) fail(`${extra.title} tarihi geçmişte olamaz.`);
       events.unshift({ kind: extra.id, title: extra.title, ...e });
@@ -72,6 +73,7 @@ export async function wizardAction(f: FormData) {
       program: plan.wantsProgram ? s(f, "program", 600) : "",
       extraProgram: plan.wantsProgram ? s(f, "k_program", 600) : "",
       theme: plan.theme, font: plan.font, ornament: plan.ornament, message: text,
+      bus: plan.wantsBus ? placeFromForm(f, "bus") : undefined,
       opening: plan.opening,
       familyA: plan.families ? s(f, "familyA", 60) : "",
       familyB: plan.families ? s(f, "familyB", 60) : "",
@@ -106,7 +108,8 @@ export async function wizardAction(f: FormData) {
       }),
       siteUrl(),
       // Uygulama fotoğraflı kapağı gösterir; web davet sayfası bu tasarımı
-      { theme: plan.theme, font: plan.font, ornament: plan.ornament }
+      { theme: plan.theme, font: plan.font, ornament: plan.ornament },
+      placeFromForm(f, "")
     );
     token = event.manageToken;
   } catch (e) {

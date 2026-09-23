@@ -8,6 +8,7 @@ import { DEFAULT_THEME, isTheme } from "@/lib/themes";
 import { isFont, isOrnament } from "@/lib/design";
 import { allow, LIMITS } from "@/lib/ratelimit";
 import { normalizeCode } from "@/lib/tokens";
+import { placeFromForm } from "@/lib/places";
 
 const s = (f: FormData, k: string, max = 120) => String(f.get(k) ?? "").trim().slice(0, max);
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -26,7 +27,7 @@ export async function createAction(f: FormData) {
   const main = kindOf(isMainKind(tur) ? tur : DEFAULT_MAIN);
 
   const events: NewEvent[] = [];
-  const toren = { date: s(f, "d_date"), time: s(f, "d_time"), venue: s(f, "d_venue"), address: s(f, "d_address") };
+  const toren = { date: s(f, "d_date"), time: s(f, "d_time"), venue: s(f, "d_venue"), address: s(f, "d_address"), ...placeFromForm(f, "d") };
   if (!isDate(toren.date) || !isTime(toren.time) || !toren.venue) fail(`${main.title} için tarih, saat ve yer zorunlu.`);
   if (toren.date < todayIso()) fail("Tören tarihi geçmişte olamaz.");
   events.push({ kind: main.id, title: main.title, ...toren });
@@ -34,7 +35,7 @@ export async function createAction(f: FormData) {
   if (f.get("hasKina") === "on") {
     const ikinciTur = s(f, "k_tur", 20);
     const ikinci = kindOf(isExtraKind(ikinciTur) ? ikinciTur : "kina");
-    const e = { date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue"), address: s(f, "k_address") };
+    const e = { date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue"), address: s(f, "k_address"), ...placeFromForm(f, "k") };
     if (!isDate(e.date) || !isTime(e.time) || !e.venue) fail(`${ikinci.title} için tarih, saat ve yer zorunlu.`);
     events.unshift({ kind: ikinci.id, title: ikinci.title, ...e });
   }
@@ -43,6 +44,7 @@ export async function createAction(f: FormData) {
     nameA, nameB, city: s(f, "city", 40), events,
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
     program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
+    bus: placeFromForm(f, "bus"),
   });
   redirect(`/yonet/${admin}`);
 }
@@ -63,6 +65,7 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
       time: s(f, `e_${e.id}_time`),
       venue: s(f, `e_${e.id}_venue`, 80),
       address: s(f, `e_${e.id}_address`),
+      ...placeFromForm(f, `e_${e.id}`),
     };
     if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail(`${e.title} için tarih, saat ve yer zorunlu.`);
     // Tarihi değiştiriyorsa geçmişe alamaz; dokunmadıysa eski tarih olduğu gibi kalır
@@ -76,6 +79,7 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
     program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
     message: s(f, "message", 600),
     font: isFont(s(f, "font", 20)) ? s(f, "font", 20) : undefined,
+    bus: placeFromForm(f, "bus"),
     opening: s(f, "opening", 50),
     familyA: s(f, "familyA", 60), familyB: s(f, "familyB", 60),
     ornament: isOrnament(s(f, "ornament", 20)) ? s(f, "ornament", 20) : undefined,
@@ -140,7 +144,7 @@ export async function addExtraEventAction(adminToken: string, f: FormData) {
   const fail = (m: string) => redirect(`/yonet/${adminToken}/duzenle?hata=${encodeURIComponent(m)}#etkinlik`);
   const tur = s(f, "k_tur", 20);
   const kind = kindOf(isExtraKind(tur) ? tur : "kina");
-  const ev = { kind: kind.id, title: kind.title, date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue", 80), address: s(f, "k_address") };
+  const ev = { kind: kind.id, title: kind.title, date: s(f, "k_date"), time: s(f, "k_time"), venue: s(f, "k_venue", 80), address: s(f, "k_address"), ...placeFromForm(f, "k") };
   if (!isDate(ev.date) || !isTime(ev.time) || !ev.venue) fail(`${kind.title} için tarih, saat ve yer zorunlu.`);
   if (ev.date < todayIso()) fail(`${kind.title} tarihi geçmişte olamaz.`);
   try {

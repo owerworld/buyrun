@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VenuePicker } from "@/components/VenuePicker";
 import { notFound } from "next/navigation";
 import { CoverPicker } from "@/components/CoverPicker";
 import { CATEGORIES } from "@/lib/categories";
@@ -51,11 +52,8 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
           <div><label className="lbl" htmlFor="date">Tarih</label><input type="date" id="date" name="date" required defaultValue={row.event_date} /></div>
           <div><label className="lbl" htmlFor="time">Saat</label><input type="time" id="time" name="time" required defaultValue={row.event_time} /></div>
         </div>
-
-        <label className="lbl" htmlFor="venue">Yer</label>
-        <input type="text" id="venue" name="venue" required maxLength={160} defaultValue={row.venue} />
-        <label className="lbl" htmlFor="address">Adres</label>
-        <input type="text" id="address" name="address" maxLength={400} defaultValue={row.address} />
+        <VenuePicker prefix="" venueName="venue" addressName="address" label="Yer" required note venueMax={160} addressMax={400}
+          placeholder="Örn: Moda Teras" defaultVenue={row.venue} defaultAddress={row.address} defaultLat={row.lat} defaultLng={row.lng} defaultPlaceId={row.place_id} defaultNote={row.directions} />
         <label className="lbl" htmlFor="description">Davetliye not</label>
         <textarea id="description" name="description" maxLength={2000} defaultValue={row.description} />
         <label className="lbl" htmlFor="capacity">Kontenjan (isteğe bağlı)</label>

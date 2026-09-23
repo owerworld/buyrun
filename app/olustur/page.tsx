@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
+import { VenuePicker } from "@/components/VenuePicker";
 import { EXTRA_KINDS, MAIN_KINDS } from "@/lib/events";
 import { createAction } from "../actions";
 
@@ -28,10 +29,7 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
           <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required /></div>
           <div><label className="lbl" htmlFor="d_time">Saat</label><input type="time" id="d_time" name="d_time" required /></div>
         </div>
-        <label className="lbl" htmlFor="d_venue">Salon / yer</label>
-        <input type="text" id="d_venue" name="d_venue" required maxLength={80} />
-        <label className="lbl" htmlFor="d_address">Adres</label>
-        <input type="text" id="d_address" name="d_address" maxLength={120} placeholder="İlçe, şehir" />
+        <VenuePicker prefix="d" venueName="d_venue" addressName="d_address" label="Salon / yer" required note placeholder="Örn: Podyum Davet" />
 
         <div className="form-section-heading"><span>03</span><h2>Diğer ayrıntılar <small>İsteğe bağlı</small></h2></div>
         <details className="form-disclosure">
@@ -42,20 +40,16 @@ export default async function Olustur({ searchParams }: { searchParams: Promise<
             <div><label className="lbl" htmlFor="k_date">Tarih</label><input type="date" id="k_date" name="k_date" /></div>
             <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" /></div>
           </div>
-          <label className="lbl" htmlFor="k_venue">Yer</label>
-          <input type="text" id="k_venue" name="k_venue" maxLength={80} placeholder="Örn: Kız evi ya da davet salonu" />
-          <label className="lbl" htmlFor="k_address">Adres</label>
-          <input type="text" id="k_address" name="k_address" maxLength={120} />
+          <VenuePicker prefix="k" venueName="k_venue" addressName="k_address" label="Yer" note placeholder="Örn: Kız evi ya da davet salonu" />
           <label className="lbl" htmlFor="k_program">Bu günün programı</label>
           <textarea id="k_program" name="k_program" maxLength={600} placeholder={"Her satıra bir madde:\n20:00 Karşılama\n21:30 Kına yakma"} />
         </details>
 
         <details className="form-disclosure">
           <summary>Servis ve tören günü programı</summary>
-          <div className="grid2">
-            <div><label className="lbl" htmlFor="busFrom">Servis kalkış yeri</label><input type="text" id="busFrom" name="busFrom" maxLength={120} /></div>
-            <div><label className="lbl" htmlFor="busTime">Kalkış saati</label><input type="time" id="busTime" name="busTime" /></div>
-          </div>
+          <VenuePicker prefix="bus" venueName="busFrom" label="Servis kalkış yeri" venueMax={120} placeholder="Örn: Heykel meydanı" />
+          <label className="lbl" htmlFor="busTime">Kalkış saati</label>
+          <input type="time" id="busTime" name="busTime" style={{ maxWidth: 180 }} />
           <label className="lbl" htmlFor="busNote">Servis notu</label>
           <input type="text" id="busNote" name="busNote" maxLength={160} placeholder="Örn: Dönüş 23:30'da salondan" />
           <label className="lbl" htmlFor="program">Tören günü programı</label>

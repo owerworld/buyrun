@@ -13,6 +13,7 @@ type EventRow = {
   description: string; cover_id: string; cover_data: string | null; capacity: number | null; delete_after: string; created_at: string;
   /** Web sihirbazının tasarımı. Boşsa (uygulamadan oluşturulan etkinlik) fotoğraflı kapak kullanılır. */
   theme: string; font: string; ornament: string;
+  lat: number | null; lng: number | null; place_id: string; directions: string;
 };
 
 /** Etkinliğin tasarım eksenleri; değerler lib/themes.ts ve lib/design.ts listelerinden gelir. */
@@ -42,6 +43,11 @@ export async function mobileReady() {
       await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT ''`);
       await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS font TEXT NOT NULL DEFAULT ''`);
       await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS ornament TEXT NOT NULL DEFAULT ''`);
+      // Mekânın konumu (web'deki mekân seçiciden); uygulama henüz göndermiyor
+      await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION`);
+      await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
+      await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS place_id TEXT NOT NULL DEFAULT ''`);
+      await q(`ALTER TABLE mobile_events ADD COLUMN IF NOT EXISTS directions TEXT NOT NULL DEFAULT ''`);
       await q(`CREATE TABLE IF NOT EXISTS mobile_guests (
         id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES mobile_events(id) ON DELETE CASCADE,
         name TEXT NOT NULL, token TEXT UNIQUE NOT NULL,
@@ -122,6 +128,11 @@ function publicFields(row: EventRow) {
     description: row.description, coverId: row.cover_id, coverData: row.cover_data, capacity: row.capacity };
 }
 /** Davet sayfasının tasarımı. Uygulama bu alanları tanımaz; API yanıtına bu yüzden eklenmez. */
+/** Davet sayfasındaki yol tarifi için mekânın konumu. */
+export const placeOf = (row: EventRow) => ({
+  venue: row.venue, address: row.address, lat: row.lat, lng: row.lng, placeId: row.place_id, directions: row.directions,
+});
+export interface EventPlace { lat: number | null; lng: number | null; placeId: string; directions: string }
 export const designOf = (row: EventRow): EventDesign | null =>
   row.theme ? { theme: row.theme, font: row.font || "klasik", ornament: row.ornament || "sirma" } : null;
 export function guestFields(row: GuestRow, event: EventRow, origin: string) {
@@ -143,23 +154,30 @@ export async function publicEvent(row: EventRow, guestToken?: string) {
   if (!guest) throw new MobileError("Bu kişisel davet bağlantısı geçersiz.", 404);
   return { ...result, guest: { name: guest.name, status: guest.status, count: guest.count, note: guest.note } };
 }
-export async function createMobileEvent(data: MobileInput, origin: string, design?: EventDesign) {
+export async function createMobileEvent(data: MobileInput, origin: string, design?: EventDesign, place?: EventPlace) {
   await mobileReady();
   const rows = await q<EventRow>(`INSERT INTO mobile_events
-    (id,manage_token,invite_token,title,category,host_name,event_date,event_time,venue,address,description,cover_id,cover_data,capacity,delete_after,theme,font,ornament)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
+    (id,manage_token,invite_token,title,category,host_name,event_date,event_time,venue,address,description,cover_id,cover_data,capacity,delete_after,theme,font,ornament,lat,lng,place_id,directions)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING *`,
     [id(), token(24), token(24), data.title, data.category, data.hostName, data.date, data.time, data.venue,
       data.address, data.description, data.coverId, data.coverData, data.capacity, addDays(data.date, 90),
-      design?.theme ?? "", design?.font ?? "", design?.ornament ?? ""]);
+      design?.theme ?? "", design?.font ?? "", design?.ornament ?? "",
+      place?.lat ?? null, place?.lng ?? null, place?.placeId ?? "", place?.directions ?? ""]);
   return managedEvent(rows[0], origin);
 }
 export async function editMobileEvent(row: EventRow, data: MobileInput, origin: string) {
   const updated = (await q<EventRow>(`UPDATE mobile_events SET title=$1,category=$2,host_name=$3,event_date=$4,
-    event_time=$5,venue=$6,address=$7,description=$8,cover_id=$9,cover_data=$10,capacity=$11,delete_after=$12 WHERE id=$13 RETURNING *`,
+    event_time=$5,venue=$6,address=$7,description=$8,cover_id=$9,cover_data=$10,capacity=$11,delete_after=$12,
+    lat=CASE WHEN venue=$6 THEN lat END, lng=CASE WHEN venue=$6 THEN lng END,
+    place_id=CASE WHEN venue=$6 THEN place_id ELSE '' END WHERE id=$13 RETURNING *`,
     [data.title,data.category,data.hostName,data.date,data.time,data.venue,data.address,data.description,data.coverId,data.coverData,data.capacity,addDays(data.date,90),row.id]))[0];
   return managedEvent(updated, origin);
 }
 export const eventInput = (row: EventRow): MobileInput => publicFields(row);
+/** Web'deki düzenleme ekranından konumu yazar (mekân adı kaydedildikten sonra). */
+export async function setMobilePlace(row: EventRow, p: EventPlace) {
+  await q(`UPDATE mobile_events SET lat=$1, lng=$2, place_id=$3, directions=$4 WHERE id=$5`, [p.lat, p.lng, p.placeId, p.directions, row.id]);
+}
 /** Web'deki düzenleme ekranından tasarımı değiştirir. Boş tema, fotoğraflı kapağa dönmek demektir. */
 export async function setMobileDesign(row: EventRow, design: EventDesign) {
   await q(`UPDATE mobile_events SET theme=$1, font=$2, ornament=$3 WHERE id=$4`, [design.theme, design.font, design.ornament, row.id]);

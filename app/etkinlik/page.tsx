@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VenuePicker } from "@/components/VenuePicker";
 import { CoverPicker } from "@/components/CoverPicker";
 import { CATEGORIES } from "@/lib/categories";
 import { createEventAction } from "./actions";
@@ -40,11 +41,8 @@ export default async function Etkinlik({ searchParams }: { searchParams: Promise
           <div><label className="lbl" htmlFor="date">Tarih</label><input type="date" id="date" name="date" required /></div>
           <div><label className="lbl" htmlFor="time">Saat</label><input type="time" id="time" name="time" required /></div>
         </div>
-
-        <label className="lbl" htmlFor="venue">Yer</label>
-        <input type="text" id="venue" name="venue" required maxLength={160} placeholder="Örn: Moda Teras" />
-        <label className="lbl" htmlFor="address">Adres</label>
-        <input type="text" id="address" name="address" maxLength={400} placeholder="Mahalle, ilçe, şehir" />
+        <VenuePicker prefix="" venueName="venue" addressName="address" label="Yer" required note venueMax={160} addressMax={400}
+          placeholder="Örn: Moda Teras" />
 
         <label className="lbl" htmlFor="description">Davetliye not</label>
         <textarea id="description" name="description" maxLength={2000} placeholder="Örn: Kek bende, sen sadece gel. Otopark binanın altında." />

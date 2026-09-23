@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ThemeStyle } from "@/components/Theme";
+import { VenuePicker } from "@/components/VenuePicker";
 import { WizardPreview } from "@/components/WizardPreview";
 import { fontOf, ornamentOf } from "@/lib/design";
 import { kindOf } from "@/lib/events";
@@ -110,10 +111,8 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
               <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required min={todayIso()} /></div>
               <div><label className="lbl" htmlFor="d_time">Saat</label><input type="time" id="d_time" name="d_time" required /></div>
             </div>
-            <label className="lbl" htmlFor="d_venue">Salon / yer</label>
-            <input type="text" id="d_venue" name="d_venue" required maxLength={80} />
-            <label className="lbl" htmlFor="d_address">Adres</label>
-            <input type="text" id="d_address" name="d_address" maxLength={120} placeholder="İlçe, şehir" />
+            <VenuePicker prefix="d" venueName="d_venue" addressName="d_address" label="Salon / yer" required note
+              placeholder="Örn: Podyum Davet" />
 
             {extra && (
               <>
@@ -122,20 +121,17 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
                   <div><label className="lbl" htmlFor="k_date">Tarih</label><input type="date" id="k_date" name="k_date" required min={todayIso()} /></div>
                   <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" required /></div>
                 </div>
-                <label className="lbl" htmlFor="k_venue">Yer</label>
-                <input type="text" id="k_venue" name="k_venue" required maxLength={80} placeholder={extraOrnek[extra.id]?.[0]} />
-                <label className="lbl" htmlFor="k_address">Adres</label>
-                <input type="text" id="k_address" name="k_address" maxLength={120} />
+                <VenuePicker prefix="k" venueName="k_venue" addressName="k_address" label="Yer" required note
+                  placeholder={extraOrnek[extra.id]?.[0]} />
               </>
             )}
 
             {plan.wantsBus && (
               <>
                 <div className="form-section-heading"><span>·</span><h2>Servis</h2></div>
-                <div className="grid2">
-                  <div><label className="lbl" htmlFor="busFrom">Kalkış yeri</label><input type="text" id="busFrom" name="busFrom" maxLength={120} placeholder="Örn: Heykel meydanı" /></div>
-                  <div><label className="lbl" htmlFor="busTime">Kalkış saati</label><input type="time" id="busTime" name="busTime" /></div>
-                </div>
+                <VenuePicker prefix="bus" venueName="busFrom" label="Kalkış yeri" venueMax={120} placeholder="Örn: Heykel meydanı" />
+                <label className="lbl" htmlFor="busTime">Kalkış saati</label>
+                <input type="time" id="busTime" name="busTime" style={{ maxWidth: 180 }} />
                 <label className="lbl" htmlFor="busNote">Servis notu</label>
                 <input type="text" id="busNote" name="busNote" maxLength={160} placeholder="Örn: Dönüş 23:30'da salondan" />
               </>
@@ -167,10 +163,8 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
               <div><label className="lbl" htmlFor="date">Tarih</label><input type="date" id="date" name="date" required min={todayIso()} /></div>
               <div><label className="lbl" htmlFor="time">Saat</label><input type="time" id="time" name="time" required /></div>
             </div>
-            <label className="lbl" htmlFor="venue">Yer</label>
-            <input type="text" id="venue" name="venue" required maxLength={160} placeholder="Örn: Moda Teras" />
-            <label className="lbl" htmlFor="address">Adres</label>
-            <input type="text" id="address" name="address" maxLength={400} placeholder="Mahalle, ilçe, şehir" />
+            <VenuePicker prefix="" venueName="venue" addressName="address" label="Yer" required note venueMax={160} addressMax={400}
+              placeholder="Örn: Moda Teras" />
 
             {plan.request === "getir" && (
               <>

@@ -5,6 +5,7 @@ import { EXTRA_KINDS, extraOf, isExtraKind } from "@/lib/events";
 import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
 import { FontPicker, OrnamentPicker } from "@/components/DesignPickers";
+import { VenuePicker } from "@/components/VenuePicker";
 import { addExtraEventAction, removeExtraEventAction, updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
@@ -65,18 +66,18 @@ export default async function Duzenle({ params, searchParams }: {
                 <input type="time" id={`e_${e.id}_time`} name={`e_${e.id}_time`} required defaultValue={e.event_time} />
               </div>
             </div>
-            <label className="lbl" htmlFor={`e_${e.id}_venue`}>{isExtraKind(e.kind) ? "Yer" : "Salon / yer"}</label>
-            <input type="text" id={`e_${e.id}_venue`} name={`e_${e.id}_venue`} required maxLength={80} defaultValue={e.venue} />
-            <label className="lbl" htmlFor={`e_${e.id}_address`}>Adres</label>
-            <input type="text" id={`e_${e.id}_address`} name={`e_${e.id}_address`} maxLength={120} placeholder="İlçe, şehir" defaultValue={e.address} />
+            <VenuePicker prefix={`e_${e.id}`} venueName={`e_${e.id}_venue`} addressName={`e_${e.id}_address`}
+              label={isExtraKind(e.kind) ? "Yer" : "Salon / yer"} required note
+              defaultVenue={e.venue} defaultAddress={e.address} defaultLat={e.lat} defaultLng={e.lng}
+              defaultPlaceId={e.place_id} defaultNote={e.directions} />
           </div>
         ))}
 
         <h2 style={{ marginTop: 20 }}>Servis ve program</h2>
-        <div className="grid2">
-          <div><label className="lbl" htmlFor="busFrom">Servis kalkış yeri</label><input type="text" id="busFrom" name="busFrom" maxLength={120} defaultValue={inv.bus_from} /></div>
-          <div><label className="lbl" htmlFor="busTime">Kalkış saati</label><input type="time" id="busTime" name="busTime" defaultValue={inv.bus_time} /></div>
-        </div>
+        <VenuePicker prefix="bus" venueName="busFrom" label="Servis kalkış yeri" venueMax={120}
+          defaultVenue={inv.bus_from} defaultLat={inv.bus_lat} defaultLng={inv.bus_lng} defaultPlaceId={inv.bus_place} />
+        <label className="lbl" htmlFor="busTime">Kalkış saati</label>
+        <input type="time" id="busTime" name="busTime" defaultValue={inv.bus_time} style={{ maxWidth: 180 }} />
         <label className="lbl" htmlFor="busNote">Servis notu</label>
         <input type="text" id="busNote" name="busNote" maxLength={160} placeholder="Örn: Dönüş 23:30'da salondan" defaultValue={inv.bus_note} />
         <label className="lbl" htmlFor="program">Tören günü programı</label>
@@ -131,10 +132,7 @@ export default async function Duzenle({ params, searchParams }: {
             <div><label className="lbl" htmlFor="k_date">Tarih</label><input type="date" id="k_date" name="k_date" required /></div>
             <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" required /></div>
           </div>
-          <label className="lbl" htmlFor="k_venue">Yer</label>
-          <input type="text" id="k_venue" name="k_venue" required maxLength={80} placeholder="Örn: Kız evi ya da davet salonu" />
-          <label className="lbl" htmlFor="k_address">Adres</label>
-          <input type="text" id="k_address" name="k_address" maxLength={120} placeholder="İlçe, şehir" />
+          <VenuePicker prefix="k" venueName="k_venue" addressName="k_address" label="Yer" required note placeholder="Örn: Kız evi ya da davet salonu" />
           <label className="lbl" htmlFor="k_program">Bu günün programı (isteğe bağlı)</label>
           <textarea id="k_program" name="k_program" maxLength={600} placeholder={"Her satıra bir madde:\n20:00 Karşılama\n21:30 Kına yakma"} />
           <label className="tog small" style={{ marginTop: 12 }}>

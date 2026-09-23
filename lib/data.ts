@@ -9,9 +9,15 @@ export type Status = "bekliyor" | "geliyor" | "gelmiyor";
 export interface Invitation {
   id: string; admin_token: string; name_a: string; name_b: string; city: string; main_date: string;
   bus_from: string; bus_time: string; bus_note: string; program: string; extra_program: string; message: string; theme: string;
-  font: string; ornament: string; opening: string; family_a: string; family_b: string; recovery_code: string; delete_after: string;
+  font: string; ornament: string; opening: string; family_a: string; family_b: string;
+  bus_lat: number | null; bus_lng: number | null; bus_place: string; recovery_code: string; delete_after: string;
 }
-export interface EventRow { id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number; }
+export interface EventRow {
+  id: string; invitation_id: string; kind: string; title: string; event_date: string; event_time: string; venue: string; address: string; sort: number;
+  lat: number | null; lng: number | null; place_id: string; directions: string;
+}
+/** Mekân seçicinin getirdiği konum. Koordinat yoksa yol tarifi yer adıyla aranır. */
+export interface PlaceInput { lat?: number | null; lng?: number | null; placeId?: string; directions?: string }
 export interface Family { id: string; invitation_id: string; side: Side; panel_token: string; }
 export interface Guest {
   id: string; invitation_id: string; family_id: string; name: string; token: string;
@@ -21,7 +27,7 @@ export interface Guest {
 export const SIDE_LABEL: Record<Side, string> = { kiz: "Kız evi", oglan: "Oğlan evi" };
 export const list = (s: string) => (s ? s.split(",").filter(Boolean) : []);
 
-export interface NewEvent { kind: string; title: string; date: string; time: string; venue: string; address: string; }
+export interface NewEvent extends PlaceInput { kind: string; title: string; date: string; time: string; venue: string; address: string; }
 export interface NewInvitation {
   nameA: string; nameB: string; city: string;
   events: NewEvent[]; busFrom: string; busTime: string; busNote: string; program: string; extraProgram: string; theme: string;
@@ -33,6 +39,8 @@ export interface NewInvitation {
   opening?: string;
   /** İki ailenin adı; boşsa davetiyede aile satırı çıkmaz */
   familyA?: string; familyB?: string;
+  /** Servis kalkış yerinin konumu */
+  bus?: PlaceInput;
 }
 
 /** Veri saklama kuralı: son etkinlikten 90 gün sonra her şey silinir. */
@@ -52,11 +60,13 @@ export async function createInvitation(input: NewInvitation) {
     [inv, admin, input.nameA, input.nameB, input.city, mainDate, input.busFrom, input.busTime, input.busNote, input.program, input.extraProgram, input.message ?? "", input.theme, input.font || "klasik", input.ornament || "sirma",
      input.opening ?? "", input.familyA ?? "", input.familyB ?? "", recovery, deleteAfter]
   );
+  if (input.bus) await setBusPlace(inv, input.bus);
   let i = 0;
   for (const e of input.events) {
     await q(
-      `INSERT INTO events (id, invitation_id, kind, title, event_date, event_time, venue, address, sort) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-      [id(), inv, e.kind, e.title, e.date, e.time, e.venue, e.address, i++]
+      `INSERT INTO events (id, invitation_id, kind, title, event_date, event_time, venue, address, sort, lat, lng, place_id, directions)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+      [id(), inv, e.kind, e.title, e.date, e.time, e.venue, e.address, i++, e.lat ?? null, e.lng ?? null, e.placeId ?? "", e.directions ?? ""]
     );
   }
   for (const side of ["kiz", "oglan"] as Side[]) {
@@ -65,12 +75,14 @@ export async function createInvitation(input: NewInvitation) {
   return admin;
 }
 
-export interface EditEvent { id: string; date: string; time: string; venue: string; address: string; }
+export interface EditEvent extends PlaceInput { id: string; date: string; time: string; venue: string; address: string; }
 export interface EditInvitation {
   nameA: string; nameB: string; city: string;
   events: EditEvent[]; busFrom: string; busTime: string; busNote: string; program: string; extraProgram: string; theme: string;
   message?: string; font?: string; ornament?: string;
   opening?: string; familyA?: string; familyB?: string;
+  /** Servis kalkış yerinin konumu */
+  bus?: PlaceInput;
 }
 
 /** Çift davetiyesini sonradan düzenler. Etkinlikler yerinde güncellenir, davetli linkleri bozulmaz. */
@@ -83,8 +95,9 @@ export async function updateInvitation(adminToken: string, input: EditInvitation
   const edits = input.events.filter((e) => events.some((x) => x.id === e.id));
   for (const e of edits) {
     await q(
-      `UPDATE events SET event_date = $1, event_time = $2, venue = $3, address = $4 WHERE id = $5 AND invitation_id = $6`,
-      [e.date, e.time, e.venue, e.address, e.id, inv.id]
+      `UPDATE events SET event_date = $1, event_time = $2, venue = $3, address = $4,
+         lat = $5, lng = $6, place_id = $7, directions = $8 WHERE id = $9 AND invitation_id = $10`,
+      [e.date, e.time, e.venue, e.address, e.lat ?? null, e.lng ?? null, e.placeId ?? "", e.directions ?? "", e.id, inv.id]
     );
   }
 
@@ -102,6 +115,12 @@ export async function updateInvitation(adminToken: string, input: EditInvitation
      input.message ?? inv.message ?? "", input.font || inv.font || "klasik", input.ornament || inv.ornament || "sirma",
      input.opening ?? inv.opening ?? "", input.familyA ?? inv.family_a ?? "", input.familyB ?? inv.family_b ?? "", deleteAfter, inv.id]
   );
+  if (input.bus) await setBusPlace(inv.id, input.bus);
+}
+
+/** Servis kalkış yerinin konumu; kalkış yeri silinirse konum da silinir. */
+async function setBusPlace(invId: string, p: PlaceInput) {
+  await q(`UPDATE invitations SET bus_lat = $1, bus_lng = $2, bus_place = $3 WHERE id = $4`, [p.lat ?? null, p.lng ?? null, p.placeId ?? "", invId]);
 }
 
 async function eventsOf(invId: string) {
@@ -232,9 +251,9 @@ export async function addExtraEvent(adminToken: string, e: NewEvent, inviteExist
 
   const eventId = id();
   await q(
-    `INSERT INTO events (id, invitation_id, kind, title, event_date, event_time, venue, address, sort)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0)`,
-    [eventId, data.inv.id, e.kind, kindOf(e.kind).title, e.date, e.time, e.venue, e.address]
+    `INSERT INTO events (id, invitation_id, kind, title, event_date, event_time, venue, address, sort, lat, lng, place_id, directions)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0,$9,$10,$11,$12)`,
+    [eventId, data.inv.id, e.kind, kindOf(e.kind).title, e.date, e.time, e.venue, e.address, e.lat ?? null, e.lng ?? null, e.placeId ?? "", e.directions ?? ""]
   );
   await q(`UPDATE invitations SET extra_program = $1 WHERE id = $2`, [program, data.inv.id]);
   if (inviteExisting) {

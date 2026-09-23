@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { designOf, mobileEventByToken, publicEvent } from "@/lib/mobile";
+import { designOf, mobileEventByToken, placeOf, publicEvent } from "@/lib/mobile";
 import { ThemeStyle } from "@/components/Theme";
 import Invitation from "./invitation";
 export const dynamic = "force-dynamic";
@@ -21,6 +21,6 @@ export default async function MobileInvitation({params,searchParams}: {
   const design = designOf(row);
   return <>
     {design && <ThemeStyle theme={design.theme} />}
-    <Invitation event={event} design={design} inviteToken={token} initialGuestToken={guestToken || null} />
+    <Invitation event={event} design={design} place={placeOf(row)} inviteToken={token} initialGuestToken={guestToken || null} />
   </>;
 }

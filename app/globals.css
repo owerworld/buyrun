@@ -352,3 +352,23 @@ details summary{cursor:pointer;font-weight:700}
 .etkinlik-kapak .names{--k:.64;line-height:1.1}
 .etkinlik-kapak.kucuk .names{--k:.46}
 .etkinlik-kapak.f-modern .names{line-height:1.35}
+/* Mekân seçici */
+.yer-kutu{position:relative}
+.yer-liste{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px #1a0a1224;max-height:320px;overflow:auto}
+.yer-liste li{padding:10px 12px;border-radius:8px;cursor:pointer}
+.yer-liste li[aria-selected="true"],.yer-liste li:hover{background:var(--chip)}
+.yer-liste b{display:block;font-weight:500;overflow-wrap:anywhere}
+.yer-liste small{display:block;margin-top:2px;font-size:.8rem;color:var(--muted);overflow-wrap:anywhere}
+.yer-liste .yer-kaynak{cursor:default;font-size:.7rem;color:var(--muted);padding:6px 12px;text-align:right}
+.yer-liste .yer-kaynak:hover{background:none}
+.yer-durum{margin:6px 0 0;font-size:.82rem;line-height:1.5;color:var(--muted)}
+.yer-durum.ok{color:var(--ok)}
+.yer-durum a{color:var(--gold-ink)}
+/* Yol tarifi */
+.yol{margin-top:8px}
+.yol-not{margin:0 0 8px;font-size:.88rem;line-height:1.5}
+.yol-not b{font-weight:600}
+.yol .yol-ana{margin:2px 0 0}
+.yol-diger{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:8px 0 0;font-size:.82rem}
+.yol-diger span{color:var(--muted)}
+.yol-diger a{display:inline-flex;align-items:center;min-height:32px}

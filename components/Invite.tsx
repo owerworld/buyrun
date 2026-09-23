@@ -3,6 +3,7 @@ import { isExtraKind, mainOf, programTitle } from "@/lib/events";
 import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
 import { fontOf, ornamentOf } from "@/lib/design";
 import { Ornament } from "./Ornament";
+import { Directions } from "./Directions";
 
 type HeroInv = Pick<Invitation, "name_a" | "name_b" | "main_date" | "city"> & {
   font?: string; ornament?: string; opening?: string; family_a?: string; family_b?: string;
@@ -46,7 +47,6 @@ export function MessageCard({ inv }: { inv: Invitation }) {
   );
 }
 
-const mapsUrl = (e: EventRow) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${e.venue} ${e.address}`)}`;
 
 export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", calendarHref }: {
   inv: Invitation; events: EventRow[]; title?: string; calendarHref?: string;
@@ -70,12 +70,14 @@ export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", 
             <h3>{e.title}</h3>
             <p>{longDate(e.event_date)} · {e.event_time}</p>
             <p className="muted">{e.venue}{e.address ? `, ${e.address}` : ""}</p>
-            <p><a href={mapsUrl(e)} target="_blank" rel="noopener noreferrer" className="small">Yol tarifi</a></p>
+            <Directions hotels={!isExtraKind(e.kind)}
+              place={{ venue: e.venue, address: e.address, lat: e.lat, lng: e.lng, placeId: e.place_id, directions: e.directions }} />
           </div>
         </div>
       ))}
       {hasWedding && inv.bus_from && (
-        <div className="bus"><span aria-hidden="true">🚌</span><div><b>Servis:</b> {inv.bus_from}{inv.bus_time ? `, saat ${inv.bus_time}` : ""}.{inv.bus_note && <span className="muted"> {inv.bus_note}</span>}</div></div>
+        <div className="bus"><span aria-hidden="true">🚌</span><div><b>Servis:</b> {inv.bus_from}{inv.bus_time ? `, saat ${inv.bus_time}` : ""}.{inv.bus_note && <span className="muted"> {inv.bus_note}</span>}
+          {inv.bus_lat != null && <Directions className="yol-servis" place={{ venue: inv.bus_from, lat: inv.bus_lat, lng: inv.bus_lng, placeId: inv.bus_place }} />}</div></div>
       )}
       {events.map((e) => {
         const lines = programOf(e);
