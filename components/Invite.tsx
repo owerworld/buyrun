@@ -1,19 +1,24 @@
 import type { EventRow, Invitation } from "@/lib/data";
 import { isExtraKind, mainOf, programTitle } from "@/lib/events";
 import { dayNum, longDate, monShort, shortDate } from "@/lib/format";
-import { Sirma } from "./Sirma";
+import { fontOf, ornamentOf } from "@/lib/design";
+import { Ornament } from "./Ornament";
 
-export function Hero({ inv, greeting }: { inv: Invitation; greeting: React.ReactNode }) {
+type HeroInv = Pick<Invitation, "name_a" | "name_b" | "main_date" | "city"> & { font?: string; ornament?: string };
+
+/** Davetiyenin kapağı. Yazı karakteri ve süsleme davetiyeye kayıtlı tasarımdan gelir. */
+export function Hero({ inv, greeting, compact = false }: { inv: HeroInv; greeting?: React.ReactNode; compact?: boolean }) {
+  const font = fontOf(inv.font).id, ornament = ornamentOf(inv.ornament).id;
   return (
-    <section className="hero" aria-label="Davetiye">
+    <section className={`hero f-${font} o-${ornament}${compact ? " kucuk" : ""}`} aria-label="Davetiye">
       <div className="frame">
-        <Sirma pos="t" /><Sirma pos="b" />
+        <Ornament kind={ornament} />
         <div className="inner">
           <p className="pre">Mutluluğumuza ortak olun</p>
           <h1 className="names"><span>{inv.name_a}</span><span className="amp">ile</span><span>{inv.name_b}</span></h1>
           <p className="date">{shortDate(inv.main_date)}</p>
           {inv.city && <p className="city">{inv.city}</p>}
-          <p className="greet">{greeting}</p>
+          {greeting && <p className="greet">{greeting}</p>}
         </div>
       </div>
     </section>

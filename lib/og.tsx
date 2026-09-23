@@ -16,20 +16,39 @@ type LoadedFonts = Awaited<ReturnType<typeof readFonts>>;
 let fontCache: Promise<LoadedFonts> | null = null;
 
 async function readFonts() {
-  const [disp, ui, uiBold] = await Promise.all([
+  const [disp, ui, uiBold, dispItalic, vibes, playfair, josefin] = await Promise.all([
     readFile(join(FONT_DIR, "cormorant-600.ttf")),
     readFile(join(FONT_DIR, "manrope-500.ttf")),
     readFile(join(FONT_DIR, "manrope-700.ttf")),
+    readFile(join(FONT_DIR, "cormorant-400i.ttf")),
+    readFile(join(FONT_DIR, "greatvibes-400.ttf")),
+    readFile(join(FONT_DIR, "playfair-500.ttf")),
+    readFile(join(FONT_DIR, "josefin-300.ttf")),
   ]);
   // Türkçe karakterler için gömülü yazı tipleri (ç ğ ı İ ö ş ü)
   return [
     { name: "Cormorant", data: disp, weight: 600 as const, style: "normal" as const },
     { name: "Manrope", data: ui, weight: 500 as const, style: "normal" as const },
     { name: "Manrope", data: uiBold, weight: 700 as const, style: "normal" as const },
+    { name: "Cormorant", data: dispItalic, weight: 400 as const, style: "italic" as const },
+    { name: "GreatVibes", data: vibes, weight: 400 as const, style: "normal" as const },
+    { name: "Playfair", data: playfair, weight: 500 as const, style: "normal" as const },
+    { name: "Josefin", data: josefin, weight: 300 as const, style: "normal" as const },
   ];
 }
 
 const fonts = () => (fontCache ??= readFonts());
+
+/** İsimler, davetiyede seçilen yazı karakteriyle yazılır (lib/design.ts ile aynı eşleme). */
+function nameFont(font: string | undefined, size: number) {
+  switch (font) {
+    case "kaligrafi": return { fontFamily: "GreatVibes", fontWeight: 400, fontSize: Math.round(size * 1.12) } as const;
+    case "gorkemli": return { fontFamily: "Playfair", fontWeight: 500, fontSize: Math.round(size * 0.86) } as const;
+    case "modern": return { fontFamily: "Josefin", fontWeight: 300, fontSize: Math.round(size * 0.58), letterSpacing: "0.16em", textTransform: "uppercase" } as const;
+    case "siir": return { fontFamily: "Cormorant", fontWeight: 400, fontStyle: "italic", fontSize: size } as const;
+    default: return { fontFamily: "Cormorant", fontWeight: 600, fontSize: size } as const;
+  }
+}
 
 /** İsimler uzadıkça yazı küçülsün ki poster taşmasın. */
 function nameSize(text: string) {
@@ -84,9 +103,7 @@ export async function posterImage(inv: Invitation, label: string) {
               flexWrap: "wrap",
               margin: "26px 0 0",
               maxWidth: 1000,
-              fontFamily: "Cormorant",
-              fontWeight: 600,
-              fontSize: size,
+              ...nameFont(inv.font, size),
               lineHeight: 1.1,
               color: CREAM,
               textAlign: "center",
@@ -202,9 +219,9 @@ export async function storyImage(inv: Invitation, events: EventRow[]) {
               lineHeight: 1.05,
             }}
           >
-            <div style={{ display: "flex", fontSize: size }}>{inv.name_a}</div>
+            <div style={{ display: "flex", ...nameFont(inv.font, size) }}>{inv.name_a}</div>
             <div style={{ display: "flex", fontSize: Math.round(size * 0.5), margin: "10px 0", color: t.accent }}>ile</div>
-            <div style={{ display: "flex", fontSize: size }}>{inv.name_b}</div>
+            <div style={{ display: "flex", ...nameFont(inv.font, size) }}>{inv.name_b}</div>
           </div>
 
           <div style={{ display: "flex", margin: "52px 0" }}><Ornament color={t.frame} /></div>

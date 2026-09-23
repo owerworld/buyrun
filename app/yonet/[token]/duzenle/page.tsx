@@ -4,6 +4,7 @@ import { getAdmin, onlyGuestsOf } from "@/lib/data";
 import { EXTRA_KINDS, extraOf, isExtraKind } from "@/lib/events";
 import { KindPicker } from "@/components/KindPicker";
 import { ThemePicker } from "@/components/Theme";
+import { FontPicker, OrnamentPicker } from "@/components/DesignPickers";
 import { addExtraEventAction, removeExtraEventAction, updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
@@ -80,6 +81,8 @@ export default async function Duzenle({ params, searchParams }: {
 
         <div className="form-section-heading"><span>✦</span><h2>Görünüm</h2></div>
         <ThemePicker current={inv.theme} />
+        <FontPicker current={inv.font} names={`${inv.name_a} & ${inv.name_b}`} />
+        <OrnamentPicker current={inv.ornament} />
         <div className="btns" style={{ marginTop: 18 }}>
           <button className="btn" type="submit">Değişiklikleri kaydet</button>
           <Link className="btn ghost" href={`/yonet/${token}`}>Vazgeç</Link>

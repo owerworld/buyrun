@@ -19,6 +19,12 @@ export interface Option {
   hint?: string;
 }
 
+/**
+ * Sorunun nasıl gösterileceği. Metin listesi yerine görsel seçim kartları:
+ * renk örnekleri, süsleme örneği, yazı karakteri örneği ya da kapak görseli.
+ */
+export type Look = "liste" | "kutular" | "renk" | "susleme" | "yazi" | "kapak";
+
 export interface Question {
   id: string;
   /** Soru başlığı */
@@ -26,6 +32,8 @@ export interface Question {
   /** Başlığın altındaki kısa cümle */
   lead?: string;
   options: Option[];
+  /** Görünüm; boşsa liste */
+  look?: Look;
   /** Bu soru yalnızca koşul sağlanırsa sorulur */
   when?: (a: Answers) => boolean;
 }
@@ -39,6 +47,7 @@ export const QUESTIONS: Question[] = [
     id: "tur",
     title: "Ne kutluyoruz?",
     lead: "Buradan sonrası size göre şekillenecek.",
+    look: "kutular",
     options: [
       { id: "dugun", label: "Düğün", hint: "Nikâh ve düğün" },
       { id: "nisan", label: "Nişan" },
@@ -65,26 +74,62 @@ export const QUESTIONS: Question[] = [
     id: "ton",
     title: "Davetiniz nasıl konuşsun?",
     options: [
-      { id: "zarif", label: "Zarif ve ölçülü" },
-      { id: "sicak", label: "Sıcak ve içten" },
-      { id: "neseli", label: "Neşeli ve esprili" },
+      { id: "zarif", label: "Zarif ve ölçülü", hint: "“Sizleri aramızda görmekten onur duyarız.”" },
+      { id: "sicak", label: "Sıcak ve içten", hint: "“Bu güzel günde yanımızda olmanızı çok isteriz.”" },
+      { id: "neseli", label: "Neşeli ve esprili", hint: "“Pistte yeriniz hazır, kaçmak yok!”" },
+    ],
+  },
+  {
+    id: "renk",
+    title: "Hangi renkler size daha yakın?",
+    lead: "İçinizden geleni seçin; davetiye bu renklere bürünecek.",
+    look: "renk",
+    when: isToren,
+    options: [
+      { id: "lal", label: "Kına kırmızısı", hint: "Al & altın" },
+      { id: "klasik", label: "Bordo", hint: "Bordo & altın" },
+      { id: "gul", label: "Pudra gül", hint: "Gül kurusu & bakır" },
+      { id: "zumrut", label: "Zümrüt", hint: "Zümrüt & altın" },
+      { id: "gece", label: "Gece mavisi", hint: "Lacivert & altın" },
+      { id: "krem", label: "Toprak", hint: "Kum & zeytin" },
+      { id: "inci", label: "İnci", hint: "Fildişi & siyah" },
+      { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre" },
     ],
   },
   {
     id: "stil",
-    title: "Davetiye nasıl görünsün?",
-    lead: "Şıklık mı, sizin tarzınız mı?",
+    title: "Davetiyeniz hangi ruhu taşısın?",
+    lead: "Çerçevenin süslemesi buna göre değişecek.",
+    look: "susleme",
     when: isToren,
     options: [
-      { id: "klasik", label: "Klasik ve görkemli", hint: "Bordo, altın, sırma" },
-      { id: "sade", label: "Sade ve zarif", hint: "Kum beji, zeytin yeşili" },
-      { id: "modern", label: "Modern ve gece", hint: "Lacivert, altın" },
-      { id: "bilmiyorum", label: "Karar veremedim", hint: "Cevaplarınıza göre biz seçelim" },
+      { id: "klasik", label: "Geleneksel ve görkemli", hint: "Sırma işi" },
+      { id: "romantik", label: "Romantik ve yumuşak", hint: "Çiçek dalları" },
+      { id: "sade", label: "Sade ve zarif", hint: "İnce çizgi" },
+      { id: "modern", label: "Modern ve şık", hint: "Art deco" },
+      { id: "bohem", label: "Doğal ve bohem", hint: "Defne dalı" },
+      { id: "bilmiyorum", label: "Karar veremedim", hint: "Siz seçin" },
+    ],
+  },
+  {
+    id: "yazi",
+    title: "İsimleriniz nasıl yazılsın?",
+    look: "yazi",
+    when: isToren,
+    options: [
+      { id: "kaligrafi", label: "El yazısı" },
+      { id: "klasik", label: "Zarif" },
+      { id: "gorkemli", label: "Görkemli" },
+      { id: "siir", label: "Şiirsel" },
+      { id: "modern", label: "Modern" },
+      { id: "sizsecin", label: "Siz seçin" },
     ],
   },
   {
     id: "hava",
     title: "Nasıl bir hava olsun?",
+    lead: "Davetinizin kapağı buna göre seçilecek.",
+    look: "kapak",
     when: (a) => !isToren(a),
     options: [
       { id: "cosku", label: "Coşkulu ve renkli" },
@@ -179,6 +224,10 @@ export interface Plan {
   extraKind: string;
   /** Tören dalı: davetiye teması (lib/themes.ts) */
   theme: string;
+  /** Tören dalı: isimlerin yazı karakteri (lib/design.ts) */
+  font: string;
+  /** Tören dalı: çerçeve süslemesi (lib/design.ts) */
+  ornament: string;
   /** Etkinlik dalı: kapak (components/CoverPicker.tsx) */
   coverId: string;
   /** Etkinlik dalı: kategori (lib/categories.ts) */
@@ -197,32 +246,55 @@ const CATEGORY_OF: Record<string, string> = {
   evpartisi: "Ev partisi", yemek: "Akşam yemeği", bulusma: "Buluşma",
 };
 
-/** Tören dalında tema: önce açık seçim, "karar veremedim" derse tondan türetilir. */
+const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci"];
+
+/**
+ * Tören dalında üç eksen ayrı ayrı seçilir. Açık cevap her zaman kazanır;
+ * "siz seçin" dendiğinde eksik eksen diğer cevaplardan türetilir.
+ */
 function themeFor(a: Answers) {
-  const direct: Record<string, string> = { klasik: "klasik", sade: "krem", modern: "gece" };
-  if (direct[a.stil ?? ""]) return direct[a.stil];
+  if (PALETLER.includes(a.renk ?? "")) return a.renk;
+  const fromStil: Record<string, string> = { klasik: "klasik", romantik: "gul", sade: "inci", modern: "gece", bohem: "krem" };
+  if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
   if (a.ton === "zarif") return "krem";
-  if (a.ton === "neseli") return "gece";
+  if (a.ton === "neseli") return "lal";
   return "klasik";
 }
 
-/** Etkinlik dalında kapak: önce türün doğal karşılığı, sonra istenen hava. */
+function ornamentFor(a: Answers, theme: string) {
+  const fromStil: Record<string, string> = { klasik: "sirma", romantik: "cicek", sade: "cizgi", modern: "deco", bohem: "yaprak" };
+  if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
+  const fromTheme: Record<string, string> = { lal: "sirma", klasik: "sirma", gul: "cicek", zumrut: "deco", gece: "deco", krem: "yaprak", inci: "cizgi" };
+  return fromTheme[theme] ?? "sirma";
+}
+
+function fontFor(a: Answers, ornament: string) {
+  if (["kaligrafi", "klasik", "gorkemli", "siir", "modern"].includes(a.yazi ?? "")) return a.yazi;
+  const fromOrnament: Record<string, string> = { sirma: "gorkemli", cicek: "kaligrafi", cizgi: "klasik", deco: "modern", yaprak: "siir" };
+  if (a.ton === "neseli" && ornament !== "deco") return "kaligrafi";
+  return fromOrnament[ornament] ?? "klasik";
+}
+
+/** Etkinlik dalında kapak: istenen hava her zaman kazanır; henüz sorulmadıysa türün doğal karşılığı. */
 function coverFor(a: Answers) {
-  if (a.tur === "dogumgunu") return "cherry";
-  if (a.tur === "yemek") return "midnight";
-  if (a.tur === "mezuniyet" || a.tur === "kina") return "bloom";
   if (a.hava === "cosku") return "cherry";
   if (a.hava === "sik") return "midnight";
+  if (a.hava === "sicakhava") return "bloom";
+  if (a.tur === "dogumgunu" || a.tur === "evpartisi") return "cherry";
+  if (a.tur === "yemek" || a.tur === "bulusma") return "midnight";
   return "bloom";
 }
 
 export function planFromAnswers(a: Answers): Plan {
   const toren = isToren(a);
+  const theme = themeFor(a);
+  const ornament = ornamentFor(a, theme);
   return {
     toren,
     mainKind: toren ? a.tur : "",
     extraKind: a.ikinci === "kina" ? "kina" : a.ikinci === "after" ? "after" : "",
-    theme: themeFor(a),
+    theme, ornament,
+    font: fontFor(a, ornament),
     coverId: coverFor(a),
     category: CATEGORY_OF[a.tur ?? ""] ?? "Buluşma",
     wantsBus: toren && a.servis === "var",

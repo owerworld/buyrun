@@ -60,27 +60,27 @@ export function sanitize(text: string) {
 /* Kural tabanlı yedek — AI olmadan da davet güzel görünür            */
 /* ------------------------------------------------------------------ */
 
-const TON: Record<string, { toren: (i: TextInput) => string; etkinlik: (i: TextInput) => string }> = {
+// Tarih ve yer davetiyede ayrıca gösteriliyor; metin onları tekrar etmez.
+const TON: Record<string, { toren: string; etkinlik: string }> = {
   zarif: {
-    toren: (i) => `Hayatımızın en güzel gününde sizi de yanımızda görmek bizim için ayrı bir mutluluk olacak. ${i.dateLabel} günü ${i.venue}'de sizi bekliyoruz.`,
-    etkinlik: (i) => `Sizi ${i.dateLabel} günü ${i.venue}'de aramızda görmek isteriz. Gelmeniz bizim için değerli.`,
+    toren: "Hayatımızın en güzel gününde sizi de yanımızda görmek bizim için ayrı bir mutluluk olacak. Bu anlamlı günü sizinle paylaşmaktan onur duyarız.",
+    etkinlik: "Sizi aramızda görmek isteriz. Gelmeniz bizim için değerli.",
   },
   sicak: {
-    toren: (i) => `Bu güzel günü sevdiklerimizle paylaşmak istiyoruz. ${i.dateLabel} günü ${i.venue}'de sizi de aramızda görmek bizi çok mutlu eder.`,
-    etkinlik: (i) => `${i.dateLabel} günü ${i.venue}'de birlikte olalım istedik. Gelirseniz çok seviniriz.`,
+    toren: "Bu güzel günü sevdiklerimizle paylaşmak istiyoruz. Sizi de aramızda görmek bizi çok mutlu eder.",
+    etkinlik: "Birlikte olalım istedik. Gelirseniz çok seviniriz.",
   },
   neseli: {
-    toren: (i) => `Uzun zamandır beklediğimiz gün geldi! ${i.dateLabel} günü ${i.venue}'de bol müzik, bol kahkaha ve sizin de orada olmanızı istiyoruz.`,
-    etkinlik: (i) => `${i.dateLabel} günü ${i.venue}'de güzel bir gün olacak. Sizi de bekliyoruz!`,
+    toren: "Uzun zamandır beklediğimiz gün geldi! Bol müzik, bol kahkaha ve sizin de orada olmanızı istiyoruz.",
+    etkinlik: "Güzel bir gün olacak, sizi de bekliyoruz!",
   },
 };
 
 /** AI çalışmadığında kullanılacak metin. */
 export function fallbackText(i: TextInput) {
   const ton = TON[i.answers.ton ?? "sicak"] ?? TON.sicak;
-  const parcalar = [i.plan.toren ? ton.toren(i) : ton.etkinlik(i)];
-  if (i.city && i.plan.toren) parcalar.push("");
-  if (i.request) parcalar.push(i.request);
+  const parcalar = [i.plan.toren ? ton.toren : ton.etkinlik];
+  if (i.request) parcalar.push(/[.!?…]$/.test(i.request) ? i.request : `${i.request}.`);
   return sanitize(parcalar.filter(Boolean).join(" "));
 }
 

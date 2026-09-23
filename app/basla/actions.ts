@@ -68,7 +68,7 @@ export async function wizardAction(f: FormData) {
       busNote: plan.wantsBus ? s(f, "busNote", 160) : "",
       program: plan.wantsProgram ? s(f, "program", 600) : "",
       extraProgram: plan.wantsProgram ? s(f, "k_program", 600) : "",
-      theme: plan.theme, message: text,
+      theme: plan.theme, font: plan.font, ornament: plan.ornament, message: text,
     });
     redirect(`/yonet/${admin}`);
   }

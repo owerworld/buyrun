@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { COVERS } from "@/components/CoverPicker";
+import { ThemeStyle } from "@/components/Theme";
+import { WizardPreview } from "@/components/WizardPreview";
+import { fontOf, ornamentOf } from "@/lib/design";
 import { kindOf } from "@/lib/events";
 import { todayIso } from "@/lib/format";
 import { themeOf } from "@/lib/themes";
@@ -31,22 +34,26 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
   const main = plan.toren ? kindOf(plan.mainKind) : null;
   const extra = plan.extraKind ? kindOf(plan.extraKind) : null;
   const ozet = plan.toren
-    ? `${themeOf(plan.theme).label} tema · ${themeOf(plan.theme).hint}`
+    ? `${themeOf(plan.theme).label} renkler, ${ornamentOf(plan.ornament).label.toLocaleLowerCase("tr")} ve ${fontOf(plan.font).label.toLocaleLowerCase("tr")} isimler`
     : `${COVERS.find((c) => c.id === plan.coverId)?.label ?? "Kapak"} kapağı · ${plan.category}`;
 
   return (
-    <main className="wrap form-wrap">
+    <main className="wrap form-wrap bilgiler">
+      {plan.toren && <ThemeStyle theme={plan.theme} />}
       <div className="brand">
         <Link href="/">Buyrun</Link>
         <Link className="back-link" href={`/basla?${answersQuery(withoutLast(answers))}`}>← Geri</Link>
       </div>
+      <div className="bilgiler-onizleme">
+        <WizardPreview answers={answers} plan={plan} />
+      </div>
 
       <form action={wizardAction} className="card">
         <p className="eyebrow">Son adım</p>
-        <h1 className="title">Bir de bilgileri alalım</h1>
+        <h1 className="title">Davetiyeniz hazır, isimleri yazalım</h1>
         <p className="muted">
-          Cevaplarınıza göre görünümü seçtik: <b>{ozet}</b>. Davet metnini de biz yazacağız,
-          sonradan değiştirebilirsiniz.
+          Cevaplarınızdan çıkan tasarım: <b>{ozet}</b>. Davet metnini de biz yazacağız;
+          hepsini sonradan değiştirebilirsiniz.
         </p>
         {hata && <p className="err" role="alert">{hata}</p>}
 

@@ -5,6 +5,7 @@ import { addGuest, addExtraEvent, adminTokenByRecoveryCode, createInvitation, ge
 import { todayIso } from "@/lib/format";
 import { DEFAULT_MAIN, isExtraKind, isMainKind, kindOf } from "@/lib/events";
 import { DEFAULT_THEME, isTheme } from "@/lib/themes";
+import { isFont, isOrnament } from "@/lib/design";
 import { allow, LIMITS } from "@/lib/ratelimit";
 import { normalizeCode } from "@/lib/tokens";
 
@@ -74,6 +75,8 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
     program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
     message: s(f, "message", 600),
+    font: isFont(s(f, "font", 20)) ? s(f, "font", 20) : undefined,
+    ornament: isOrnament(s(f, "ornament", 20)) ? s(f, "ornament", 20) : undefined,
   });
   redirect(`/yonet/${adminToken}?guncellendi=1`);
 }

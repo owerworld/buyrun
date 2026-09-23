@@ -40,3 +40,8 @@ export function ThemePicker({ current }: { current?: string }) {
     </fieldset>
   );
 }
+
+/** Temayı yalnızca bir kutunun içine uygular (ör. yönetim panelindeki davetiye önizlemesi). */
+export function themeScope(theme: string): React.CSSProperties {
+  return themeOf(theme).light as React.CSSProperties;
+}

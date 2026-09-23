@@ -136,6 +136,7 @@ export function planFromAnswers(a: Answers): {
   category: string;
   request: string;
 } {
+  // İstenen hava her zaman kazanır; yoksa türün doğal karşılığı (web'deki kuralla aynı)
   let coverId: CoverId = "bloom";
   if (isToren(a))
     coverId =
@@ -144,10 +145,11 @@ export function planFromAnswers(a: Answers): {
         : a.stil === "klasik"
           ? "cherry"
           : "bloom";
-  else if (a.tur === "dogumgunu") coverId = "cherry";
-  else if (a.tur === "yemek") coverId = "midnight";
   else if (a.hava === "cosku") coverId = "cherry";
   else if (a.hava === "sik") coverId = "midnight";
+  else if (a.hava === "sicakhava") coverId = "bloom";
+  else if (a.tur === "dogumgunu" || a.tur === "evpartisi") coverId = "cherry";
+  else if (a.tur === "yemek" || a.tur === "bulusma") coverId = "midnight";
   return {
     coverId: coverId in covers ? coverId : "cherry",
     category: CATEGORY_OF[a.tur ?? ""] ?? "Buluşma",
