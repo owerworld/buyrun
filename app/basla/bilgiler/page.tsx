@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ThemeStyle } from "@/components/Theme";
 import { VenuePicker } from "@/components/VenuePicker";
-import { WizardPreview } from "@/components/WizardPreview";
+import { CanliOnizleme } from "@/components/CanliOnizleme";
 import { fontOf, ornamentOf } from "@/lib/design";
 import { kindOf } from "@/lib/events";
 import { todayIso } from "@/lib/format";
@@ -71,7 +71,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
         <Link className="back-link" href={`/basla?${answersQuery(withoutLast(answers))}`}>← Geri</Link>
       </div>
       <div className="bilgiler-onizleme">
-        <WizardPreview answers={answers} plan={plan} />
+        <CanliOnizleme answers={answers} plan={plan} />
       </div>
 
       <form action={wizardAction} className="card">

@@ -387,3 +387,78 @@ details summary{cursor:pointer;font-weight:700}
 .hava-kaynak{display:block;margin-top:2px;font-size:.7rem;color:var(--muted)}
 /* QR kartı: QR her zaman beyaz zeminde (koyu temada da okunabilsin) */
 .qr-kart img{display:block;margin:6px 0 12px;padding:6px;background:#fff;border-radius:10px;border:1px solid var(--line)}
+
+/* ================= Canlı sihirbaz: hareket ================= */
+/* Renkler kayıtlı özellik: tema değişince sayfa bir anda değil, yumuşakça yeni renge döner */
+@property --bg{syntax:"<color>";inherits:true;initial-value:#F5F3F7}
+@property --card{syntax:"<color>";inherits:true;initial-value:#FFFFFF}
+@property --ink{syntax:"<color>";inherits:true;initial-value:#24121C}
+@property --muted{syntax:"<color>";inherits:true;initial-value:#6E5F68}
+@property --line{syntax:"<color>";inherits:true;initial-value:#E6DFE6}
+@property --chip{syntax:"<color>";inherits:true;initial-value:#F0EAF0}
+@property --velvet{syntax:"<color>";inherits:true;initial-value:#3E0F24}
+@property --velvet2{syntax:"<color>";inherits:true;initial-value:#5A1532}
+@property --gold{syntax:"<color>";inherits:true;initial-value:#CFA85A}
+@property --gold-ink{syntax:"<color>";inherits:true;initial-value:#7E5D1F}
+@property --btn{syntax:"<color>";inherits:true;initial-value:#3E0F24}
+@property --btn-ink{syntax:"<color>";inherits:true;initial-value:#FFFFFF}
+@property --hero-ink{syntax:"<color>";inherits:true;initial-value:#F7EEDC}
+@property --hero-edge{syntax:"<color>";inherits:true;initial-value:transparent}
+@media(prefers-reduced-motion:no-preference){
+  :root:has(.sihirbaz){transition:--bg .7s ease,--card .7s ease,--ink .7s ease,--muted .7s ease,--line .7s ease,--chip .7s ease,--velvet .7s ease,--velvet2 .7s ease,--gold .7s ease,--gold-ink .7s ease,--btn .7s ease,--btn-ink .7s ease,--hero-ink .7s ease,--hero-edge .7s ease}
+}
+.sihirbaz{position:relative}
+/* Arkada, seçilen renklerden yumuşak bir ışık */
+.sihirbaz-isik{position:fixed;inset:-20vh -20vw auto auto;width:70vw;height:70vh;z-index:-1;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--gold) 22%,transparent),transparent);filter:blur(10px);opacity:.8}
+.karsilik{margin:18px 0 -6px;font-size:.92rem;color:var(--gold-ink);font-weight:500}
+.secim{position:relative}
+.secim-tik{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  font-size:.8rem;font-weight:700;background:var(--btn);color:var(--btn-ink);opacity:0;transform:scale(.4)}
+.secimler.look-liste .secim-tik{top:50%;margin-top:-12px;right:16px}
+.secimler.look-liste .secim.secildi::after{opacity:0}
+.secim.secildi{border-color:var(--gold-ink);box-shadow:inset 0 0 0 1.5px var(--gold-ink);background:var(--chip)}
+.secim.secildi .secim-tik{opacity:1;transform:scale(1)}
+.degisim{margin:10px 0 0;text-align:center;font-size:.85rem;font-weight:600;color:var(--gold-ink);opacity:0;min-height:1.3em}
+.degisim.gorunur{opacity:1}
+.onizleme-kutu{border-radius:22px}
+/* Hazırlanıyor anı */
+.hazirlik{text-align:center;padding-top:40px}
+.hazirlik-onizleme{max-width:280px;margin:10px auto 0}
+.hazirlik-liste{list-style:none;padding:0;margin:22px auto 0;max-width:320px;text-align:left}
+.hazirlik-liste li{display:flex;align-items:center;gap:12px;padding:9px 0;color:var(--muted);font-size:1rem}
+.hazirlik-liste .tik{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;border:1.5px solid var(--line);color:transparent}
+.hazirlik-liste li.tamam{color:var(--ink)}
+.hazirlik-liste li.tamam .tik{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
+
+@media(prefers-reduced-motion:no-preference){
+  /* Soru geçişi: ileri giderken sağdan, geri dönerken soldan gelir */
+  .soru.ileri{animation:soru-ileri .42s cubic-bezier(.2,.8,.2,1) both}
+  .soru.geri{animation:soru-geri .42s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes soru-ileri{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+  @keyframes soru-geri{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+  /* Seçenekler sırayla belirir */
+  .soru .secim{animation:secim-gel .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 45ms + 80ms)}
+  @keyframes secim-gel{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+  .karsilik{animation:karsilik-gel .5s ease both}
+  @keyframes karsilik-gel{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  /* Seçilen kart hafifçe basılır, diğerleri geri çekilir */
+  .secim:active{transform:scale(.97)}
+  .secim.secildi{animation:secildi .26s cubic-bezier(.3,1.4,.5,1) both}
+  @keyframes secildi{0%{transform:scale(.96)}100%{transform:scale(1.02)}}
+  .secim-yapildi .secim:not(.secildi){opacity:.45;transition:opacity .2s}
+  .secim-tik{transition:opacity .2s,transform .26s cubic-bezier(.3,1.6,.5,1)}
+  /* İlerleme çubuğu kayarak dolar */
+  .adim-bar span{transition:width .5s cubic-bezier(.2,.8,.2,1)}
+  /* Önizleme her yeni süsleme ya da yazıda hafifçe "nefes alır" */
+  .onizleme-kutu{animation:onizleme-degis .6s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes onizleme-degis{from{opacity:.4;transform:scale(.96);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+  .degisim{transition:opacity .3s}
+  .sihirbaz-isik{transition:opacity .7s}
+  /* Hazırlık: önizleme büyür, adımlar sırayla işaretlenir */
+  .hazirlik-onizleme{animation:hazirlik-buyu 2s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes hazirlik-buyu{from{transform:scale(.9);opacity:.6}to{transform:scale(1);opacity:1}}
+  .hazirlik-liste .tik{transition:background .25s,border-color .25s,color .25s,transform .3s cubic-bezier(.3,1.6,.5,1)}
+  .hazirlik-liste li.tamam .tik{transform:scale(1.08)}
+  .hazirlik-liste li{transition:color .25s}
+}
