@@ -73,6 +73,7 @@ export async function updateInvitationAction(adminToken: string, f: FormData) {
     nameA, nameB, city: s(f, "city", 40), events,
     busFrom: s(f, "busFrom"), busTime: isTime(s(f, "busTime")) ? s(f, "busTime") : "", busNote: s(f, "busNote", 160),
     program: s(f, "program", 600), extraProgram: s(f, "k_program", 600), theme: theme(f),
+    message: s(f, "message", 600),
   });
   redirect(`/yonet/${adminToken}?guncellendi=1`);
 }

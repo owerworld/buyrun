@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getGuest, list } from "@/lib/data";
 import { greetingFor, inviteLabel } from "@/lib/events";
 import { shortDate } from "@/lib/format";
-import { EventsCard, Hero, SiteFooter } from "@/components/Invite";
+import { EventsCard, Hero, MessageCard, SiteFooter } from "@/components/Invite";
 import { ThemeStyle } from "@/components/Theme";
 import { respondAction } from "../../actions";
 
@@ -34,6 +34,7 @@ export default async function Davet({ params, searchParams }: { params: Promise<
     <main className="wrap invite-wrap">
       <ThemeStyle theme={inv.theme} />
       <Hero inv={inv} greeting={<>Sevgili <b>{g.name}</b>, {greet} sizi aramızda görmek istiyoruz.</>} />
+      <MessageCard inv={inv} />
       <nav className="invite-shortcuts" aria-label="Davetiye bölümleri"><a href="#gunler">Etkinlik bilgileri</a><a href="#katilim">{answered ? "Yanıtınız" : "Katılım bildir"}<span aria-hidden="true">↓</span></a></nav>
       <div id="gunler"><EventsCard inv={inv} events={events} calendarHref={`/d/${token}/takvim`} /></div>
 

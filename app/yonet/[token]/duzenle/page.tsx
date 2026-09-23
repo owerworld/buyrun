@@ -37,7 +37,10 @@ export default async function Duzenle({ params, searchParams }: {
         <label className="lbl" htmlFor="city">Şehir</label>
         <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" defaultValue={inv.city} />
 
-
+        <label className="lbl" htmlFor="message">Davet metni</label>
+        <textarea id="message" name="message" maxLength={600} rows={3} defaultValue={inv.message ?? ""}
+          placeholder="Davetiyede isimlerinizin altında görünen cümle. Boş bırakırsanız hazır metin kullanılır." />
+        <p className="muted small" style={{ marginTop: 6 }}>Sihirbaz sizin için yazdı; dilediğiniz gibi değiştirin.</p>
 
         {events.map((e) => (
           <div key={e.id}>

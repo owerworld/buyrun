@@ -20,6 +20,16 @@ export function Hero({ inv, greeting }: { inv: Invitation; greeting: React.React
   );
 }
 
+/** Çiftin davet metni. Sihirbazdan geçmeyen eski davetiyelerde boş olur, o zaman hiç görünmez. */
+export function MessageCard({ inv }: { inv: Invitation }) {
+  if (!inv.message?.trim()) return null;
+  return (
+    <section className="card davet-metni">
+      <p>{inv.message}</p>
+    </section>
+  );
+}
+
 const mapsUrl = (e: EventRow) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${e.venue} ${e.address}`)}`;
 
 export function EventsCard({ inv, events, title = "Davetli olduğunuz günler", calendarHref }: {

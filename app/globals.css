@@ -208,3 +208,26 @@ details summary{cursor:pointer;font-weight:700}
 .home-paths h2{font-size:1.4rem;margin:6px 0 10px}
 .home-paths p{color:var(--muted);font-size:.95rem;margin:0 0 14px}
 @media(max-width:760px){.home-paths{grid-template-columns:1fr;gap:14px;padding-bottom:26px}.home-paths>div{padding:20px}}
+
+/* Sihirbaz: sayfa başına tek soru, tek dokunuş */
+.sihirbaz{max-width:560px;padding-top:24px}
+.sihirbaz h1.title{font-size:2.1rem;margin:14px 0 0}
+.sihirbaz>p.muted{margin:8px 0 0}
+.adim{display:flex;align-items:center;gap:12px;margin-top:18px}
+.adim-bar{flex:1;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+.adim-bar span{display:block;height:100%;border-radius:99px;background:var(--gold)}
+.adim-sayi{margin:0;font:700 12px var(--ui);letter-spacing:.1em;color:var(--gold-ink);white-space:nowrap}
+.sorular{display:grid;gap:10px;margin-top:20px}
+.soru-secenek{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  min-height:60px;padding:14px 18px;border:1.5px solid var(--line);border-radius:14px;
+  background:var(--card);color:var(--ink);text-decoration:none}
+.soru-secenek b{display:block;font-size:1rem}
+.soru-secenek small{display:block;margin-top:3px;font-size:.8rem;font-weight:400;color:var(--muted)}
+.soru-secenek .ok{color:var(--gold-ink);font-size:1.05rem;flex-shrink:0}
+.soru-secenek:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(prefers-reduced-motion:no-preference){.soru-secenek{transition:border-color .15s,box-shadow .15s}}
+.soru-secenek:hover{border-color:var(--gold);box-shadow:0 3px 12px #24121c14}
+@media(max-width:560px){.sihirbaz h1.title{font-size:1.8rem}.soru-secenek{padding:13px 15px}}
+
+/* Davetiyedeki davet metni */
+.davet-metni p{margin:0;font-size:1rem;line-height:1.75;text-align:center;overflow-wrap:anywhere}

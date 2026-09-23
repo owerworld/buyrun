@@ -21,10 +21,12 @@ export default function Home() {
             sevdiklerinize gönderin, kimin geleceğini tek bakışta görün.
           </p>
           <div className="home-actions">
-            <Link className="btn" href="/olustur">Düğün davetiyesi <span aria-hidden="true">→</span></Link>
-            <Link className="btn ghost" href="/etkinlik">Etkinlik daveti <span aria-hidden="true">→</span></Link>
+            <Link className="btn" href="/basla">Davetimi hazırla <span aria-hidden="true">→</span></Link>
+            <Link className="btn ghost" href="/olustur">Formu kendim dolduracağım</Link>
           </div>
-          <p className="home-note">Üyelik yok. Uygulama indirmek yok.</p>
+          <p className="home-note">
+            Birkaç soru soruyoruz, gerisini biz hazırlıyoruz. Üyelik yok, uygulama indirmek yok.
+          </p>
         </div>
         <div className="home-invite">
           <InvitationCard nameA="Defne" nameB="Mert" date="2027-06-19" city="İSTANBUL" />
@@ -40,7 +42,7 @@ export default function Home() {
             Kız evi ve oğlan evi kendi davetlisini yönetir, salon için gereken toplam
             iki listeden birleşir. Servis saatleri ve günün programı davetiyede yer alır.
           </p>
-          <Link className="lnk" href="/olustur">Düğün davetiyesi oluştur →</Link>
+          <Link className="lnk" href="/basla?tur=dugun">Düğün davetiyesi oluştur →</Link>
         </div>
         <div>
           <p className="eyebrow">Etkinlik daveti</p>
@@ -49,12 +51,12 @@ export default function Home() {
             Tek ev sahibi, tek liste. Davetli “geliyorum”, “belki” ya da “gelemiyorum”
             der; kontenjanınızı aşmadan kaç kişi olacağınızı bilirsiniz.
           </p>
-          <Link className="lnk" href="/etkinlik">Etkinlik daveti oluştur →</Link>
+          <Link className="lnk" href="/basla">Etkinlik daveti oluştur →</Link>
         </div>
       </section>
 
       <section className="home-steps" aria-label="Nasıl çalışır?">
-        <div><span>01</span><h2>Davetini hazırla</h2><p>Gününüzü, yerinizi ve görünümünü seçin. Birkaç dakika sürer.</p></div>
+        <div><span>01</span><h2>Sorulara cevap ver</h2><p>Zevkinizi soran birkaç soru. Hepsi tek dokunuş; davetinizi ona göre hazırlıyoruz.</p></div>
         <div><span>02</span><h2>Sevdiklerini davet et</h2><p>Her davetliye özel bir link oluşur. Hazır mesajı kendi WhatsApp&apos;ınızdan paylaşırsınız.</p></div>
         <div><span>03</span><h2>Birlikte planla</h2><p>Yanıtlar anında düşer; kaç kişi geleceğini ve kimin yanıt vermediğini görürsünüz.</p></div>
       </section>
