@@ -38,11 +38,13 @@ export async function wizardAction(f: FormData) {
     if (!nameA || !nameB) fail("Çiftin iki adını da yazın.");
 
     const main = kindOf(plan.mainKind);
+    // Nikâh ayrı gündeyse ana tören yalnızca "Düğün" olarak anılır
+    const mainTitle = plan.extraKind === "nikah" ? "Düğün Töreni" : main.title;
     const events: NewEvent[] = [];
     const toren = { date: s(f, "d_date", 10), time: s(f, "d_time", 5), venue: s(f, "d_venue", 80), address: s(f, "d_address", 120) };
-    if (!isDate(toren.date) || !isTime(toren.time) || !toren.venue) fail(`${main.title} için tarih, saat ve yer zorunlu.`);
+    if (!isDate(toren.date) || !isTime(toren.time) || !toren.venue) fail(`${mainTitle} için tarih, saat ve yer zorunlu.`);
     if (toren.date < todayIso()) fail("Tören tarihi geçmişte olamaz.");
-    events.push({ kind: main.id, title: main.title, ...toren });
+    events.push({ kind: main.id, title: mainTitle, ...toren });
 
     if (plan.extraKind) {
       const extra = kindOf(plan.extraKind);

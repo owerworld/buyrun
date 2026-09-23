@@ -154,6 +154,26 @@ export const THEMES: Theme[] = [
     },
     og: { bg: "#FBF9F4", bg2: "#FFFFFF", frame: "#1C1C1C", text: "#1C1C1C", accent: "#3A3A3A" },
   },
+  {
+    id: "turkuaz",
+    label: "İznik",
+    hint: "Kobalt, turkuaz & mercan",
+    // İznik çinisinin üç rengi: kobalt zemin, turkuaz çizgi, mercan vurgu
+    swatch: ["#123E6B", "#7FD1D3", "#C8453A"],
+    light: {
+      "--bg": "#F3F7F8", "--card": "#FFFFFF", "--ink": "#10263A", "--muted": "#55687A",
+      "--line": "#DCE6EA", "--chip": "#E8F1F4",
+      "--velvet": "#123E6B", "--velvet2": "#1B5486", "--gold": "#8AD9DA", "--gold-ink": "#1D5F7A",
+      "--kina": "#C8453A", "--btn": "#123E6B", "--btn-ink": "#FFFFFF",
+    },
+    dark: {
+      "--bg": "#0A141D", "--card": "#101E2B", "--ink": "#E8F1F6", "--muted": "#9FB3C2",
+      "--line": "#1E3142", "--chip": "#152636",
+      "--velvet": "#0B2744", "--velvet2": "#133A60", "--gold": "#8ADADB", "--gold-ink": "#8ADADB",
+      "--kina": "#F08A7E", "--btn": "#8ADADB", "--btn-ink": "#0B2744",
+    },
+    og: { bg: "#123E6B", bg2: "#1B5486", frame: "#8AD9DA", text: "#F2FAFB", accent: "#8AD9DA" },
+  },
 ];
 
 export const DEFAULT_THEME = THEMES[0].id;

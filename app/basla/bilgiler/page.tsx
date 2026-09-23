@@ -48,6 +48,12 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
   const query = answersQuery(answers);
   const main = plan.toren ? kindOf(plan.mainKind) : null;
   const aday = plan.mainKind === "dugun" ? "" : " adayının";
+  const mainTitle = plan.extraKind === "nikah" ? "Düğün Töreni" : main?.title;
+  const extraOrnek: Record<string, [yer: string, program: string]> = {
+    kina: ["Örn: Kız evi ya da davet salonu", "20:00 Karşılama\n21:00 Gelin çıkışı\n21:30 Kına yakma"],
+    nikah: ["Örn: Nilüfer Belediyesi Nikâh Salonu", "14:00 Nikâh\n14:30 Tebrikler ve fotoğraf"],
+    after: ["Örn: Kordon Teras", "23:00 DJ performansı"],
+  };
   const [baslikEtiket, baslikOrnek, evEtiket, evOrnek] =
     answers.tur === "mevlid" && answers.vesile === "rahmetli"
       ? ["Davetin başlığı", "Rahmetli Hasan Yılmaz'ın anısına", "Davet eden", "Yılmaz ailesi"]
@@ -100,7 +106,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
             <label className="lbl" htmlFor="city">Şehir</label>
             <input type="text" id="city" name="city" maxLength={40} placeholder="Örn: Bursa" />
 
-            <div className="form-section-heading"><span>·</span><h2>{main?.title}</h2></div>
+            <div className="form-section-heading"><span>·</span><h2>{mainTitle}</h2></div>
             <div className="grid2">
               <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required min={todayIso()} /></div>
               <div><label className="lbl" htmlFor="d_time">Saat</label><input type="time" id="d_time" name="d_time" required /></div>
@@ -118,7 +124,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
                   <div><label className="lbl" htmlFor="k_time">Saat</label><input type="time" id="k_time" name="k_time" required /></div>
                 </div>
                 <label className="lbl" htmlFor="k_venue">Yer</label>
-                <input type="text" id="k_venue" name="k_venue" required maxLength={80} placeholder="Örn: Kız evi" />
+                <input type="text" id="k_venue" name="k_venue" required maxLength={80} placeholder={extraOrnek[extra.id]?.[0]} />
                 <label className="lbl" htmlFor="k_address">Adres</label>
                 <input type="text" id="k_address" name="k_address" maxLength={120} />
               </>
@@ -139,12 +145,13 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
             {plan.wantsProgram && (
               <>
                 <div className="form-section-heading"><span>·</span><h2>Günün programı</h2></div>
-                <label className="lbl" htmlFor="program">{main?.title} günü</label>
-                <textarea id="program" name="program" maxLength={600} placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 Nikâh töreni"} />
+                <label className="lbl" htmlFor="program">{mainTitle} günü</label>
+                <textarea id="program" name="program" maxLength={600} rows={6}
+                  placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 " + (plan.extraKind === "nikah" ? "Karşılama" : "Nikâh töreni") + "\n20:00 Yemek\n21:00 İlk dans\n21:30 Takı merasimi\n22:30 Pasta kesimi"} />
                 {extra && (
                   <>
                     <label className="lbl" htmlFor="k_program">{extra.title}</label>
-                    <textarea id="k_program" name="k_program" maxLength={600} placeholder={"20:00 Karşılama\n21:30 Kına yakma"} />
+                    <textarea id="k_program" name="k_program" maxLength={600} placeholder={extraOrnek[extra.id]?.[1]} />
                   </>
                 )}
               </>

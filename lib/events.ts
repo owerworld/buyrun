@@ -30,6 +30,8 @@ export const MAIN_KINDS: Kind[] = [
 export const EXTRA_KINDS: Kind[] = [
   { id: "kina", title: "Kına Gecesi", short: "kına", greeting: "kına gecemizde", phrase: "kına gecelerine" },
   { id: "after", title: "After Party", short: "after party", greeting: "after party'mizde", phrase: "after party'lerine" },
+  // Türkiye'de sık: belediyede hafta içi nikâh, hafta sonu düğün
+  { id: "nikah", title: "Nikâh Töreni", short: "nikâh", greeting: "nikâhımızda", phrase: "nikâhlarına" },
 ];
 
 const ALL = [...MAIN_KINDS, ...EXTRA_KINDS];

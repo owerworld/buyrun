@@ -3,7 +3,7 @@
  *
  * Renk paleti lib/themes.ts'te. Burada kalan iki eksen var: isimlerin yazı karakteri
  * ve çerçevenin süslemesi. Üçü birbirinden bağımsız seçilir; sihirbazın cevapları
- * her birini ayrı ayrı belirler, böylece 7 × 5 × 5 = 175 farklı davetiye çıkar.
+ * her birini ayrı ayrı belirler, böylece 8 × 6 × 5 = 240 farklı davetiye çıkar.
  *
  * Değerler sabit listelerden gelir; kullanıcı metni asla CSS'e girmez.
  */
@@ -41,6 +41,7 @@ export const ORNAMENTS: Ornament[] = [
   { id: "cizgi", label: "İnce çizgi", hint: "Süssüz, sade" },
   { id: "deco", label: "Art deco", hint: "Geometrik, şık" },
   { id: "yaprak", label: "Defne dalı", hint: "Doğal, bohem" },
+  { id: "cini", label: "Çini lale", hint: "Geleneksel Türk motifi" },
 ];
 
 export const DEFAULT_FONT = "klasik";

@@ -159,6 +159,7 @@ export const QUESTIONS: Question[] = [
       { id: "gece", label: "Gece mavisi", hint: "Lacivert & altın" },
       { id: "krem", label: "Toprak", hint: "Kum & zeytin" },
       { id: "inci", label: "İnci", hint: "Fildişi & siyah" },
+      { id: "turkuaz", label: "İznik", hint: "Kobalt, turkuaz & mercan" },
       { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre" },
     ],
   },
@@ -174,6 +175,7 @@ export const QUESTIONS: Question[] = [
       { id: "sade", label: "Minimal", hint: "İnce çizgi, süssüz" },
       { id: "modern", label: "Modern lüks", hint: "Art deco" },
       { id: "bohem", label: "Rustik ve doğal", hint: "Defne dalı" },
+      { id: "cini", label: "Geleneksel Türk motifi", hint: "Çini, lale" },
       { id: "bilmiyorum", label: "Karar veremedim", hint: "Siz seçin" },
     ],
   },
@@ -206,31 +208,26 @@ export const QUESTIONS: Question[] = [
   {
     id: "ikinci",
     title: "Tek gün mü, iki gün mü?",
-    lead: "Kına gecesi ya da after party ekleyebilirsiniz.",
+    lead: "Kına gecesi, ayrı günde nikâh ya da after party ekleyebilirsiniz.",
     when: isToren,
     options: [
       { id: "tek", label: "Tek gün" },
       { id: "kina", label: "Kına gecesi de var" },
+      { id: "nikah", label: "Nikâh ayrı bir günde", hint: "Belediyede nikâh, başka gün düğün", when: (a) => a.tur === "dugun" },
       { id: "after", label: "After party de var" },
     ],
   },
   {
-    id: "servis",
-    title: "Davetliler için servis kalkacak mı?",
-    when: (a) => isToren(a),
-    options: [
-      { id: "var", label: "Evet, servis olacak" },
-      { id: "yok", label: "Hayır" },
-    ],
-  },
-  {
-    id: "program",
-    title: "Günün programını paylaşmak ister misiniz?",
-    lead: "Gelin alma, nikâh, ilk dans gibi saatler.",
+    // Servis ve program tek soruda: bilgi kaybetmeden bir dokunuş eksik
+    id: "ekler",
+    title: "Davetiyede başka neler olsun?",
+    lead: "Türkiye'de düğünlerin çoğunda servis kalkar, program da merak edilir.",
     when: isToren,
     options: [
-      { id: "var", label: "Evet, saatleri yazacağım" },
-      { id: "yok", label: "Gerek yok" },
+      { id: "ikisi", label: "Servis ve günün programı", hint: "Kalkış yeri ve saati; gelin alma, nikâh, takı merasimi" },
+      { id: "servis", label: "Sadece servis bilgisi" },
+      { id: "program", label: "Sadece günün programı" },
+      { id: "yok", label: "Hiçbiri, sade kalsın" },
     ],
   },
   {
@@ -321,7 +318,7 @@ const CATEGORY_OF: Record<string, string> = {
   mevlid: "Mevlid", iftar: "İftar", hac: "Hac uğurlaması", asker: "Asker uğurlaması",
 };
 
-const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci"];
+const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "turkuaz"];
 
 /**
  * Tören dalında üç eksen ayrı ayrı seçilir. Açık cevap her zaman kazanır;
@@ -329,7 +326,7 @@ const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci"];
  */
 function themeFor(a: Answers) {
   if (PALETLER.includes(a.renk ?? "")) return a.renk;
-  const fromStil: Record<string, string> = { klasik: "klasik", romantik: "gul", sade: "inci", modern: "gece", bohem: "krem" };
+  const fromStil: Record<string, string> = { klasik: "klasik", romantik: "gul", sade: "inci", modern: "gece", bohem: "krem", cini: "turkuaz" };
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
   if (a.ton === "zarif") return "krem";
   if (a.ton === "neseli") return "lal";
@@ -338,15 +335,15 @@ function themeFor(a: Answers) {
 }
 
 function ornamentFor(a: Answers, theme: string) {
-  const fromStil: Record<string, string> = { klasik: "sirma", romantik: "cicek", sade: "cizgi", modern: "deco", bohem: "yaprak" };
+  const fromStil: Record<string, string> = { klasik: "sirma", romantik: "cicek", sade: "cizgi", modern: "deco", bohem: "yaprak", cini: "cini" };
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
-  const fromTheme: Record<string, string> = { lal: "sirma", klasik: "sirma", gul: "cicek", zumrut: "deco", gece: "deco", krem: "yaprak", inci: "cizgi" };
+  const fromTheme: Record<string, string> = { lal: "sirma", klasik: "sirma", gul: "cicek", zumrut: "deco", gece: "deco", krem: "yaprak", inci: "cizgi", turkuaz: "cini" };
   return fromTheme[theme] ?? "sirma";
 }
 
 function fontFor(a: Answers, ornament: string) {
   if (["kaligrafi", "klasik", "gorkemli", "siir", "modern"].includes(a.yazi ?? "")) return a.yazi;
-  const fromOrnament: Record<string, string> = { sirma: "gorkemli", cicek: "kaligrafi", cizgi: "klasik", deco: "modern", yaprak: "siir" };
+  const fromOrnament: Record<string, string> = { sirma: "gorkemli", cicek: "kaligrafi", cizgi: "klasik", deco: "modern", yaprak: "siir", cini: "gorkemli" };
   if (a.ton === "neseli" && ornament !== "deco") return "kaligrafi";
   return fromOrnament[ornament] ?? "klasik";
 }
@@ -382,13 +379,13 @@ export function planFromAnswers(a: Answers): Plan {
   return {
     toren,
     mainKind: toren ? a.tur : "",
-    extraKind: a.ikinci === "kina" ? "kina" : a.ikinci === "after" ? "after" : "",
+    extraKind: ["kina", "nikah", "after"].includes(a.ikinci ?? "") ? a.ikinci : "",
     theme, ornament,
     font: fontFor(a, ornament),
     coverId: coverFor(a),
     category: CATEGORY_OF[a.tur ?? ""] ?? "Buluşma",
-    wantsBus: toren && a.servis === "var",
-    wantsProgram: toren && a.program === "var",
+    wantsBus: toren && (a.ekler === "ikisi" || a.ekler === "servis"),
+    wantsProgram: toren && (a.ekler === "ikisi" || a.ekler === "program"),
     request: !toren && a.istek && a.istek !== "yok" ? a.istek : "",
     families: toren && a.aile === "evet",
     opening: openingFor(a),

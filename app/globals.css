@@ -339,3 +339,12 @@ details summary{cursor:pointer;font-weight:700}
 .aileler span+span{border-left:1px solid color-mix(in srgb,var(--gold) 60%,transparent)}
 .hero.kucuk .aileler{font-size:.62rem;margin-bottom:10px}
 .f-modern .aileler{text-transform:uppercase;letter-spacing:.08em;font-size:.68rem}
+/* Çini lale: üstte ve altta (altta ters), çift çerçeve korunur */
+.o-cini .frame{padding:66px 22px 64px}
+.orn.lale{left:50%;width:124px;height:46px}
+.orn.lale.t{top:12px;transform:translateX(-50%)}
+.orn.lale.b{bottom:12px;transform:translateX(-50%) rotate(180deg)}
+.hero.kucuk.o-cini .frame{padding:52px 16px 50px}
+.hero.kucuk .orn.lale{width:96px;height:36px}
+.orn-ornek .orn.lale{width:52px;height:20px}
+.orn-ornek .orn.lale.t{top:6px}.orn-ornek .orn.lale.b{bottom:6px}

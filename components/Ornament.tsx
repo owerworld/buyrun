@@ -82,6 +82,25 @@ function Laurel({ pos }: { pos: "t" | "b" }) {
   );
 }
 
+/** Çini lale: üç yapraklı çiçek, iki yaprak, yanlarda noktalı çizgi. İznik çinisinin en bilinen motifi. */
+function Lale({ pos }: { pos: "t" | "b" }) {
+  return (
+    <svg className={`orn lale ${pos}`} viewBox="0 0 120 44" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M60 4c-4 6-4 13 0 17 4-4 4-11 0-17z" fill="currentColor" fillOpacity=".22" />
+        <path d="M60 21c-8-1-11-8-10-14 3 4 6 8 10 14zM60 21c8-1 11-8 10-14-3 4-6 8-10 14z" />
+        <path d="M60 21v19" />
+        <path d="M60 36c-7-1-11-6-12-11 5 2 9 5 12 11zM60 36c7-1 11-6 12-11-5 2-9 5-12 11z" />
+        <path d="M8 26h30M82 26h30" />
+      </g>
+      <g fill="currentColor">
+        <circle cx="42" cy="26" r="1.6" /><circle cx="78" cy="26" r="1.6" />
+        <circle cx="4" cy="26" r="1.2" /><circle cx="116" cy="26" r="1.2" />
+      </g>
+    </svg>
+  );
+}
+
 const CORNERS = ["tl", "tr", "bl", "br"] as const;
 
 export function Ornament({ kind }: { kind: string }) {
@@ -92,6 +111,8 @@ export function Ornament({ kind }: { kind: string }) {
       return <><Fan />{CORNERS.map((p) => <Deco key={p} pos={p} />)}</>;
     case "yaprak":
       return <><Laurel pos="t" /><Laurel pos="b" /></>;
+    case "cini":
+      return <><Lale pos="t" /><Lale pos="b" /></>;
     case "cizgi":
       return null;
     default:
