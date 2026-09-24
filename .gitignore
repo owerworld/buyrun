@@ -14,3 +14,4 @@ Buyrun-Birlesik-*.zip
 
 # Uygulamanın web önizlemesi (expo export çıktısı) ikon dosyalarını içerir
 !public/uygulama/**/node_modules
+Buyrun-[0-9]*.zip
