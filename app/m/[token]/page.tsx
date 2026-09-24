@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { designOf, mobileEventByToken, placeOf, publicEvent } from "@/lib/mobile";
+import { designOf, detailsOf, mobileEventByToken, placeOf, publicEvent } from "@/lib/mobile";
 import { ThemeStyle } from "@/components/Theme";
 import { dayStatus, todayTr } from "@/lib/eventday";
 import { forecastFor } from "@/lib/weather";
@@ -30,8 +30,10 @@ export default async function MobileInvitation({params,searchParams}: {
   // Sihirbaz cevapları: hitap, sürpriz uyarısı, not kutusunun örneği
   const cevaplar = cevaplarOf(row.answers);
   const samimi = cevaplar.kim === "arkadaslar";
+  const detay = detailsOf(row);
   return <>
     {design && <ThemeStyle theme={design.theme} />}
-    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} samimi={samimi} ekler={davetEkleri(cevaplar, samimi)} />
+    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} samimi={samimi} ekler={davetEkleri(cevaplar, samimi, detay.surpriz)}
+      detay={{ akis: detay.akis ?? "", mevlidhan: detay.mevlidhan ?? "" }} />
   </>;
 }

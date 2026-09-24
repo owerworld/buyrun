@@ -37,13 +37,15 @@ const SIZ: typeof SEN = {
   chooseFirst:"Önce katılım durumunuzu seçin.",
   privacy:"Adınız ve yanıtınız yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir. Bu davet sizden para göndermenizi asla istemez; isteyen olursa dikkat edin.",
 };
-export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken,samimi=false,ekler}: {
+export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken,samimi=false,ekler,detay}: {
   event:InvitationEvent;design:EventDesign|null;place:PlaceRef&{directions?:string};
   dayState:DayStatus<BannerItem>|null;forecast:Forecast|null;inviteToken:string;initialGuestToken:string|null;
   /** Sihirbazda "davetliler arkadaşlar" seçildiyse tasarımlı davette de "sen" denir */
   samimi?:boolean;
   /** Sürpriz uyarısı ve türe göre not örneği (lib/ornekler.ts) */
-  ekler?:{uyari:string;not:string;ev:string}
+  ekler?:{uyari:string;not:string;ev:string;ipucu:string;akisBaslik:string};
+  /** Son adımda yazılan ayrıntılar: günün akışı, mevlidi okuyacak hoca */
+  detay?:{akis:string;mevlidhan:string}
 }) {
   const [guestToken,setGuestToken]=useState(initialGuestToken);
   const [name,setName]=useState(event.guest?.name || "");
@@ -54,6 +56,8 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
   const [error,setError]=useState("");
   const [saved,setSaved]=useState(false);
   const t=design&&!samimi?SIZ:SEN;
+  // "14:00 Mevlid-i Şerif" gibi satırlar: saat solda, madde sağda; saatsiz satır da olur
+  const akis=(detay?.akis||"").split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(\d{1,2}[:.]\d{2})\s+(.*)$/);return m?[m[1].replace(".",":"),m[2]]:["",l];});
   useEffect(() => {
     if(initialGuestToken) return;
     let active=true;
@@ -116,9 +120,11 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
       {ekler?.uyari&&<p className={styles.surpriz} role="note"><span aria-hidden="true">🤫</span>{ekler.uyari}</p>}
       <section id="invitation" className={styles.details}>
         <div className={styles.host}><span className={styles.avatar}>{event.hostName.slice(0,1).toLocaleUpperCase("tr")}</span><div><span>{ekler?.ev?ekler.ev.toLocaleUpperCase("tr"):t.host}</span><strong>{event.hostName}</strong></div><span className={styles.star}>✳</span></div>
-        <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p>{forecast&&<WeatherLine forecast={forecast} credit/>}</div></div>
+        <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p>{ekler?.ipucu&&<p className={styles.ipucu}>{ekler.ipucu}</p>}{forecast&&<WeatherLine forecast={forecast} credit/>}</div></div>
         <div className={styles.infoRow}><span className={styles.infoIcon}>⌖</span><div><strong>{event.venue}</strong>{event.address&&<p>{event.address}</p>}<Directions place={place}/></div></div>
+        {detay?.mevlidhan&&<div className={styles.infoRow}><span className={styles.infoIcon}>✦</span><div><strong>Mevlidi okuyacak</strong><p>{detay.mevlidhan}</p></div></div>}
         {event.description&&<div className={styles.description}><h2>{t.descTitle}</h2><p>{event.description}</p></div>}
+        {akis.length>0&&<div className={styles.description}><h2>{ekler?.akisBaslik||"Günün akışı"}</h2><ul className={styles.akis}>{akis.map(([saat,madde],i)=><li key={i}><b>{saat}</b><span>{madde}</span></li>)}</ul></div>}
       </section>
       <section className={styles.rsvp} aria-labelledby="rsvp-title">
         <div className={styles.formHeading}><span className={styles.eyebrow}>{t.eyebrow}</span><h2 id="rsvp-title">{t.title}</h2><p>{t.lead}</p></div>

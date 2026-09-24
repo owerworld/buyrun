@@ -9,7 +9,7 @@ import { fontOf, ornamentOf } from "@/lib/design";
 import { kindOf } from "@/lib/events";
 import { todayIso } from "@/lib/format";
 import { themeOf } from "@/lib/themes";
-import { alanlarFor, istekOrnekleri } from "@/lib/ornekler";
+import { alanlarFor, istekOrnekleri, sonAdim, torenAkisOrnegi } from "@/lib/ornekler";
 import { answersQuery, buyukHarf, davetAdi, nextQuestion, parseAnswers, planFromAnswers, withoutLast } from "@/lib/wizard";
 import { wizardAction } from "../actions";
 
@@ -43,6 +43,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
   };
   const [baslikEtiket, baslikOrnek, evEtiket, evOrnek] = alanlarFor(answers);
   const istekOrnek = istekOrnekleri(answers);
+  const son = sonAdim(answers);
   const extra = plan.extraKind ? kindOf(plan.extraKind) : null;
   const ozet = plan.toren
     ? `${themeOf(plan.theme).label} renkler, ${ornamentOf(plan.ornament).label.toLocaleLowerCase("tr")} ve ${fontOf(plan.font).label.toLocaleLowerCase("tr")} isimler`
@@ -127,7 +128,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
                 <div className="form-section-heading"><span>·</span><h2>Günün programı</h2></div>
                 <label className="lbl" htmlFor="program">{mainTitle} günü</label>
                 <textarea id="program" name="program" maxLength={600} rows={6}
-                  placeholder={"Her satıra bir madde:\n15:00 Gelin alma\n19:00 " + (plan.extraKind === "nikah" ? "Karşılama" : "Nikâh töreni") + "\n20:00 Yemek\n21:00 İlk dans\n21:30 Takı merasimi\n22:30 Pasta kesimi"} />
+                  placeholder={torenAkisOrnegi(plan.mainKind, plan.extraKind === "nikah")} />
                 {extra && (
                   <>
                     <label className="lbl" htmlFor="k_program">{extra.title}</label>
@@ -144,14 +145,35 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
             <label className="lbl" htmlFor="hostName">{evEtiket}</label>
             <input type="text" id="hostName" name="hostName" required maxLength={80} placeholder={`Örn: ${evOrnek}`} />
 
+            <div className="form-section-heading"><span>·</span><h2>{son.zamanBaslik}</h2></div>
             <div className="grid2">
               <div><label className="lbl" htmlFor="date">Tarih</label><input type="date" id="date" name="date" required min={todayIso()} /></div>
-              <div><label className="lbl" htmlFor="time">Saat</label><input type="time" id="time" name="time" required /></div>
+              <div><label className="lbl" htmlFor="time">{son.saat}</label><input type="time" id="time" name="time" required /></div>
             </div>
-            <VenuePicker prefix="" venueName="venue" addressName="address" label="Yer" required note venueMax={160} addressMax={400}
-              placeholder="Örn: Moda Teras" />
+            {son.saatNot && <p className="muted small" style={{ marginTop: 6 }}>{son.saatNot}</p>}
+            {son.surpriz && (
+              <>
+                <label className="lbl" htmlFor="surpriz">{son.surpriz} <small className="muted">(isteğe bağlı)</small></label>
+                <input type="time" id="surpriz" name="surpriz" style={{ maxWidth: 180 }} />
+                <p className="muted small" style={{ marginTop: 6 }}>Davette “bu saatten önce gelin, çaktırmayın” diye yazar.</p>
+              </>
+            )}
+            <VenuePicker prefix="" venueName="venue" addressName="address" label={son.yer} required note venueMax={160} addressMax={400}
+              placeholder={son.yerOrnek} />
 
-            <FotoSecici tur={answers.tur} />
+            {son.akisOrnek && (
+              <>
+                <div className="form-section-heading"><span>·</span><h2>{son.akisBaslik}</h2></div>
+                <label className="lbl" htmlFor="akis">Her satıra bir madde <small className="muted">(isteğe bağlı)</small></label>
+                <textarea id="akis" name="akis" maxLength={600} rows={4} placeholder={son.akisOrnek} />
+              </>
+            )}
+            {son.mevlidhan && (
+              <>
+                <label className="lbl" htmlFor="mevlidhan">Mevlidi okuyacak hoca <small className="muted">(isteğe bağlı)</small></label>
+                <input type="text" id="mevlidhan" name="mevlidhan" maxLength={80} placeholder="Örn: Hafız Ahmet Yılmaz" />
+              </>
+            )}
 
             {plan.request === "getir" && (
               <>
@@ -166,8 +188,14 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
               </>
             )}
 
-            <label className="lbl" htmlFor="capacity">Kontenjan (isteğe bağlı)</label>
-            <input type="number" id="capacity" name="capacity" min={1} max={10000} inputMode="numeric" placeholder="Örn: 40" style={{ width: 140 }} />
+            <FotoSecici tur={answers.tur} />
+
+            {son.kontenjan && (
+              <>
+                <label className="lbl" htmlFor="capacity">{son.kontenjan} <small className="muted">(isteğe bağlı)</small></label>
+                <input type="number" id="capacity" name="capacity" min={1} max={10000} inputMode="numeric" placeholder="Örn: 40" style={{ width: 140 }} />
+              </>
+            )}
           </>
         )}
 
@@ -175,7 +203,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
           <input type="checkbox" name="kvkk" required />
           <span><Link href="/gizlilik" target="_blank">Aydınlatma metnini</Link> okudum. Davetli bilgilerinin son etkinlikten 90 gün sonra silineceğini biliyorum.</span>
         </label>
-        <button className="btn full" type="submit" style={{ marginTop: 16 }}>Davetimi hazırla</button>
+        <button className="btn full" type="submit" style={{ marginTop: 16 }}>{buyukHarf(davetAdi(answers).replace(/niz$/, "mi"))} hazırla</button>
         <p className="muted small centered" style={{ marginTop: 10 }}>
           Metni ve görünümü sonradan istediğiniz kadar değiştirebilirsiniz.
         </p>

@@ -3,7 +3,8 @@ import { VenuePicker } from "@/components/VenuePicker";
 import { notFound } from "next/navigation";
 import { CoverPicker } from "@/components/CoverPicker";
 import { CATEGORIES } from "@/lib/categories";
-import { designOf, mobileEventByToken } from "@/lib/mobile";
+import { designOf, detailsOf, mobileEventByToken } from "@/lib/mobile";
+import { sonAdim } from "@/lib/ornekler";
 import { ThemePicker, ThemeStyle } from "@/components/Theme";
 import { FontPicker, OrnamentPicker, PatternPicker } from "@/components/DesignPickers";
 import { FotoSecici } from "@/components/FotoSecici";
@@ -25,6 +26,8 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
   // Renk, doku ve fotoğraf seçenekleri davetin türüne göre (eski davetlerde tür kategoriden)
   const kayitli = cevaplarOf(row.answers);
   const cevaplar = { ...kayitli, tur: kayitli.tur || turOfCategory(row.category) };
+  const son = sonAdim(cevaplar);
+  const detay = detailsOf(row);
   const kategori = CATEGORIES.includes(row.category as (typeof CATEGORIES)[number]) ? row.category : CATEGORIES[0];
 
   return (
@@ -65,6 +68,22 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
         <label className="lbl" htmlFor="description">Davetliye not</label>
         <textarea id="description" name="description" maxLength={2000} defaultValue={row.description} />
         <MetinOneri hedef="description" oneriler={oneriler(row.answers, turOfCategory(row.category))} />
+
+        {/* Türe özel ayrıntılar: son adımda sorulanlarla aynı */}
+        <label className="lbl" htmlFor="akis">{son.akisBaslik} <small className="muted">(isteğe bağlı, her satıra bir madde)</small></label>
+        <textarea id="akis" name="akis" maxLength={600} rows={4} defaultValue={detay.akis ?? ""} placeholder={son.akisOrnek || "Örn: 20:00 Yemek"} />
+        {(son.mevlidhan || detay.mevlidhan) && (
+          <>
+            <label className="lbl" htmlFor="mevlidhan">Mevlidi okuyacak hoca <small className="muted">(isteğe bağlı)</small></label>
+            <input type="text" id="mevlidhan" name="mevlidhan" maxLength={80} defaultValue={detay.mevlidhan ?? ""} placeholder="Örn: Hafız Ahmet Yılmaz" />
+          </>
+        )}
+        {(son.surpriz || detay.surpriz) && (
+          <>
+            <label className="lbl" htmlFor="surpriz">{son.surpriz ?? "Sürpriz saati"} <small className="muted">(isteğe bağlı)</small></label>
+            <input type="time" id="surpriz" name="surpriz" defaultValue={detay.surpriz ?? ""} style={{ maxWidth: 180 }} />
+          </>
+        )}
         <label className="lbl" htmlFor="capacity">Kontenjan (isteğe bağlı)</label>
         <input type="number" id="capacity" name="capacity" min={1} max={10000} inputMode="numeric" defaultValue={row.capacity ?? ""} style={{ width: 140 }} />
 

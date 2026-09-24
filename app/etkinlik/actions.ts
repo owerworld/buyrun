@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import {
   createMobileEvent, createMobileGuest, editMobileEvent, editMobileGuest, eventInput,
-  designOf, mobileEventByToken, MobileError, removeMobileGuest, setMobileDesign, validateEvent,
+  designOf, mobileEventByToken, MobileError, removeMobileGuest, setMobileDesign, setMobileDetails, validateEvent,
 } from "@/lib/mobile";
 import { isFont, isOrnament, isPattern } from "@/lib/design";
 import { isTheme } from "@/lib/themes";
@@ -52,6 +52,8 @@ export async function updateEventAction(manageToken: string, f: FormData) {
   try {
     await editMobileEvent(row, validateEvent(formEvent(f), eventInput(row)), siteUrl());
     await setMobilePlace(row, placeFromForm(f, ""));
+    // Günün akışı, mevlidhan ve sürpriz saati (formda olmayan alan boş kalır)
+    await setMobileDetails(row, { akis: s(f, "akis", 600), mevlidhan: s(f, "mevlidhan", 80), surpriz: s(f, "surpriz", 5) });
     // Tasarımlı davette seçiciler formda; geçersiz değer gelirse eski tasarım korunur
     const design = designOf(row);
     if (design) {

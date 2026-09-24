@@ -115,7 +115,9 @@ export async function wizardAction(f: FormData) {
       // Uygulama fotoğraflı kapağı gösterir; web davet sayfası bu tasarımı
       { theme: plan.theme, font: plan.font, ornament: plan.ornament, pattern: plan.pattern },
       placeFromForm(f, ""),
-      answersQuery(answers)
+      answersQuery(answers),
+      // Türe özel ayrıntılar: günün akışı, mevlidhan, sürpriz saati (lib/ornekler.ts sonAdim)
+      { akis: s(f, "akis", 600), mevlidhan: s(f, "mevlidhan", 80), surpriz: s(f, "surpriz", 5) }
     );
     token = event.manageToken;
   } catch (e) {
