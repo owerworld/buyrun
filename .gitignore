@@ -9,3 +9,4 @@ next-env.d.ts
 # Next.js otomatik ürettiği agent dosyaları
 AGENTS.md
 CLAUDE.md
+test-fixture.json
