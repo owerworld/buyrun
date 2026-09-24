@@ -9,51 +9,13 @@ import { fontOf, ornamentOf } from "@/lib/design";
 import { kindOf } from "@/lib/events";
 import { todayIso } from "@/lib/format";
 import { themeOf } from "@/lib/themes";
-import { answersQuery, nextQuestion, parseAnswers, planFromAnswers, withoutLast } from "@/lib/wizard";
+import { alanlarFor, istekOrnekleri } from "@/lib/ornekler";
+import { answersQuery, buyukHarf, davetAdi, nextQuestion, parseAnswers, planFromAnswers, withoutLast } from "@/lib/wizard";
 import { wizardAction } from "../actions";
 
 export const metadata: Metadata = { title: "Son bilgiler – Buyrun" };
 
 type SP = Record<string, string | string[] | undefined>;
-
-/** Etkinlik dalında başlık ve ev sahibi alanları, davet türünün Türkiye'deki alışkanlığına göre adlandırılır. */
-const ALANLAR: Record<string, [baslik: string, baslikOrnek: string, ev: string, evOrnek: string]> = {
-  sunnet: ["Davetin başlığı", "Mert'in sünnet düğünü", "Anne ve baba", "Ayşe & Ahmet Yılmaz"],
-  babyshower: ["Davetin başlığı", "Minik Zeynep yolda", "Düzenleyen", "Zeynep'in arkadaşları"],
-  cinsiyet: ["Davetin başlığı", "Kız mı, erkek mi?", "Aile", "Zeynep & Can"],
-  disbugdayi: ["Davetin başlığı", "Ela'nın diş buğdayı", "Aile", "Zeynep & Can Demir"],
-  mevlid: ["Davetin başlığı", "Mevlid-i Şerif", "Davet eden", "Yılmaz ailesi"],
-  iftar: ["Davetin başlığı", "İftar soframıza buyrun", "Davet eden", "Yılmaz ailesi"],
-  hac: ["Davetin başlığı", "Hacı adayımızı uğurluyoruz", "Davet eden", "Yılmaz ailesi"],
-  asker: ["Davetin başlığı", "Emre'yi askere uğurluyoruz", "Davet eden", "Kaya ailesi"],
-  bekarlik: ["Davetin başlığı", "Elif'e bekârlığa veda", "Düzenleyen", "Nazlı ve Ece"],
-  kina: ["Davetin başlığı", "Zeynep'in kına gecesi", "Davet eden", "Zeynep'in ailesi"],
-  dogumgunu: ["Davetin başlığı", "İyi ki doğdun, Ece!", "Ev sahibi", "Ece"],
-  mezuniyet: ["Davetin başlığı", "Mezun olduk!", "Davet eden", "Deniz ya da 2027 Mezunları"],
-  evpartisi: ["Davetin başlığı", "Yeni evimize buyrun", "Ev sahibi", "Elif & Can"],
-  yemek: ["Davetin başlığı", "Cuma akşamı sofrası", "Ev sahibi", "Elif & Can"],
-  bulusma: ["Davetin başlığı", "Lise arkadaşları buluşuyor", "Düzenleyen", "Deniz"],
-};
-const VARSAYILAN_ALAN: [string, string, string, string] = ["Etkinliğin adı", "Bir araya gelelim", "Ev sahibi", "Ece ya da Bilgisayar Kulübü"];
-
-/** "Ne getirsinler?" ve kıyafet notunun örnekleri; her günün kendi alışkanlığı var. */
-const ISTEK_ORNEK: Record<string, [getir: string, kiyafet: string]> = {
-  dogumgunu: ["Örn: Birlikte dinlemek istediğiniz bir şarkıyı yazın", "Örn: Temamız 90'lar, ona göre giyinin"],
-  mezuniyet: ["Örn: Okul yıllarından bir fotoğraf getirin", "Örn: Kep ve cüppe bizden, siz rahat gelin"],
-  evpartisi: ["Örn: Evimize bir saksı çiçek yeter", "Örn: Rahat gelin, yer minderlerimiz var"],
-  yemek: ["Örn: Yanınızda bir tatlı getirin", "Örn: Bahçede oturacağız, hırka alın"],
-  bulusma: ["Örn: Eski fotoğraflarınızı getirin", "Örn: Piknik var, rahat ayakkabı giyin"],
-  bekarlik: ["Örn: Geline bir tavsiye yazıp getirin", "Örn: Hepimiz pembe giyiyoruz"],
-  kina: ["Örn: Tefinizi getirin, türküler söylenecek", "Örn: Kırmızı ya da bordo giyelim"],
-  sunnet: ["Örn: Çocuklar için boya kalemi getirin, resim köşemiz var", "Örn: Mavi tonlarında giyinirsek fotoğraflar güzel olur"],
-  babyshower: ["Örn: Bebeğe bir dilek kartı yazın", "Örn: Pastel renkler giyelim"],
-  cinsiyet: ["Örn: Tahmininizi bir karta yazıp getirin", "Örn: Tahmininize göre pembe ya da mavi giyin"],
-  disbugdayi: ["Örn: Bebeğe bir dilek yazın", "Örn: Rahat gelin, yer sofrası kuruyoruz"],
-  iftar: ["Örn: Gönlünüzden geçen bir dua yeter", "Örn: Bahçede iftar, akşam serin olabilir"],
-  mevlid: ["Örn: Dualarınız yeter", "Örn: Mevlid evde okunacak, sade kıyafet yeterli"],
-  hac: ["Örn: Dualarınızı getirin, yeter", "Örn: Sade kıyafet yeterli"],
-  asker: ["Örn: Askerimize bir not yazıp getirin", "Örn: Kırmızı beyaz giyelim"],
-};
 
 /**
  * Sihirbazın son sayfası: yazı isteyen tek yer.
@@ -79,11 +41,8 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
     nikah: ["Örn: Nilüfer Belediyesi Nikâh Salonu", "14:00 Nikâh\n14:30 Tebrikler ve fotoğraf"],
     after: ["Örn: Kordon Teras", "23:00 DJ performansı"],
   };
-  const [baslikEtiket, baslikOrnek, evEtiket, evOrnek] =
-    answers.tur === "mevlid" && answers.vesile === "rahmetli"
-      ? ["Davetin başlığı", "Rahmetli Hasan Yılmaz'ın anısına", "Davet eden", "Yılmaz ailesi"]
-      : ALANLAR[answers.tur ?? ""] ?? VARSAYILAN_ALAN;
-  const istekOrnek = ISTEK_ORNEK[answers.tur ?? ""] ?? ["Örn: Yanınızda bir tatlı getirin", "Örn: Rahat kıyafetle gelin"];
+  const [baslikEtiket, baslikOrnek, evEtiket, evOrnek] = alanlarFor(answers);
+  const istekOrnek = istekOrnekleri(answers);
   const extra = plan.extraKind ? kindOf(plan.extraKind) : null;
   const ozet = plan.toren
     ? `${themeOf(plan.theme).label} renkler, ${ornamentOf(plan.ornament).label.toLocaleLowerCase("tr")} ve ${fontOf(plan.font).label.toLocaleLowerCase("tr")} isimler`
@@ -102,7 +61,7 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
 
       <form action={wizardAction} className="card">
         <p className="eyebrow">Son adım</p>
-        <h1 className="title">Davetiyeniz hazır, isimleri yazalım</h1>
+        <h1 className="title">{plan.toren ? "Davetiyeniz hazır, isimleri yazalım" : `${buyukHarf(davetAdi(answers))} hazır, bilgileri yazalım`}</h1>
         <p className="muted">
           Cevaplarınızdan çıkan tasarım: <b>{ozet}</b>. Davet metnini de seçtiğiniz dile göre biz yazacağız;
           beğenmezseniz tek dokunuşla başka öneri alabilirsiniz.
@@ -137,8 +96,8 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
               <div><label className="lbl" htmlFor="d_date">Tarih</label><input type="date" id="d_date" name="d_date" required min={todayIso()} /></div>
               <div><label className="lbl" htmlFor="d_time">Saat</label><input type="time" id="d_time" name="d_time" required /></div>
             </div>
-            <VenuePicker prefix="d" venueName="d_venue" addressName="d_address" label="Salon / yer" required note
-              placeholder="Örn: Podyum Davet" />
+            <VenuePicker prefix="d" venueName="d_venue" addressName="d_address" label={answers.torenyer === "kizevi" ? "Yer" : "Salon / yer"} required note
+              placeholder={{ kizevi: "Örn: Yılmaz ailesinin evi", restoran: "Örn: Kordon Restoran", bahce: "Örn: Bahçe Davet" }[answers.torenyer ?? ""] ?? "Örn: Podyum Davet"} />
 
             {extra && (
               <>

@@ -282,7 +282,8 @@ function CreateForm() {
       };
       const event = editing
         ? await store.update(existing.id, clean)
-        : await store.create(clean);
+        : // Sihirbaz cevapları davet sayfasında sürpriz uyarısı ve hitap için saklanır
+          await store.create(answers ? { ...clean, answers } : clean);
       completed.current = true;
       if (!editing) {
         await draftWrite.current;

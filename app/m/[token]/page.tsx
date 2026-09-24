@@ -4,6 +4,7 @@ import { designOf, mobileEventByToken, placeOf, publicEvent } from "@/lib/mobile
 import { ThemeStyle } from "@/components/Theme";
 import { dayStatus, todayTr } from "@/lib/eventday";
 import { forecastFor } from "@/lib/weather";
+import { davetEkleri } from "@/lib/ornekler";
 import { cevaplarOf } from "@/lib/sozler";
 import Invitation from "./invitation";
 export const dynamic = "force-dynamic";
@@ -26,8 +27,11 @@ export default async function MobileInvitation({params,searchParams}: {
   // Gün yaklaşınca üstte bant, 9 gün içindeyse hava tahmini (sunucuda hesaplanır)
   const dayState = dayStatus([{ title: row.title, date: row.event_date, time: row.event_time, place }]);
   const forecast = await forecastFor(row.lat, row.lng, row.event_date, row.event_time, todayTr());
+  // Sihirbaz cevapları: hitap, sürpriz uyarısı, not kutusunun örneği
+  const cevaplar = cevaplarOf(row.answers);
+  const samimi = cevaplar.kim === "arkadaslar";
   return <>
     {design && <ThemeStyle theme={design.theme} />}
-    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} samimi={cevaplarOf(row.answers).kim === "arkadaslar"} />
+    <Invitation event={event} design={design} place={place} dayState={dayState} forecast={forecast} inviteToken={token} initialGuestToken={guestToken || null} samimi={samimi} ekler={davetEkleri(cevaplar, samimi)} />
   </>;
 }

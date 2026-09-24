@@ -36,6 +36,8 @@ export interface Question {
   id: string;
   /** Soru başlığı */
   title: string;
+  /** Başlık türe göre değişiyorsa: "Baby shower davetiniz nasıl konuşsun?" */
+  titleOf?: (a: Answers) => string;
   /** Başlığın altındaki kısa cümle */
   lead?: string;
   options: Option[];
@@ -61,6 +63,46 @@ const GRUP_OF: Record<string, string> = {
   mevlid: "manevi", iftar: "manevi", hac: "manevi",
   evpartisi: "dostlar", yemek: "dostlar", mezuniyet: "dostlar", asker: "dostlar", bulusma: "dostlar",
 };
+
+/**
+ * Davetin adı: düğün, kına, sünnet gibi basılı geleneği olanlar "davetiye",
+ * baby shower, iftar, doğum günü gibi günler "davet". Sihirbaz her yerde bu adla konuşur.
+ */
+export function davetAdi(a: Answers) {
+  switch (a.tur) {
+    case "dugun": return "düğün davetiyeniz";
+    case "nisan": return "nişan davetiyeniz";
+    case "soz": return "söz davetiyeniz";
+    case "kina": return "kına davetiyeniz";
+    case "sunnet": return "sünnet davetiyeniz";
+    case "bekarlik": return "veda partisi davetiniz";
+    case "babyshower": return "baby shower davetiniz";
+    case "cinsiyet": return "cinsiyet partisi davetiniz";
+    case "disbugdayi": return "diş buğdayı davetiniz";
+    case "dogumgunu": return a.surpriz === "evet" ? "sürpriz parti davetiniz" : "doğum günü davetiniz";
+    case "mevlid": return "mevlid davetiniz";
+    case "iftar": return "iftar davetiniz";
+    case "hac": return a.hacyon === "hackars" || a.hacyon === "umrekars" ? "hoş geldin davetiniz" : "uğurlama davetiniz";
+    case "asker": return a.askyon === "karsilama" ? "hoş geldin davetiniz" : "uğurlama davetiniz";
+    case "evpartisi": return a.evtur === "hayirli" ? "ev hayırlısı davetiniz" : "ev partisi davetiniz";
+    case "yemek": return "yemek davetiniz";
+    case "mezuniyet": return "mezuniyet davetiniz";
+    case "bulusma": return "buluşma davetiniz";
+    default: return "davetiniz";
+  }
+}
+export const buyukHarf = (s: string) => s.charAt(0).toLocaleUpperCase("tr") + s.slice(1);
+/** Sorunun bu cevaplarla görünen başlığı. */
+export const soruBasligi = (q: Question, a: Answers) => q.titleOf?.(a) ?? q.title;
+
+/** Soru yalnızca bu türlerde sorulur. */
+const tur = (...t: string[]) => (a: Answers) => t.includes(a.tur ?? "");
+
+/**
+ * Havayı kendi sorusuyla belli olan türler: "Nasıl bir hava olsun?" ayrıca sorulmaz,
+ * süsleme ve kapak türe özel cevaptan çıkar (havaOf).
+ */
+const HAVASIZ = ["sunnet", "kina", "asker", "bekarlik", "evpartisi", "mezuniyet"];
 
 /** Tür listesini seçilen gruba göre süzer. Grup sorulmadıysa (ana sayfadan türle gelindiyse) hepsi geçerli. */
 function grupta(...gruplar: string[]) {
@@ -147,6 +189,244 @@ export const QUESTIONS: Question[] = [
       { id: "sukur", label: "Şükür için", hint: "Hayırlı bir iş, sağlık, kavuşma" },
     ],
   },
+  /* ---------------------------------------------------------------- */
+  /* Türe özel sorular: her günün kendi ayrıntısı var. Cevaplar davet   */
+  /* metnine, davet sayfasına ve son sayfadaki örneklere işlenir.       */
+  /* ---------------------------------------------------------------- */
+  {
+    id: "torenyer",
+    title: "Tören nerede yapılacak?",
+    lead: "Nişan ve söz çoğu zaman kız evinde, sıcak bir aile ortamında yapılır.",
+    when: tur("nisan", "soz"),
+    options: [
+      { id: "kizevi", label: "Kız evinde", hint: "Geleneksel, aile arasında" },
+      { id: "salon", label: "Salonda" },
+      { id: "restoran", label: "Restoranda ya da otelde" },
+      { id: "bahce", label: "Bahçede, açık havada" },
+    ],
+  },
+  {
+    id: "kinatarz",
+    title: "Nasıl bir kına gecesi?",
+    lead: "Bugün kınaların çoğu ikisini birleştiriyor: önce kına yakılıyor, sonra dans.",
+    when: tur("kina"),
+    options: [
+      { id: "geleneksel", label: "Geleneksel", hint: "Bindallı, kına türküleri, gelin ağlatma" },
+      { id: "hibrit", label: "Gelenek ve eğlence bir arada", hint: "Kına yakılır, sonra müzik ve dans" },
+      { id: "modern", label: "Modern kına partisi", hint: "Koreografi, DJ, konfeti" },
+    ],
+  },
+  {
+    id: "bkkim",
+    title: "Veda kimin için?",
+    when: tur("bekarlik"),
+    options: [
+      { id: "gelin", label: "Gelin için" },
+      { id: "damat", label: "Damat için" },
+      { id: "cift", label: "Çift birlikte" },
+    ],
+  },
+  {
+    id: "bktarz",
+    title: "Nasıl bir veda olacak?",
+    when: tur("bekarlik"),
+    options: [
+      { id: "ev", label: "Evde, en yakınlarla" },
+      { id: "gece", label: "Yemek ve gece eğlencesi" },
+      { id: "tekne", label: "Tekne turu" },
+      { id: "gunduz", label: "Brunch ya da gündüz buluşması" },
+    ],
+  },
+  {
+    id: "sunyas",
+    title: "Şehzademiz kaç yaşında?",
+    lead: "Büyük çocuk davetine kendi ağzından seslenebilir; bebek için metni aile yazar.",
+    when: tur("sunnet"),
+    options: [
+      { id: "bebek", label: "Bebek", hint: "0–2 yaş" },
+      { id: "kucuk", label: "Küçük", hint: "3–6 yaş" },
+      { id: "buyuk", label: "Büyük", hint: "7 yaş ve üstü" },
+    ],
+  },
+  {
+    id: "sunakis",
+    title: "Sünnet düğününde neler olacak?",
+    when: tur("sunnet"),
+    options: [
+      { id: "ikisi", label: "Mevlid de eğlence de", hint: "En yaygını: önce mevlid, sonra eğlence" },
+      { id: "mevlid", label: "Mevlid ve yemek", hint: "Manevi ve sade" },
+      { id: "eglence", label: "Müzik ve eğlence", hint: "Palyaço, sihirbaz, DJ" },
+      { id: "sofra", label: "Aile sofrası", hint: "Küçük ve sade" },
+    ],
+  },
+  {
+    id: "bscins",
+    title: "Bebeğin cinsiyeti belli mi?",
+    when: tur("babyshower"),
+    options: [
+      { id: "kiz", label: "Kız" },
+      { id: "erkek", label: "Erkek" },
+      { id: "sir", label: "Henüz sır", hint: "Davetliler tahminini yazsın" },
+    ],
+  },
+  {
+    id: "bsduzen",
+    title: "Kutlamayı kim düzenliyor?",
+    lead: "Baby shower'ı çoğu zaman anne adayının kardeşi ya da yakın arkadaşları hazırlar.",
+    when: tur("babyshower"),
+    options: [
+      { id: "aile", label: "Anne-baba adayı" },
+      { id: "sevenler", label: "Arkadaşlar ve aile", hint: "Anne adayının haberi var" },
+      { id: "surpriz", label: "Sürpriz parti", hint: "Davette “çaktırmayın” uyarısı çıkar" },
+    ],
+  },
+  {
+    id: "acikla",
+    title: "Cinsiyet nasıl açıklanacak?",
+    when: tur("cinsiyet"),
+    options: [
+      { id: "balon", label: "Balon patlatarak", hint: "En sevilen yöntem" },
+      { id: "pasta", label: "Pasta keserek" },
+      { id: "duman", label: "Renkli duman ya da konfeti" },
+      { id: "kutu", label: "Kutudan uçan balonlar" },
+    ],
+  },
+  {
+    id: "meslek",
+    title: "Meslek seçtirme olacak mı?",
+    lead: "Bebeğin önüne kalem, makas, stetoskop gibi eşyalar konur; hangisini seçerse…",
+    when: tur("disbugdayi"),
+    options: [
+      { id: "evet", label: "Evet, olacak" },
+      { id: "hayir", label: "Hayır, sadece buğday ve sofra" },
+    ],
+  },
+  {
+    id: "dgkim",
+    title: "Kimin doğum günü?",
+    when: (a) => a.tur === "dogumgunu" && a.grup !== "cocuk",
+    options: [
+      { id: "cocuk", label: "Bir çocuğun" },
+      { id: "genc", label: "Bir gencin", hint: "13–25 yaş" },
+      { id: "yetiskin", label: "Bir yetişkinin" },
+      { id: "buyuk", label: "Bir büyüğümüzün", hint: "Annemiz, babamız, dedemiz, ninemiz" },
+    ],
+  },
+  {
+    id: "surpriz",
+    title: "Sürpriz parti mi?",
+    when: tur("dogumgunu"),
+    options: [
+      { id: "hayir", label: "Hayır, haberi var" },
+      { id: "evet", label: "Evet, sürpriz!", hint: "Davette “çaktırmayın” uyarısı çıkar" },
+    ],
+  },
+  {
+    id: "okul",
+    title: "Hangi mezuniyet?",
+    when: tur("mezuniyet"),
+    options: [
+      { id: "ilk", label: "İlkokul ya da ortaokul" },
+      { id: "lise", label: "Lise" },
+      { id: "uni", label: "Üniversite" },
+      { id: "yuksek", label: "Yüksek lisans ya da doktora" },
+    ],
+  },
+  {
+    id: "mzkutla",
+    title: "Nasıl kutluyoruz?",
+    when: tur("mezuniyet"),
+    options: [
+      { id: "yemek", label: "Törenin ardından yemek" },
+      { id: "parti", label: "Mezuniyet partisi" },
+      { id: "aile", label: "Evde, aile sofrasında" },
+    ],
+  },
+  {
+    id: "askyon",
+    title: "Uğurlama mı, karşılama mı?",
+    when: tur("asker"),
+    options: [
+      { id: "ugurlama", label: "Askere uğurlama" },
+      { id: "karsilama", label: "Askerden dönüş", hint: "Tezkere kutlaması" },
+    ],
+  },
+  {
+    id: "askakis",
+    title: "Neler olacak?",
+    lead: "Pek çok yörede askere gidene kına yakılır, davul zurna çalar.",
+    when: tur("asker"),
+    options: [
+      { id: "kina", label: "Kına ve davul zurna", hint: "Geleneksel asker gecesi", when: (a) => a.askyon !== "karsilama" },
+      { id: "davul", label: "Davul zurnayla karşılama", when: (a) => a.askyon === "karsilama" },
+      { id: "yemek", label: "Yemek", hint: "Uğurlama ya da hoş geldin sofrası" },
+      { id: "konvoy", label: "Konvoyla uğurlama", hint: "Otogara ya da havalimanına", when: (a) => a.askyon !== "karsilama" },
+    ],
+  },
+  {
+    id: "hacyon",
+    title: "Ne için bir araya geliyoruz?",
+    lead: "Hacdan dönene zemzem ve hurmayla “hoş geldin” demek de köklü bir gelenek.",
+    when: tur("hac"),
+    options: [
+      { id: "hacugur", label: "Hac uğurlaması" },
+      { id: "umreugur", label: "Umre uğurlaması" },
+      { id: "hackars", label: "Hacı karşılaması", hint: "Zemzem ve hurmayla hoş geldin" },
+      { id: "umrekars", label: "Umreden dönüş" },
+    ],
+  },
+  {
+    id: "ikram",
+    title: "Mevlidin ardından ne ikram edilecek?",
+    when: tur("mevlid"),
+    options: [
+      { id: "yemek", label: "Yemek" },
+      { id: "lokma", label: "Lokma, helva ve şerbet" },
+      { id: "cay", label: "Çay ve kurabiye" },
+    ],
+  },
+  {
+    id: "iftaryer",
+    title: "İftar nerede açılacak?",
+    when: tur("iftar"),
+    options: [
+      { id: "ev", label: "Evimizde" },
+      { id: "restoran", label: "Restoranda" },
+      { id: "bahce", label: "Bahçede, açık havada" },
+    ],
+  },
+  {
+    id: "evtur",
+    title: "Nasıl bir ev daveti?",
+    when: tur("evpartisi"),
+    options: [
+      { id: "hayirli", label: "Ev hayırlısı", hint: "Büyüklerle, çay ve sohbet" },
+      { id: "parti", label: "Ev partisi", hint: "Arkadaşlarla, müzik ve eğlence" },
+      { id: "ikisi", label: "İkisi bir arada" },
+    ],
+  },
+  {
+    id: "yemekneden",
+    title: "Bu sofranın vesilesi ne?",
+    when: tur("yemek"),
+    options: [
+      { id: "ozlem", label: "Sebepsiz, özledik" },
+      { id: "kutlama", label: "Bir kutlama", hint: "Terfi, yıl dönümü, güzel bir haber" },
+      { id: "tanisma", label: "Tanışma yemeği", hint: "Aileler, yeni komşular" },
+      { id: "bayram", label: "Bayram sofrası" },
+    ],
+  },
+  {
+    id: "kimler",
+    title: "Kimler buluşuyor?",
+    when: tur("bulusma"),
+    options: [
+      { id: "okul", label: "Okul arkadaşları" },
+      { id: "is", label: "İş arkadaşları" },
+      { id: "aile", label: "Aile ve akrabalar" },
+      { id: "komsu", label: "Komşular" },
+    ],
+  },
   {
     id: "kim",
     title: "Davetliler çoğunlukla kim?",
@@ -160,6 +440,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "ton",
     title: "Davetiniz nasıl konuşsun?",
+    titleOf: (a) => `${buyukHarf(davetAdi(a))} nasıl konuşsun?`,
     options: [
       // Örnek cümle davetin türüne göre değişir (lib/sozler.ts)
       { id: "zarif", label: "Zarif ve ölçülü", hintOf: (a) => tonOrnegi(a.tur, "zarif") },
@@ -181,7 +462,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "renk",
     title: "Hangi renkler size daha yakın?",
-    lead: "İçinizden geleni seçin; davetiye bu renklere bürünecek.",
+    lead: "İçinizden geleni seçin; davetiniz bu renklere bürünecek.",
     look: "renk",
     options: [
       { id: "lal", label: "Kına kırmızısı", hint: "Al & altın" },
@@ -231,7 +512,7 @@ export const QUESTIONS: Question[] = [
     title: "Nasıl bir hava olsun?",
     lead: "Çerçevenin süslemesi buna göre değişecek.",
     look: "susleme",
-    when: (a) => !isToren(a) && !MANEVI.includes(a.tur ?? ""),
+    when: (a) => !isToren(a) && !MANEVI.includes(a.tur ?? "") && !HAVASIZ.includes(a.tur ?? ""),
     options: [
       { id: "cosku", label: "Coşkulu ve renkli", hint: "Art deco" },
       { id: "sicakhava", label: "Küçük ve samimi", hint: "Çiçek dalları" },
@@ -241,13 +522,16 @@ export const QUESTIONS: Question[] = [
   {
     id: "desen",
     title: "Arka planda hangi doku olsun?",
-    lead: "Türkiye'de davetiyelerde en sevilen dokular; her birinin bir anlamı var.",
+    lead: "Türkiye'de davetlerde en sevilen dokular; her birinin bir anlamı var.",
     look: "desen",
     options: [
       { id: "cicekli", label: "Çiçekli", hint: "Romantik, en çok sevilen", when: uygun("cicekli") },
       { id: "mermer", label: "Mermer", hint: "Modern ve şık", when: uygun("mermer") },
       { id: "varak", label: "Altın varak", hint: "Görkemli, ışıltılı", when: uygun("varak") },
-      { id: "dantel", label: "Dantel ve oya", hint: "Gelinliğin, çeyizin inceliği", when: uygun("dantel") },
+      {
+        id: "dantel", label: "Dantel ve oya", hint: "Gelinliğin, çeyizin inceliği", when: uygun("dantel"),
+        hintOf: (a) => (desenGrubu(a) === "bebek" ? "Bebek battaniyesinin, oyanın inceliği" : undefined),
+      },
       { id: "bindalli", label: "Bindallı sırması", hint: "Kınanın altın işlemesi", when: uygun("bindalli") },
       { id: "nazar", label: "Nazar", hint: "Maşallah, nazardan korusun", when: uygun("nazar") },
       { id: "fener", label: "Hilal ve fener", hint: "Ramazan'ın ışığı", when: uygun("fener") },
@@ -276,7 +560,8 @@ export const QUESTIONS: Question[] = [
     id: "ekler",
     title: "Davetiyede başka neler olsun?",
     lead: "Türkiye'de düğünlerin çoğunda servis kalkar, program da merak edilir.",
-    when: isToren,
+    // Kız evindeki nişan ve sözde servis ve program sorulmaz
+    when: (a) => isToren(a) && a.torenyer !== "kizevi",
     options: [
       { id: "ikisi", label: "Servis ve günün programı", hint: "Kalkış yeri ve saati; gelin alma, nikâh, takı merasimi" },
       { id: "servis", label: "Sadece servis bilgisi" },
@@ -287,7 +572,8 @@ export const QUESTIONS: Question[] = [
   {
     id: "istek",
     title: "Davetlilerden bir isteğiniz var mı?",
-    when: (a) => !isToren(a),
+    // Mevlid, iftar ve hacda "yanınızda getirin" ya da kıyafet notu yadırganır
+    when: (a) => !isToren(a) && !MANEVI.includes(a.tur ?? ""),
     options: [
       { id: "yok", label: "Hayır, sadece gelsinler" },
       { id: "getir", label: "Yanlarında bir şey getirsinler" },
@@ -376,6 +662,16 @@ const CATEGORY_OF: Record<string, string> = {
   mevlid: "Mevlid", iftar: "İftar", hac: "Hac uğurlaması", asker: "Asker uğurlaması",
 };
 
+/** Alt türü olan günlerde kategori de değişir: hacı karşılaması, askerden dönüş. */
+function categoryFor(a: Answers) {
+  if (a.tur === "hac") {
+    const alt: Record<string, string> = { umreugur: "Umre uğurlaması", hackars: "Hacı karşılaması", umrekars: "Umreden dönüş" };
+    if (alt[a.hacyon ?? ""]) return alt[a.hacyon ?? ""];
+  }
+  if (a.tur === "asker" && a.askyon === "karsilama") return "Askerden dönüş";
+  return CATEGORY_OF[a.tur ?? ""] ?? "Buluşma";
+}
+
 const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "turkuaz", "pastel"];
 
 /** Etkinlik dalında "siz seçin" denirse türün Türkiye'de alışılmış rengi. */
@@ -401,12 +697,30 @@ function themeFor(a: Answers) {
   return "klasik";
 }
 
+/**
+ * Havası kendi sorusundan belli olan türlerde "hava" karşılığı: sünnette eğlence
+ * coşkulu, tekne vedası coşkulu, ev hayırlısı samimi…
+ */
+const HAVA_KARSILIGI: Record<string, Record<string, string>> = {
+  sunakis: { mevlid: "sik", eglence: "cosku", ikisi: "cosku", sofra: "sicakhava" },
+  kinatarz: { modern: "cosku" },
+  askakis: { kina: "cosku", davul: "cosku", konvoy: "cosku", yemek: "sicakhava" },
+  bktarz: { tekne: "cosku", gece: "cosku", ev: "sicakhava", gunduz: "sik" },
+  evtur: { hayirli: "sicakhava", parti: "cosku", ikisi: "sicakhava" },
+  mzkutla: { parti: "cosku", yemek: "sik", aile: "sicakhava" },
+};
+export function havaOf(a: Answers) {
+  if (a.hava) return a.hava;
+  for (const [soru, karsilik] of Object.entries(HAVA_KARSILIGI)) if (karsilik[a[soru] ?? ""]) return karsilik[a[soru]];
+  return "";
+}
+
 function ornamentFor(a: Answers, theme: string) {
   if (!isToren(a)) {
     // Manevi günlerde hava sorulmaz: çini lale. Diğerlerinde istenen hava süslemeyi seçer.
     if (MANEVI.includes(a.tur ?? "")) return "cini";
     const fromHava: Record<string, string> = { cosku: "deco", sicakhava: "cicek", sik: "cizgi" };
-    if (fromHava[a.hava ?? ""]) return fromHava[a.hava ?? ""];
+    if (fromHava[havaOf(a)]) return fromHava[havaOf(a)];
     if (a.tur === "sunnet" || a.tur === "kina") return "sirma";
     if (BEBEK.includes(a.tur ?? "")) return "cicek";
   }
@@ -442,9 +756,10 @@ function fontFor(a: Answers, ornament: string) {
 
 /** Etkinlik dalında kapak: istenen hava her zaman kazanır; henüz sorulmadıysa türün doğal karşılığı. */
 function coverFor(a: Answers) {
-  if (a.hava === "cosku") return "cherry";
-  if (a.hava === "sik") return "midnight";
-  if (a.hava === "sicakhava") return "bloom";
+  const hava = havaOf(a);
+  if (hava === "cosku") return "cherry";
+  if (hava === "sik") return "midnight";
+  if (hava === "sicakhava") return "bloom";
   if (a.tur === "iftar") return "midnight";
   if (MANEVI.includes(a.tur ?? "")) return "bloom";
   if (["dogumgunu", "evpartisi", "bekarlik", "sunnet", "asker"].includes(a.tur ?? "")) return "cherry";
@@ -468,7 +783,7 @@ export function planFromAnswers(a: Answers): Plan {
     theme, ornament, pattern: patternFor(a),
     font: fontFor(a, ornament),
     coverId: coverFor(a),
-    category: CATEGORY_OF[a.tur ?? ""] ?? "Buluşma",
+    category: categoryFor(a),
     wantsBus: toren && (a.ekler === "ikisi" || a.ekler === "servis"),
     wantsProgram: toren && (a.ekler === "ikisi" || a.ekler === "program"),
     request: !toren && a.istek && a.istek !== "yok" ? a.istek : "",

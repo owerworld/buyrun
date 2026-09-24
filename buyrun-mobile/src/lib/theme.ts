@@ -54,6 +54,7 @@ export const categories = [
   "Mevlid",
   "İftar",
   "Asker uğurlaması",
+  "Askerden dönüş",
 ];
 export const statusLabels = {
   going: "Geliyor",

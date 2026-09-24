@@ -4,4 +4,6 @@ export const CATEGORIES = [
   // Türkiye'de sık yapılan diğer davetler (sihirbaz bunları da kurar)
   "Sünnet", "Baby shower", "Cinsiyet partisi", "Diş buğdayı", "Bekârlığa veda",
   "Mevlid", "İftar", "Hac uğurlaması", "Asker uğurlaması",
+  // Sihirbazın alt türleri
+  "Umre uğurlaması", "Hacı karşılaması", "Umreden dönüş", "Askerden dönüş",
 ] as const;

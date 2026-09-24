@@ -20,6 +20,10 @@ import {
   nextQuestion,
   planFromAnswers,
   progress,
+  buyukHarf,
+  davetAdi,
+  soruBasligi,
+  SORU_TEPKI,
   tonOrnegi,
   TUR_TEPKI,
   visibleOptions,
@@ -70,7 +74,7 @@ function tepki(qid: string, v: string, a: Answers) {
     case "kalabalik":
       return "Son dokunuşlar yapılıyor…";
     default:
-      return "";
+      return SORU_TEPKI[qid]?.[v] ?? "";
   }
 }
 
@@ -432,7 +436,9 @@ export default function Wizard() {
           style={{ flex: 1, padding: 22, justifyContent: "center" }}
         >
           <KapakOnizleme coverId={coverId} category={plan.category} photoId={plan.photoId} />
-          <Heading style={{ marginTop: 28 }}>Davetin hazırlanıyor</Heading>
+          <Heading style={{ marginTop: 28 }}>
+            {buyukHarf(davetAdi(answers))} hazırlanıyor
+          </Heading>
           <View style={{ marginTop: 18, gap: 14 }}>
             {adimlar.map((m, i) => (
               <View key={m} style={[shared.row, { gap: 12 }]}>
@@ -545,7 +551,7 @@ export default function Wizard() {
               </Txt>
             )}
             <Heading style={{ marginTop: answers.tur || karsilik ? 12 : 4 }}>
-              {question.title}
+              {soruBasligi(question, answers)}
             </Heading>
             {!!question.lead && (
               <Txt style={{ color: C.muted, marginTop: 10 }}>

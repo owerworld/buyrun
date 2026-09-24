@@ -22,6 +22,8 @@ export type EventInput = {
   /** Sihirbazın önerdiği telifsiz kapak fotoğrafı (sunucudaki /foto/<id>.jpg) */
   photoId?: string;
   capacity?: number | null;
+  /** Yalnızca oluştururken gönderilir: sihirbaz cevapları */
+  answers?: Record<string, string>;
 };
 export type Party = EventInput & {
   id: string;

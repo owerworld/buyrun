@@ -9,10 +9,10 @@ import { OrnamentSwatch, PatternSwatch } from "@/components/Ornament";
 import { ThemeStyle } from "@/components/Theme";
 import { WizardPreview } from "@/components/WizardPreview";
 import { fontOf, ornamentOf, patternOf } from "@/lib/design";
-import { TUR_TEPKI, tonOrnegi, type Ton } from "@/lib/sozler";
+import { SORU_TEPKI, TUR_TEPKI, tonOrnegi, type Ton } from "@/lib/sozler";
 import { themeOf } from "@/lib/themes";
 import {
-  answersQuery, nextQuestion, parseAnswers, planFromAnswers, progress, visibleOptions, withoutLast,
+  answersQuery, buyukHarf, QUESTIONS, davetAdi, nextQuestion, parseAnswers, planFromAnswers, progress, soruBasligi, visibleOptions, withoutLast,
   type Answers, type Option, type Question,
 } from "@/lib/wizard";
 
@@ -37,17 +37,20 @@ function tepki(qid: string, v: string, a: Answers): string {
       return ornek ? `Metniniz bu havada olacak: ${ornek}` : "Not aldık.";
     }
     case "aile": return v === "evet" ? "Ailelerinizin adı en üstte yer alacak." : "Sade ve modern, sadece sizin adınız.";
-    case "renk": return `${themeOf(plan.theme).label} renkler davetiyenize işlendi.`;
+    case "renk": return `${themeOf(plan.theme).label} renkler ${a.tur ? davetAdi(a).replace(/iz$/, "ize") : "davetinize"} işlendi.`;
     case "stil": case "hava": return `${ornamentOf(plan.ornament).label} çerçeveye yerleşti.`;
     case "desen": {
       const d = patternOf(plan.pattern);
-      return d.id === "sade" ? "Sade bir zemin, renkler öne çıkacak." : `${d.label} arka plana işlendi: ${d.hint.toLocaleLowerCase("tr")}.`;
+      // Açıklama sorudaki seçenekten: baby shower'da dantel "gelinlik" değil "bebek battaniyesi"
+      const q = QUESTIONS.find((x) => x.id === "desen");
+      const hint = (q && visibleOptions(q, a).find((o) => o.id === d.id)?.hint) || d.hint;
+      return d.id === "sade" ? "Sade bir zemin, renkler öne çıkacak." : `${d.label} arka plana işlendi: ${hint.toLocaleLowerCase("tr")}.`;
     }
     case "yazi": return `İsimleriniz ${fontOf(plan.font).label.toLocaleLowerCase("tr")} yazıyla yazıldı.`;
     case "ikinci": return v === "tek" ? "Tek gün, not aldık." : "İkinci gün de davetiyede yer alacak.";
     case "vesile": return v === "rahmetli" ? "Allah rahmet eylesin. Metni buna uygun, sade yazacağız." : "Not aldık.";
     case "kalabalik": return "Son dokunuşlar yapılıyor…";
-    default: return "";
+    default: return SORU_TEPKI[qid]?.[v] ?? "";
   }
 }
 
@@ -177,7 +180,7 @@ export function Sihirbaz({ initial }: { initial: Answers }) {
       <main className="sihirbaz hazirlik">
         <ThemeStyle theme={plan.theme} />
         <div className="hazirlik-onizleme"><WizardPreview answers={answers} plan={plan} /></div>
-        <h1 className="soru-baslik">Davetiyeniz hazırlanıyor</h1>
+        <h1 className="soru-baslik">{buyukHarf(davetAdi(answers))} hazırlanıyor</h1>
         <ul className="hazirlik-liste" aria-live="polite">
           {adimlar.map((m, i) => (
             <li key={m} className={adim > i ? "tamam" : ""}><span className="tik" aria-hidden="true">✓</span>{m}</li>
@@ -188,7 +191,7 @@ export function Sihirbaz({ initial }: { initial: Answers }) {
   }
 
   if (!q) return null;
-  const baslik = q.id === "tur" && answers.grup ? GRUP_BASLIK[answers.grup] ?? q.title : q.title;
+  const baslik = q.id === "tur" && answers.grup ? GRUP_BASLIK[answers.grup] ?? q.title : soruBasligi(q, answers);
   const look = q.look ?? "liste";
   const geriHref = done === 0 ? "/" : `/basla?${answersQuery(withoutLast(answers))}`;
 
@@ -235,7 +238,7 @@ export function Sihirbaz({ initial }: { initial: Answers }) {
 
         {canli && (
           <aside className="canli" aria-label="Davetiyenizin önizlemesi">
-            <p className="canli-etiket">Davetiyeniz şekilleniyor</p>
+            <p className="canli-etiket">{answers.tur ? buyukHarf(davetAdi(answers)) : "Davetiniz"} şekilleniyor</p>
             <div className="onizleme-kutu" key={`${plan.ornament}-${plan.font}-${plan.pattern}`}>
               <WizardPreview answers={answers} plan={plan} />
             </div>

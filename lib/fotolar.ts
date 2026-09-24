@@ -114,5 +114,6 @@ const KATEGORI_TUR: Record<string, string> = {
   "Ev partisi": "evpartisi", "Akşam yemeği": "yemek", "Buluşma": "bulusma", "Sünnet": "sunnet",
   "Baby shower": "babyshower", "Cinsiyet partisi": "cinsiyet", "Diş buğdayı": "disbugdayi",
   "Mevlid": "mevlid", "İftar": "iftar", "Hac uğurlaması": "hac", "Asker uğurlaması": "asker",
+  "Umre uğurlaması": "hac", "Hacı karşılaması": "hac", "Umreden dönüş": "hac", "Askerden dönüş": "asker",
 };
 export const turOfCategory = (category: string) => KATEGORI_TUR[category] ?? "";

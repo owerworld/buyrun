@@ -169,12 +169,12 @@ const ETKINLIK: Record<string, Havuz> = {
   },
   bekarlik: {
     zarif: [
-      "Yeni hayatına adım atmadan önce bekârlığına zarif bir veda düzenliyoruz. Sizi de aramızda görmek isteriz.",
+      "Nikâh öncesi zarif bir veda düzenliyoruz. Sizi de aramızda görmek isteriz.",
       "Unutulmaz bir akşam hazırladık; bu anıda sizin de yeriniz olsun.",
     ],
     sicak: [
       "Bekârlığa son bir kez birlikte veda edelim! Sizi de aramızda görmek isteriz.",
-      "Dostlar toplanıyor! Yeni hayatına en güzel anılarla uğurlayalım.",
+      "Dostlar toplanıyor! Yeni hayata en güzel anılarla uğurlayalım.",
     ],
     neseli: [
       "Bekârlık bitiyor, eğlence bitmiyor! Son özgür gecede pistte buluşalım.",
@@ -400,6 +400,221 @@ const ETKINLIK: Record<string, Havuz> = {
   },
 };
 
+/** Alt türler: sihirbazdaki türe özel sorunun cevabı günün kendisini değiştirir. */
+const ALT: Record<string, Havuz> = {
+  // Bebek sünnette çocuğun ağzından konuşulmaz; neşeyi aile anlatır
+  "sunnet-bebek": {
+    neseli: [
+      "Şehzademiz minik ama düğünü kocaman! Eğlencemize bekliyoruz.",
+      "Maşallah, şehzademizin büyük günü geldi! Müzik, oyunlar ve bol sevinç sizi bekliyor.",
+    ],
+  },
+  // Baby shower'ı çoğu zaman anne adayının yakınları hazırlar; metin onların ağzından
+  "babyshower-dostlar": {
+    zarif: [
+      "Sevgili anne adayımız için küçük bir kutlama hazırladık. Minik misafiri birlikte bekleyelim.",
+      "Doğuma sayılı günler kala anne adayımızı sevgiyle kucaklamak istiyoruz.",
+    ],
+    sicak: [
+      "Minik ayaklar yolda! Anne adayımızı sevgiyle şımartmak için toplanıyoruz.",
+      "Anne adayımızın bu güzel bekleyişine hep birlikte eşlik edelim.",
+    ],
+    neseli: [
+      "Bebek geliyor, parti başlıyor! Anne adayımızı kutlamaya bekliyoruz.",
+      "Oyunlar hazır, pastalar hazır; anne adayımızı şımartma vakti!",
+    ],
+    manevi: ["Allah'ın izniyle minik bir can aramıza katılıyor. Anne adayımız için dualarınızla gelin."],
+  },
+  "dogumgunu-buyuk": {
+    zarif: [
+      "Hayatımızın büyüğünün yeni yaşını sevdikleriyle kutlamak istiyoruz. Teşriflerinizle bize mutluluk verirsiniz.",
+      "Nice sağlıklı, huzurlu yıllara… Bu güzel günde sizi de aramızda görmek isteriz.",
+    ],
+    sicak: [
+      "Emekleriyle bizi büyüten büyüğümüzün doğum gününü birlikte kutlayalım.",
+      "Yaşı kaç olursa olsun gönlü hep genç! Doğum günü sofrasında buluşalım.",
+    ],
+    neseli: [
+      "Mumlar pastaya sığmadı ama neşesi hâlâ yerinde! Kutlamaya bekliyoruz.",
+      "Yaş sadece bir sayı, kutlama ise şart! Sizi de bekliyoruz.",
+    ],
+  },
+  "dogumgunu-genc": {
+    neseli: [
+      "Müzik yüksek, pasta büyük, eğlence garanti! Partide görüşürüz.",
+      a("Yeni yaşa dev bir parti! Sen de gel, eksik kalmasın."),
+      "Mumları saymayın, sadece gelin! Yeni yaşı birlikte kutlayalım.",
+    ],
+  },
+  "mezuniyet-ilk": {
+    zarif: ["Minik mezunumuzun büyük gününü sevdiklerimizle kutlamak istiyoruz."],
+    sicak: [
+      "Bir okul bitti, yeni bir heyecan başlıyor! Karne sevincini birlikte kutlayalım.",
+      "Minik mezunumuz bizi çok gururlandırdı. Kutlamamızda sizi de görmek istiyoruz.",
+    ],
+    neseli: [
+      "Çantalar yaza, heyecan yeni okula! Mezuniyet şenliğimize bekliyoruz.",
+      "Diploma cepte, dondurma elde! Kutlamaya gelin.",
+    ],
+  },
+  // Tezkere: askerden dönüşün sevinci
+  "asker-donus": {
+    zarif: [
+      "Vatani görevini tamamlayan evladımıza hoş geldin demek istiyoruz. Sevincimizi paylaşmanızı isteriz.",
+      "Yiğidimiz görevini bitirip yuvasına döndü. Bu mutlu günde sizi de aramızda görmek isteriz.",
+    ],
+    sicak: [
+      "Tezkeresini aldı, evine döndü! Hoş geldin sofrasında sizi de bekliyoruz.",
+      "Yolunu gözlediğimiz askerimiz geldi. Bu sevinci birlikte yaşayalım.",
+    ],
+    neseli: [
+      "Tezkere cepte, asker evde! Davul zurnalı kutlamaya bekliyoruz.",
+      "Şafak sayma bitti! Hoş geldin eğlencesinde buluşalım.",
+    ],
+    manevi: [
+      "Allah'a şükür, evladımız vatani görevini tamamlayıp sağ salim döndü. Şükür sofrasına buyurun.",
+      "Dualarınızla uğurladığımız askerimiz sağ salim geldi. Sevincimize ortak olun.",
+    ],
+  },
+  // Hacdan dönene zemzem ve hurmayla "hoş geldin" demek köklü bir gelenek
+  "hac-karsilama": {
+    zarif: [
+      "Mübarek topraklardan dönen hacımıza hoş geldin demek istiyoruz. Ziyaretinizi bekleriz.",
+      "Hacımız sağ salim döndü. Zemzem ve hurmayla sizleri ağırlamak isteriz.",
+    ],
+    sicak: [
+      "Hacımız geldi! Zemzemimiz, hurmamız ve hasretimiz sizi bekliyor.",
+      "Kutsal yolculuktan dönen hacımızı birlikte karşılayalım, dualarını alalım.",
+    ],
+    manevi: [
+      "Allah kabul etsin, hacımız mübarek topraklardan döndü. Zemzem ve hurma ikramımıza buyurun, dualarını alalım.",
+      "Rabbimize şükür, hac ibadetini eda eden hacımız aramızda. Hayırlı ziyaretinizi bekleriz.",
+    ],
+  },
+  "umre-ugurlama": {
+    zarif: ["Umre ziyaretine çıkmadan önce sizlerle vedalaşmak ve dualarınızı almak isteriz."],
+    sicak: ["Yolculuk öncesi helalleşmek ve dualarınızı almak istiyoruz. Umre uğurlamamıza buyurun."],
+    manevi: [
+      "Allah'ın izniyle umreye gidiyoruz. Yola çıkmadan helalleşmek ve dualarınızı almak isteriz.",
+      "Rabbim nasip etti, Kâbe'yi ziyarete gidiyoruz. Uğurlama duamıza teşriflerinizi bekleriz.",
+    ],
+  },
+  "umre-donus": {
+    zarif: ["Umreden dönen sevdiğimize hoş geldin demek istiyoruz. Ziyaretinizi bekleriz."],
+    sicak: ["Umreden döndük! Zemzem ve hurmayla sizi ağırlamak istiyoruz."],
+    manevi: ["Allah kabul etsin, umre ziyaretinden sağ salim döndük. Zemzem ve hurma ikramımıza buyurun."],
+  },
+};
+
+/** Cevaplara göre hangi alt havuz: yoksa türün kendi havuzu. */
+function altHavuz(a: Answers): Havuz | null {
+  switch (a.tur) {
+    case "sunnet": return a.sunyas === "bebek" ? { ...ETKINLIK.sunnet, ...ALT["sunnet-bebek"] } : null;
+    case "babyshower": return a.bsduzen === "sevenler" || a.bsduzen === "surpriz" ? ALT["babyshower-dostlar"] : null;
+    case "dogumgunu":
+      if (a.grup === "cocuk" || a.dgkim === "cocuk") return ETKINLIK["dogumgunu-cocuk"];
+      if (a.dgkim === "buyuk") return ALT["dogumgunu-buyuk"];
+      if (a.dgkim === "genc") return { ...ETKINLIK.dogumgunu, ...ALT["dogumgunu-genc"] };
+      return null;
+    case "mezuniyet": return a.okul === "ilk" ? ALT["mezuniyet-ilk"] : null;
+    case "asker": return a.askyon === "karsilama" ? ALT["asker-donus"] : null;
+    case "hac": {
+      const h: Record<string, string> = { hackars: "hac-karsilama", umreugur: "umre-ugurlama", umrekars: "umre-donus" };
+      return h[a.hacyon ?? ""] ? ALT[h[a.hacyon ?? ""]] : null;
+    }
+    default: return null;
+  }
+}
+
+/**
+ * Ayrıntı cümleleri: ana metnin ardına eklenir ("Önce Mevlid-i Şerif okunacak…").
+ * atla: ana metin bu ayrıntıyı zaten söylüyorsa tekrar etmesin.
+ */
+const EK: Record<string, Record<string, { t: string; atla?: RegExp; when?: (a: Answers) => boolean }>> = {
+  torenyer: {
+    kizevi: { t: "Tören, kız evinde sıcak bir aile ortamında yapılacak." },
+    bahce: { t: "Tören açık havada, bahçede yapılacak." },
+  },
+  kinatarz: {
+    geleneksel: { t: "Bindallılar giyilecek, kına türküleri söylenecek.", atla: /türkü/i },
+    hibrit: { t: "Önce kınamız yakılacak, ardından müzik ve dans!" },
+    modern: { t: "Koreografiler hazır, pist sizi bekliyor!", atla: /pist/i },
+  },
+  bkkim: {
+    gelin: { t: "Gelinimiz için unutulmaz bir veda hazırlıyoruz." },
+    damat: { t: "Damadımız için son bir bekâr gecesi!" },
+    cift: { t: "Çiftimiz için birlikte, son bir bekâr kutlaması!" },
+  },
+  bktarz: {
+    tekne: { t: "Tekneyle denize açılıyoruz!" },
+    ev: { t: "En yakınlarla, evde samimi bir gece." },
+    gunduz: { t: "Brunch'ta buluşuyoruz." },
+  },
+  sunakis: {
+    ikisi: { t: "Önce Mevlid-i Şerif okunacak, ardından eğlencemiz başlayacak." },
+    mevlid: { t: "Mevlid-i Şerif okunacak, ardından yemeğimiz var." },
+    eglence: { t: "Müzik, oyunlar ve sürprizlerle dolu bir gün olacak." },
+  },
+  bscins: {
+    kiz: { t: "Bir kız bebek bekliyoruz!" },
+    erkek: { t: "Bir erkek bebek bekliyoruz!" },
+    sir: { t: "Cinsiyet henüz sır; tahmininizi getirin!" },
+  },
+  acikla: {
+    balon: { t: "Cevap koca bir balonun içinde saklı!", atla: /balon/i },
+    pasta: { t: "Cevap pastanın içinde; ilk dilimi birlikte keseceğiz!" },
+    duman: { t: "Cevabı renkli bir sürprizle öğreneceğiz!" },
+    kutu: { t: "Kutu açılınca uçan balonlar söyleyecek!", atla: /balon/i },
+  },
+  meslek: { evet: { t: "Önüne konan eşyalardan hangisini seçecek, birlikte göreceğiz!", atla: /meslek/i } },
+  okul: {
+    lise: { t: "Lise bitti, yeni bir yol başlıyor!", atla: /okul bitti/i },
+    yuksek: { t: "Tez teslim edildi, unvan alındı!" },
+  },
+  mzkutla: {
+    yemek: { t: "Törenin ardından yemekte buluşuyoruz." },
+    parti: { t: "Kutlamada pistte buluşalım!", atla: /parti/i },
+    aile: { t: "Evde, aile sofrasında kutlayacağız." },
+  },
+  askakis: {
+    kina: { t: "Kınası yakılacak, davul zurna çalacak.", atla: /kına/i },
+    davul: { t: "Davul zurnayla karşılayacağız!", atla: /davul/i },
+    yemek: { t: "Sofrada buluşalım.", atla: /sofra/i },
+    konvoy: { t: "Konvoyla yolcu edeceğiz; araçlarınızla gelebilirsiniz." },
+  },
+  ikram: {
+    yemek: { t: "Mevlidin ardından yemek ikram edilecek." },
+    lokma: { t: "Mevlidin ardından lokma, helva ve şerbet ikram edilecek.", atla: /şerbet/i },
+    cay: { t: "Mevlidin ardından çay ikramımız var." },
+  },
+  iftaryer: { bahce: { t: "Orucumuzu bahçede, açık havada açacağız." } },
+  evtur: {
+    hayirli: { t: "Çayımız demli, kapımız açık; ev hayırlısına buyurun.", atla: /çay|hayırlı/i },
+    parti: { t: "Müzik, ikram ve bol kahkaha var!" },
+  },
+  yemekneden: {
+    kutlama: { t: "Güzel bir haberi kutluyoruz." },
+    tanisma: { t: "Tanışmak, kaynaşmak için güzel bir sofra." },
+    bayram: { t: "Bayramı sofrada birlikte karşılayalım." },
+  },
+  kimler: {
+    okul: { t: "Okul yıllarının dostları yeniden bir araya geliyor." },
+    is: { t: "Mesai dışında, iş arkadaşlarıyla güzel bir buluşma." },
+    aile: { t: "Aile ve akrabalarla hasret gidermek istiyoruz." },
+    komsu: { t: "Komşularımızla bir araya gelmek istiyoruz." },
+  },
+};
+
+/** Ana metne eklenecek en fazla iki ayrıntı cümlesi. */
+function ekle(metin: string, a: Answers) {
+  const ekler: string[] = [];
+  for (const [soru, secenekler] of Object.entries(EK)) {
+    const e = secenekler[a[soru] ?? ""];
+    if (e && !(e.atla && e.atla.test(metin)) && (!e.when || e.when(a))) ekler.push(e.t);
+  }
+  return [metin, ...ekler.slice(0, 2)].join(" ");
+}
+
 /** Mevlidin vesilesi tonu belirler; rahmetli anısına kutlama dili hiç kullanılmaz. */
 const MEVLID: Record<string, Havuz> = {
   bebek: {
@@ -453,12 +668,13 @@ export interface SozGirdisi {
 const tonOf = (a: Answers): Ton => (TONLAR.includes(a.ton as Ton) ? (a.ton as Ton) : "sicak");
 
 function havuzOf(a: Answers): Havuz {
+  const alt = altHavuz(a);
+  if (alt) return alt;
   const tur = a.tur ?? "";
   if (tur === "dugun") return DUGUN;
   if (tur === "nisan") return NISAN;
   if (tur === "soz") return SOZ;
   if (tur === "mevlid") return MEVLID[a.vesile ?? ""] ?? MEVLID.genel;
-  if (tur === "dogumgunu" && a.grup === "cocuk") return ETKINLIK["dogumgunu-cocuk"];
   return ETKINLIK[tur] ?? ETKINLIK.genel;
 }
 
@@ -510,7 +726,18 @@ export function sozSecenekleri({ answers, names, families }: SozGirdisi): string
     );
     list = [...sesli, ...list];
   }
-  return list.length ? list : uyanlar(ETKINLIK.genel.sicak ?? [], kim);
+  if (!list.length) list = uyanlar(ETKINLIK.genel.sicak ?? [], kim);
+  // Meslek seçtirme olmayacaksa ondan söz eden cümle çıkar
+  // Cinsiyet pastayla ya da dumanla açıklanacaksa "balonlar patlayınca" demesin
+  if (answers.acikla === "pasta" || answers.acikla === "duman") {
+    const kalan = list.filter((s) => !/balon/i.test(s));
+    if (kalan.length) list = kalan;
+  }
+  if (answers.meslek === "hayir") {
+    const kalan = list.filter((s) => !/meslek/i.test(s));
+    if (kalan.length) list = kalan;
+  }
+  return list.map((s) => ekle(s, answers));
 }
 
 /** Metinden türeyen küçük, kararlı sayı: aynı davet her açılışta aynı sırayı görür. */
@@ -647,3 +874,29 @@ export function oneriler(saved: string | null | undefined, fallbackTur: string, 
   if (!answers.tur && fallbackTur) answers.tur = fallbackTur;
   return sozSecenekleri({ answers, names, families });
 }
+
+/** Türe özel sorulara karşılık: kullanıcı cevabının davete işlendiğini görür. */
+export const SORU_TEPKI: Record<string, Record<string, string>> = {
+  torenyer: { kizevi: "Kız evinde, sıcak bir aile ortamı. Not aldık.", salon: "Salon daveti, not aldık.", restoran: "Şık bir sofra, not aldık.", bahce: "Açık havada, ne güzel!" },
+  kinatarz: { geleneksel: "Bindallılar, türküler… Geleneğe yakışır bir davet olacak.", hibrit: "Önce kına, sonra dans!", modern: "Pist hazır, konfetiler hazır!" },
+  bkkim: { gelin: "Gelinimize yakışır bir veda!", damat: "Damada yakışır bir veda!", cift: "İkisine birden, harika fikir!" },
+  bktarz: { tekne: "Denize açılıyoruz!", gece: "Uzun bir gece olacak!", ev: "En yakınlarla, samimi bir gece.", gunduz: "Güne güzel başlayan bir veda." },
+  sunyas: { bebek: "Minik şehzade! Metni ailenin ağzından yazacağız.", kucuk: "Şehzademiz davetine kendi ağzından da seslenebilir!", buyuk: "Şehzademiz davetine kendi ağzından da seslenebilir!" },
+  sunakis: { ikisi: "Önce mevlid, sonra eğlence. Davette ikisi de yazacak.", mevlid: "Mevlid-i Şerif davette yer alacak.", eglence: "Eğlence dolu bir gün, not aldık!", sofra: "Sade ve sıcak bir sofra." },
+  bscins: { kiz: "Bir kız bebek, ne güzel!", erkek: "Bir erkek bebek, ne güzel!", sir: "Sır kalsın; davetliler tahminini yazacak." },
+  bsduzen: { surpriz: "Şşşt! Davette “çaktırmayın” uyarısı çıkacak.", aile: "Not aldık.", sevenler: "Ne güzel bir jest!" },
+  acikla: { balon: "Balon hazır, iğne hazır!", pasta: "Cevap pastanın içinde!", duman: "Renkli bir sürpriz geliyor!", kutu: "Kutu açılınca balonlar söyleyecek!" },
+  meslek: { evet: "Makas mı, kalem mi? Davette de soracağız!", hayir: "Buğday ve sofra, sade ve güzel." },
+  dgkim: { cocuk: "Çocuklara göre neşeli bir dil kuracağız.", genc: "Genç ve enerjik bir dil geliyor.", yetiskin: "Not aldık.", buyuk: "Büyüğümüze yakışır, saygılı bir dil kuracağız." },
+  surpriz: { evet: "Şşşt! Davette “çaktırmayın” uyarısı çıkacak.", hayir: "Not aldık." },
+  okul: { ilk: "Minik mezunumuza tebrikler!", lise: "Lise bitti, yeni yol başlıyor!", uni: "Kepler havaya!", yuksek: "Tebrikler, emeğe saygı!" },
+  mzkutla: { yemek: "Törenden sonra sofrada buluşulacak.", parti: "Mezuniyet partisi, harika!", aile: "Aile sofrasında, sıcacık." },
+  askyon: { ugurlama: "Yolu açık olsun!", karsilama: "Hoş geldin askerimiz! Tezkere kutlaması hazırlanıyor." },
+  askakis: { kina: "Kınası yakılacak, davul zurna çalacak!", davul: "Davul zurnayla karşılanacak!", yemek: "Sofra kuruluyor.", konvoy: "Konvoy bilgisi davette yazacak." },
+  hacyon: { hacugur: "Allah kabul etsin, yolunuz açık olsun.", umreugur: "Umreniz kabul olsun.", hackars: "Hacımız hoş geldi! Zemzem ve hurma davette.", umrekars: "Umreniz kabul olsun, hoş geldiniz!" },
+  ikram: { yemek: "Mevlidin ardından yemek, not aldık.", lokma: "Lokma, helva ve şerbet… Geleneğe yakışır.", cay: "Çay ve kurabiye, not aldık." },
+  iftaryer: { ev: "Ev sofrası, en güzeli.", restoran: "Not aldık.", bahce: "Açık havada iftar, ne güzel!" },
+  evtur: { hayirli: "Ev hayırlısı: büyüklere yakışır, sıcak bir davet.", parti: "Ev partisi, müzik hazır!", ikisi: "Hem hayırlı olsun hem eğlence!" },
+  yemekneden: { ozlem: "Özlem gidermeye en güzel bahane!", kutlama: "Güzel haberler kutlanır!", tanisma: "Tanışmaya en güzel bahane: bir sofra.", bayram: "Bayram sofrası, el öpmeye hazır olun!" },
+  kimler: { okul: "Eski dostlar bir araya geliyor!", is: "Mesai dışında buluşma, harika.", aile: "Hasret giderilecek.", komsu: "Komşuluk en güzel akrabalık." },
+};

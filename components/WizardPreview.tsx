@@ -1,14 +1,7 @@
 import { EventHero } from "@/components/EventHero";
 import { Hero } from "@/components/Invite";
+import { ornekBaslik } from "@/lib/ornekler";
 import type { Answers, Plan } from "@/lib/wizard";
-
-const ORNEK_BASLIK: Record<string, string> = {
-  dogumgunu: "İyi ki doğdun!", mezuniyet: "Mezun olduk!", evpartisi: "Yeni evimize buyrun",
-  yemek: "Bir akşam yemeği", bulusma: "Buluşalım", kina: "Kına gecemize buyrun",
-  bekarlik: "Bekârlığa veda!", sunnet: "Mert'in sünnet düğünü", babyshower: "Bebeğimizi bekliyoruz",
-  cinsiyet: "Kız mı, erkek mi?", disbugdayi: "İlk dişimiz çıktı!", mevlid: "Mevlid-i Şerif",
-  iftar: "İftar soframıza buyrun", hac: "Hac yolculuğuna uğurlama", asker: "Asker uğurlaması",
-};
 
 /**
  * Sihirbazın sağındaki canlı önizleme. Her cevapla yeniden çizilir; kullanıcı
@@ -32,7 +25,7 @@ export function WizardPreview({ answers, plan, names, families, title, date, pho
   return (
     <EventHero
       compact
-      title={title || (ORNEK_BASLIK[answers.tur ?? ""] ?? "Sizin davetiniz")}
+      title={title || ornekBaslik(answers)}
       category={plan.category}
       date={date || "2027-06-19"}
       font={plan.font}

@@ -24,7 +24,7 @@ const labels = {going:"Geliyorum",maybe:"Belki",declined:"Gelemiyorum"};
 const SEN = {
   host:"EV SAHİBİ",descTitle:"Bir araya gelelim.",eyebrow:"YERİN HAZIR",title:"Sen de geliyor musun?",
   lead:"Ev sahibine haber ver, planlar tamamlansın.",name:"Adın soyadın",namePh:"Sana nasıl seslenelim?",
-  countHint:"Kendin dahil toplam kişi sayısı",note:"Ev sahibine not",notePh:"Bir şey getireyim mi?",
+  countHint:"Kendin dahil toplam kişi sayısı",count:"Kaç kişi geliyorsun?",note:"Ev sahibine not",notePh:"Bir şey getireyim mi?",
   saved:"✓ Yanıtın kaydedildi. Fikrin değişirse buradan güncelleyebilirsin.",send:"Yanıtımı gönder",update:"Yanıtımı güncelle",
   chooseFirst:"Önce katılım durumunu seç.",
   privacy:"Adın ve yanıtın yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir. Bu davet senden para göndermeni asla istemez; isteyen olursa dikkat et.",
@@ -32,16 +32,18 @@ const SEN = {
 const SIZ: typeof SEN = {
   host:"DAVET EDEN",descTitle:"Davetimiz",eyebrow:"SİZİ BEKLİYORUZ",title:"Katılım durumunuz",
   lead:"Ev sahibine haber verin, hazırlıklar ona göre yapılsın.",name:"Adınız soyadınız",namePh:"Adınızı yazın",
-  countHint:"Siz dahil toplam kişi sayısı",note:"Ev sahibine not",notePh:"İletmek istediğiniz bir şey varsa",
+  countHint:"Siz dahil toplam kişi sayısı",count:"Kaç kişi geliyorsunuz?",note:"Ev sahibine not",notePh:"İletmek istediğiniz bir şey varsa",
   saved:"✓ Yanıtınız iletildi. Değişirse buradan güncelleyebilirsiniz.",send:"Yanıtımı gönder",update:"Yanıtımı güncelle",
   chooseFirst:"Önce katılım durumunuzu seçin.",
   privacy:"Adınız ve yanıtınız yalnızca ev sahibine görünür. Davet bilgileri etkinlikten 90 gün sonra silinir. Bu davet sizden para göndermenizi asla istemez; isteyen olursa dikkat edin.",
 };
-export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken,samimi=false}: {
+export default function Invitation({event,design,place,dayState,forecast,inviteToken,initialGuestToken,samimi=false,ekler}: {
   event:InvitationEvent;design:EventDesign|null;place:PlaceRef&{directions?:string};
   dayState:DayStatus<BannerItem>|null;forecast:Forecast|null;inviteToken:string;initialGuestToken:string|null;
   /** Sihirbazda "davetliler arkadaşlar" seçildiyse tasarımlı davette de "sen" denir */
-  samimi?:boolean
+  samimi?:boolean;
+  /** Sürpriz uyarısı ve türe göre not örneği (lib/ornekler.ts) */
+  ekler?:{uyari:string;not:string;ev:string}
 }) {
   const [guestToken,setGuestToken]=useState(initialGuestToken);
   const [name,setName]=useState(event.guest?.name || "");
@@ -111,8 +113,9 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
         <div className={styles.coverShade}/><span className={styles.badge}>SEN DE DAVETLİSİN ↗</span>
         <div className={styles.coverBottom}><span>{event.category}</span><h1>{event.title}</h1></div>
       </section>}
+      {ekler?.uyari&&<p className={styles.surpriz} role="note"><span aria-hidden="true">🤫</span>{ekler.uyari}</p>}
       <section id="invitation" className={styles.details}>
-        <div className={styles.host}><span className={styles.avatar}>{event.hostName.slice(0,1).toLocaleUpperCase("tr")}</span><div><span>{t.host}</span><strong>{event.hostName}</strong></div><span className={styles.star}>✳</span></div>
+        <div className={styles.host}><span className={styles.avatar}>{event.hostName.slice(0,1).toLocaleUpperCase("tr")}</span><div><span>{ekler?.ev?ekler.ev.toLocaleUpperCase("tr"):t.host}</span><strong>{event.hostName}</strong></div><span className={styles.star}>✳</span></div>
         <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p>{forecast&&<WeatherLine forecast={forecast} credit/>}</div></div>
         <div className={styles.infoRow}><span className={styles.infoIcon}>⌖</span><div><strong>{event.venue}</strong>{event.address&&<p>{event.address}</p>}<Directions place={place}/></div></div>
         {event.description&&<div className={styles.description}><h2>{t.descTitle}</h2><p>{event.description}</p></div>}
@@ -124,8 +127,8 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
             <legend className={styles.srOnly}>Katılım yanıtı</legend>
             <div className={styles.statuses}>{(["going","maybe","declined"] as const).map(value=><button key={value} type="button" aria-pressed={status===value} className={status===value?styles.selected:""} onClick={()=>{setStatus(value);setSaved(false);}}><span>{value==="going"?"✓":value==="maybe"?"~":"×"}</span>{labels[value]}</button>)}</div>
             <label className={styles.label}>{t.name}<input value={name} onChange={e=>{setName(e.target.value);setSaved(false);}} placeholder={t.namePh} autoComplete="name" required maxLength={100}/></label>
-            {status!=="declined"&&<div className={styles.countRow}><div><strong>Kaç kişi geliyorsunuz?</strong><p>{t.countHint}</p></div><div className={styles.stepper}><button type="button" disabled={count<=1} onClick={()=>{setCount(c=>Math.max(1,c-1));setSaved(false);}} aria-label="Kişi sayısını azalt">−</button><output aria-live="polite">{count}</output><button type="button" disabled={count>=20} onClick={()=>{setCount(c=>Math.min(20,c+1));setSaved(false);}} aria-label="Kişi sayısını artır">+</button></div></div>}
-            <label className={styles.label}>{t.note} <span>isteğe bağlı</span><textarea value={note} onChange={e=>{setNote(e.target.value);setSaved(false);}} maxLength={500} placeholder={t.notePh} rows={3}/></label>
+            {status!=="declined"&&<div className={styles.countRow}><div><strong>{t.count}</strong><p>{t.countHint}</p></div><div className={styles.stepper}><button type="button" disabled={count<=1} onClick={()=>{setCount(c=>Math.max(1,c-1));setSaved(false);}} aria-label="Kişi sayısını azalt">−</button><output aria-live="polite">{count}</output><button type="button" disabled={count>=20} onClick={()=>{setCount(c=>Math.min(20,c+1));setSaved(false);}} aria-label="Kişi sayısını artır">+</button></div></div>}
+            <label className={styles.label}>{t.note} <span>isteğe bağlı</span><textarea value={note} onChange={e=>{setNote(e.target.value);setSaved(false);}} maxLength={500} placeholder={ekler?.not||t.notePh} rows={3}/></label>
             {error&&<p role="alert" className={styles.error}>{error}</p>}
             {saved&&<p role="status" className={styles.success}>{t.saved}</p>}
             <button className={styles.submit} disabled={busy} type="submit">{busy?"Kaydediliyor…":guestToken?t.update:t.send}<span>↗</span></button>
