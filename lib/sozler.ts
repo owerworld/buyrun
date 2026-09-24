@@ -25,7 +25,7 @@
  * düğmesi listede bir sonrakine geçer.
  */
 
-import type { Answers } from "./wizard";
+import { cocukDogumGunu, type Answers } from "./wizard";
 
 export type Ton = "zarif" | "sicak" | "neseli" | "manevi";
 const TONLAR: Ton[] = ["zarif", "sicak", "neseli", "manevi"];
@@ -512,7 +512,7 @@ function altHavuz(a: Answers): Havuz | null {
     case "sunnet": return a.sunyas === "bebek" ? { ...ETKINLIK.sunnet, ...ALT["sunnet-bebek"] } : null;
     case "babyshower": return a.bsduzen === "sevenler" || a.bsduzen === "surpriz" ? ALT["babyshower-dostlar"] : null;
     case "dogumgunu":
-      if (a.grup === "cocuk" || a.dgkim === "cocuk") return ETKINLIK["dogumgunu-cocuk"];
+      if (cocukDogumGunu(a)) return ETKINLIK["dogumgunu-cocuk"];
       if (a.dgkim === "buyuk") return ALT["dogumgunu-buyuk"];
       if (a.dgkim === "genc") return { ...ETKINLIK.dogumgunu, ...ALT["dogumgunu-genc"] };
       return null;

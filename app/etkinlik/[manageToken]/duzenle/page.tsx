@@ -10,6 +10,7 @@ import { FotoSecici } from "@/components/FotoSecici";
 import { MetinOneri } from "@/components/MetinOneri";
 import { turOfCategory } from "@/lib/fotolar";
 import { cevaplarOf, oneriler } from "@/lib/sozler";
+import { desenListesi, renkListesi } from "@/lib/wizard";
 import { updateEventAction } from "../../actions";
 
 export default async function EtkinlikDuzenle({ params, searchParams }: {
@@ -21,6 +22,9 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
   const row = await mobileEventByToken(manageToken, "manage");
   if (!row) notFound();
   const design = designOf(row);
+  // Renk, doku ve fotoğraf seçenekleri davetin türüne göre (eski davetlerde tür kategoriden)
+  const kayitli = cevaplarOf(row.answers);
+  const cevaplar = { ...kayitli, tur: kayitli.tur || turOfCategory(row.category) };
   const kategori = CATEGORIES.includes(row.category as (typeof CATEGORIES)[number]) ? row.category : CATEGORIES[0];
 
   return (
@@ -64,17 +68,17 @@ export default async function EtkinlikDuzenle({ params, searchParams }: {
         <label className="lbl" htmlFor="capacity">Kontenjan (isteğe bağlı)</label>
         <input type="number" id="capacity" name="capacity" min={1} max={10000} inputMode="numeric" defaultValue={row.capacity ?? ""} style={{ width: 140 }} />
 
-        <FotoSecici tur={cevaplarOf(row.answers).tur || turOfCategory(row.category)} current={row.photo_id} />
+        <FotoSecici tur={cevaplar.tur} current={row.photo_id} />
 
         {design ? (
           <>
             {/* Uygulama fotoğraflı kapağı göstermeye devam eder; web daveti bu tasarımı */}
             <input type="hidden" name="coverId" value={row.cover_id} />
             <div className="form-section-heading"><span>✦</span><h2>Görünüm</h2></div>
-            <ThemePicker current={design.theme} />
+            <ThemePicker current={design.theme} ids={renkListesi(cevaplar)} />
             <FontPicker current={design.font} names={row.title} />
             <OrnamentPicker current={design.ornament} />
-            <PatternPicker current={design.pattern} />
+            <PatternPicker current={design.pattern} ids={desenListesi(cevaplar)} />
           </>
         ) : (
           <CoverPicker current={row.cover_id} />

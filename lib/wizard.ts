@@ -11,6 +11,8 @@
  */
 
 import { fotolarFor } from "./fotolar";
+import { patternOf } from "./design";
+import { isTheme, themeOf } from "./themes";
 import { acilisSecenekleri, tonOrnegi } from "./sozler";
 
 export type Answers = Record<string, string>;
@@ -43,6 +45,8 @@ export interface Question {
   options: Option[];
   /** Görünüm; boşsa liste */
   look?: Look;
+  /** Seçeneklerin sırası türe göre değişiyorsa (renk, doku): listede olmayanlar sona */
+  order?: (a: Answers) => string[];
   /** Bu soru yalnızca koşul sağlanırsa sorulur */
   when?: (a: Answers) => boolean;
 }
@@ -59,7 +63,9 @@ const DUALI = [...TOREN, "kina", "sunnet", "disbugdayi", "babyshower", "mevlid",
 /** Her türün ilk grubu: ana sayfadan türle gelen kullanıcıda grup kendiliğinden dolar. */
 const GRUP_OF: Record<string, string> = {
   dugun: "evlilik", nisan: "evlilik", soz: "evlilik", kina: "evlilik", bekarlik: "evlilik",
-  sunnet: "cocuk", babyshower: "cocuk", cinsiyet: "cocuk", disbugdayi: "cocuk", dogumgunu: "cocuk",
+  sunnet: "cocuk", babyshower: "cocuk", cinsiyet: "cocuk", disbugdayi: "cocuk",
+  // Doğum günü iki grupta da var; grup bilinmiyorsa "kimin?" sorusu sorulsun
+  dogumgunu: "dostlar",
   mevlid: "manevi", iftar: "manevi", hac: "manevi",
   evpartisi: "dostlar", yemek: "dostlar", mezuniyet: "dostlar", asker: "dostlar", bulusma: "dostlar",
 };
@@ -95,6 +101,9 @@ export const buyukHarf = (s: string) => s.charAt(0).toLocaleUpperCase("tr") + s.
 /** Sorunun bu cevaplarla görünen başlığı. */
 export const soruBasligi = (q: Question, a: Answers) => q.titleOf?.(a) ?? q.title;
 
+/** Çocuğun doğum günü mü? Açık cevap ("kimin doğum günü?") gruptan önce gelir. */
+export const cocukDogumGunu = (a: Answers) => (a.dgkim ? a.dgkim === "cocuk" : a.grup === "cocuk");
+
 /** Soru yalnızca bu türlerde sorulur. */
 const tur = (...t: string[]) => (a: Answers) => t.includes(a.tur ?? "");
 
@@ -110,34 +119,99 @@ function grupta(...gruplar: string[]) {
 }
 
 /**
- * Hangi doku hangi günde sunulur. Her günün Türkiye'de oturmuş bir görsel dili var:
- * kınada bindallının sırması, sünnette nazar ve mavi çini, iftarda hilal ve fener.
- * Uymayan doku hiç gösterilmez (mevlide altın varak ya da disko havası sunulmaz).
+ * Her davetin kendi renkleri: sıradaki ilk renk o gün için önerilen ("siz seçin"
+ * denirse o gelir). Asker uğurlamasında al bayrak, baby shower'da bebek pembesi ya da
+ * mavisi, iftarda gece mavisi ve hurma, buluşmada demli çay… Uymayan renk sunulmaz.
  */
-const DESEN_UYGUN: Record<string, string[]> = {
-  toren: ["cicekli", "mermer", "varak", "dantel", "cini", "yildiz", "nar", "ebru"],
-  kina: ["bindalli", "varak", "dantel", "cicekli", "nar", "cini"],
-  bekarlik: ["varak", "cicekli", "mermer", "ebru"],
-  sunnet: ["nazar", "cini", "yildiz", "varak"],
-  bebek: ["cicekli", "dantel", "nazar", "ebru"],
-  mevlid: ["cini", "yildiz", "ebru"],
-  hac: ["cini", "yildiz", "ebru"],
-  iftar: ["fener", "yildiz", "cini"],
-  diger: ["varak", "cicekli", "mermer", "ebru", "yildiz"],
-};
-function desenGrubu(a: Answers) {
-  const t = a.tur ?? "";
-  if (TOREN.includes(t)) return "toren";
-  if (["babyshower", "cinsiyet", "disbugdayi"].includes(t)) return "bebek";
-  return DESEN_UYGUN[t] ? t : "diger";
-}
-function uygun(id: string) {
-  return (a: Answers) => DESEN_UYGUN[desenGrubu(a)].includes(id);
+export function renkListesi(a: Answers): string[] {
+  switch (a.tur) {
+    case "dugun": case "nisan": case "soz":
+      return ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "turkuaz", "pastel", "mor", "siyahaltin"];
+    case "kina": return ["lal", "mor", "klasik", "gul", "zumrut", "fusya"];
+    case "bekarlik":
+      return a.bkkim === "damat"
+        ? ["gece", "siyahaltin", "haki", "klasik", "zumrut", "inci"]
+        : ["gul", "fusya", "inci", "siyahaltin", "mor", "gece"];
+    case "sunnet": return ["turkuaz", "bebekmavi", "gece", "zumrut", "klasik", "lal"];
+    case "babyshower":
+      if (a.bscins === "kiz") return ["bebekpembe", "gul", "pastel", "inci", "bugday", "bebekmavi"];
+      if (a.bscins === "erkek") return ["bebekmavi", "turkuaz", "pastel", "inci", "bugday", "bebekpembe"];
+      return ["pastel", "tahmin", "bugday", "inci", "bebekpembe", "bebekmavi"];
+    case "cinsiyet": return ["tahmin", "bebekpembe", "bebekmavi", "pastel", "inci"];
+    case "disbugdayi": return ["bugday", "pastel", "bebekpembe", "bebekmavi", "krem"];
+    case "dogumgunu":
+      if (cocukDogumGunu(a)) return ["bebekmavi", "bebekpembe", "fusya", "turkuaz", "bugday", "tahmin"];
+      if (a.dgkim === "buyuk") return ["klasik", "zumrut", "krem", "gul", "inci", "hurma"];
+      return ["fusya", "gul", "siyahaltin", "gece", "mor", "inci", "lal"];
+    case "mezuniyet":
+      return a.okul === "ilk"
+        ? ["bebekmavi", "turkuaz", "bugday", "fusya", "gece"]
+        : ["gece", "siyahaltin", "klasik", "inci", "zumrut", "mor"];
+    case "asker": return ["bayrak", "lal", "haki", "gece", "zumrut"];
+    case "mevlid": return ["zumrut", "gul", "inci", "krem", "gece", "turkuaz"];
+    case "iftar": return ["gece", "zumrut", "hurma", "turkuaz", "mor", "krem"];
+    case "hac": return ["zumrut", "krem", "inci", "hurma", "gece"];
+    case "evpartisi":
+      return a.evtur === "hayirli"
+        ? ["krem", "zumrut", "terrakota", "inci", "hurma"]
+        : ["terrakota", "krem", "pastel", "fusya", "zumrut", "inci"];
+    case "yemek":
+      return a.yemekneden === "bayram"
+        ? ["klasik", "zumrut", "krem", "terrakota", "hurma"]
+        : ["gece", "terrakota", "klasik", "krem", "siyahaltin", "cay", "zumrut"];
+    case "bulusma": return ["cay", "krem", "terrakota", "turkuaz", "pastel", "gece"];
+    default: return ["klasik", "lal", "gul", "zumrut", "gece", "krem", "inci", "turkuaz", "pastel"];
+  }
 }
 
-/** Bir sorunun bu cevaplarla gösterilecek seçenekleri; türe bağlı açıklamalar doldurulmuş olarak. */
-export const visibleOptions = (q: Question, a: Answers) =>
-  q.options.filter((o) => !o.when || o.when(a)).map((o) => (o.hintOf ? { ...o, hint: o.hintOf(a) ?? o.hint } : o));
+/**
+ * Her davetin kendi dokuları, en uygunu önde: sünnette şehzade tacı ve nazar, diş
+ * buğdayında başak, mezuniyette kep, askerde ay yıldız, mevlidde gül, buluşmada ince
+ * belli çay bardağı. Uymayan doku hiç gösterilmez (mevlide konfeti sunulmaz).
+ */
+export function desenListesi(a: Answers): string[] {
+  switch (a.tur) {
+    case "dugun": case "nisan": case "soz":
+      return ["cicekli", "mermer", "varak", "dantel", "gul", "cini", "yildiz", "nar", "ebru", "kalp"];
+    case "kina": return ["bindalli", "varak", "gul", "dantel", "cicekli", "nar", "cini", "kalp"];
+    case "bekarlik": return ["konfeti", "kalp", "varak", "mermer", "puantiye", "cicekli"];
+    case "sunnet": return ["tac", "nazar", "cini", "yildiz", "balon", "varak"];
+    case "babyshower": return ["bulut", "puantiye", "balon", "dantel", "cicekli", "nazar"];
+    case "cinsiyet": return ["balon", "konfeti", "puantiye", "bulut", "kalp"];
+    case "disbugdayi": return ["basak", "nar", "bulut", "puantiye", "dantel", "nazar"];
+    case "dogumgunu":
+      if (cocukDogumGunu(a)) return ["balon", "konfeti", "puantiye", "bulut", "tac"];
+      if (a.dgkim === "buyuk") return ["cicekli", "gul", "varak", "kilim", "nar"];
+      return ["konfeti", "balon", "puantiye", "varak", "kalp", "mermer"];
+    case "mezuniyet": return ["kep", "konfeti", "yildiz", "varak", "mermer"];
+    case "asker": return ["ayyildiz", "nazar", "kilim", "yildiz"];
+    case "mevlid": return ["gul", "cini", "yildiz", "ebru"];
+    case "iftar": return ["fener", "yildiz", "cini", "kilim"];
+    case "hac": return ["gul", "cini", "yildiz", "ebru"];
+    case "evpartisi":
+      return a.evtur === "hayirli" ? ["kilim", "nar", "cicekli", "cay", "cini"] : ["konfeti", "kilim", "cicekli", "cay", "puantiye", "mermer"];
+    case "yemek": return ["kilim", "nar", "cay", "mermer", "cicekli"];
+    case "bulusma": return ["cay", "kilim", "konfeti", "puantiye", "ebru"];
+    default: return ["varak", "cicekli", "mermer", "ebru", "yildiz"];
+  }
+}
+
+/** Seçenek bu davetin listesinde mi? "Siz seçin" ve "sade" her zaman var. */
+const renkte = (id: string) => (a: Answers) => renkListesi(a).includes(id);
+const desende = (id: string) => (a: Answers) => desenListesi(a).includes(id);
+const BEBEK_TUR = ["babyshower", "cinsiyet", "disbugdayi"];
+
+/**
+ * Bir sorunun bu cevaplarla gösterilecek seçenekleri: türe bağlı açıklamalar
+ * doldurulmuş, sıralı sorularda en uygunu önde.
+ */
+export function visibleOptions(q: Question, a: Answers) {
+  const list = q.options.filter((o) => !o.when || o.when(a)).map((o) => (o.hintOf ? { ...o, hint: o.hintOf(a) ?? o.hint } : o));
+  const sira = q.order?.(a);
+  if (!sira) return list;
+  const yer = (id: string) => (sira.includes(id) ? sira.indexOf(id) : sira.length);
+  return [...list].sort((x, y) => yer(x.id) - yer(y.id));
+}
 
 export const QUESTIONS: Question[] = [
   {
@@ -462,19 +536,32 @@ export const QUESTIONS: Question[] = [
   {
     id: "renk",
     title: "Hangi renkler size daha yakın?",
-    lead: "İçinizden geleni seçin; davetiniz bu renklere bürünecek.",
+    lead: "Bu güne yakışan renkler; en uygunu başta. İçinizden geleni seçin.",
     look: "renk",
+    order: renkListesi,
     options: [
-      { id: "lal", label: "Kına kırmızısı", hint: "Al & altın" },
-      { id: "klasik", label: "Bordo", hint: "Bordo & altın" },
-      { id: "gul", label: "Pudra gül", hint: "Gül kurusu & bakır" },
-      { id: "zumrut", label: "Zümrüt", hint: "Zümrüt & altın" },
-      { id: "gece", label: "Gece mavisi", hint: "Lacivert & altın" },
-      { id: "krem", label: "Toprak", hint: "Kum & zeytin" },
-      { id: "inci", label: "İnci", hint: "Fildişi & siyah" },
-      { id: "turkuaz", label: "İznik", hint: "Kobalt, turkuaz & mercan" },
-      { id: "pastel", label: "Pastel", hint: "Latte, vizon & adaçayı" },
-      { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre" },
+      { id: "lal", label: "Kına kırmızısı", hint: "Al & altın", when: renkte("lal") },
+      { id: "klasik", label: "Bordo", hint: "Bordo & altın", when: renkte("klasik") },
+      { id: "gul", label: "Pudra gül", hint: "Gül kurusu & bakır", when: renkte("gul") },
+      { id: "zumrut", label: "Zümrüt", hint: "Zümrüt & altın", when: renkte("zumrut") },
+      { id: "gece", label: "Gece mavisi", hint: "Lacivert & altın", when: renkte("gece") },
+      { id: "krem", label: "Toprak", hint: "Kum & zeytin", when: renkte("krem") },
+      { id: "inci", label: "İnci", hint: "Fildişi & siyah", when: renkte("inci") },
+      { id: "turkuaz", label: "İznik", hint: "Kobalt, turkuaz & mercan", when: renkte("turkuaz") },
+      { id: "pastel", label: "Pastel", hint: "Latte, vizon & adaçayı", when: renkte("pastel") },
+      { id: "mor", label: "Kına moru", hint: "Mor & altın", when: renkte("mor") },
+      { id: "fusya", label: "Şeker pembe", hint: "Fuşya & şeftali", when: renkte("fusya") },
+      { id: "bebekpembe", label: "Bebek pembesi", hint: "Pudra pembe & krem", when: renkte("bebekpembe") },
+      { id: "bebekmavi", label: "Bebek mavisi", hint: "Gök mavisi & gümüş", when: renkte("bebekmavi") },
+      { id: "tahmin", label: "Pembe & mavi", hint: "Kız mı, erkek mi?", when: renkte("tahmin") },
+      { id: "bugday", label: "Buğday", hint: "Buğday sarısı & krem", when: renkte("bugday") },
+      { id: "siyahaltin", label: "Siyah & altın", hint: "Gece gibi şık", when: renkte("siyahaltin") },
+      { id: "bayrak", label: "Al bayrak", hint: "Al & beyaz", when: renkte("bayrak") },
+      { id: "haki", label: "Haki", hint: "Haki & kum", when: renkte("haki") },
+      { id: "hurma", label: "Hurma", hint: "Hurma kahvesi & altın", when: renkte("hurma") },
+      { id: "terrakota", label: "Kiremit", hint: "Terrakota & krem", when: renkte("terrakota") },
+      { id: "cay", label: "Demli çay", hint: "Çay kızılı & altın", when: renkte("cay") },
+      { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre", hintOf: (a) => (isToren(a) ? undefined : `Önerimiz: ${themeOf(renkListesi(a)[0]).label}`) },
     ],
   },
   {
@@ -522,25 +609,38 @@ export const QUESTIONS: Question[] = [
   {
     id: "desen",
     title: "Arka planda hangi doku olsun?",
-    lead: "Türkiye'de davetlerde en sevilen dokular; her birinin bir anlamı var.",
+    lead: "Bu güne yakışan dokular; her birinin bir anlamı var.",
     look: "desen",
+    order: desenListesi,
     options: [
-      { id: "cicekli", label: "Çiçekli", hint: "Romantik, en çok sevilen", when: uygun("cicekli") },
-      { id: "mermer", label: "Mermer", hint: "Modern ve şık", when: uygun("mermer") },
-      { id: "varak", label: "Altın varak", hint: "Görkemli, ışıltılı", when: uygun("varak") },
+      { id: "cicekli", label: "Çiçekli", hint: "Romantik, en çok sevilen", when: desende("cicekli") },
+      { id: "mermer", label: "Mermer", hint: "Modern ve şık", when: desende("mermer") },
+      { id: "varak", label: "Altın varak", hint: "Görkemli, ışıltılı", when: desende("varak") },
       {
-        id: "dantel", label: "Dantel ve oya", hint: "Gelinliğin, çeyizin inceliği", when: uygun("dantel"),
-        hintOf: (a) => (desenGrubu(a) === "bebek" ? "Bebek battaniyesinin, oyanın inceliği" : undefined),
+        id: "dantel", label: "Dantel ve oya", hint: "Gelinliğin, çeyizin inceliği", when: desende("dantel"),
+        hintOf: (a) => (BEBEK_TUR.includes(a.tur ?? "") ? "Bebek battaniyesinin, oyanın inceliği" : undefined),
       },
-      { id: "bindalli", label: "Bindallı sırması", hint: "Kınanın altın işlemesi", when: uygun("bindalli") },
-      { id: "nazar", label: "Nazar", hint: "Maşallah, nazardan korusun", when: uygun("nazar") },
-      { id: "fener", label: "Hilal ve fener", hint: "Ramazan'ın ışığı", when: uygun("fener") },
-      { id: "cini", label: "Çini", hint: "Lale ve karanfil", when: uygun("cini") },
-      { id: "yildiz", label: "Selçuklu yıldızı", hint: "Mutluluk ve sonsuzluk", when: uygun("yildiz") },
-      { id: "nar", label: "Nar", hint: "Bereket ve bolluk", when: uygun("nar") },
-      { id: "ebru", label: "Ebru", hint: "UNESCO mirası Türk sanatı", when: uygun("ebru") },
+      { id: "bindalli", label: "Bindallı sırması", hint: "Kınanın altın işlemesi", when: desende("bindalli") },
+      { id: "nazar", label: "Nazar", hint: "Maşallah, nazardan korusun", when: desende("nazar") },
+      { id: "fener", label: "Hilal ve fener", hint: "Ramazan'ın ışığı", when: desende("fener") },
+      { id: "cini", label: "Çini", hint: "Lale ve karanfil", when: desende("cini") },
+      { id: "yildiz", label: "Selçuklu yıldızı", hint: "Mutluluk ve sonsuzluk", when: desende("yildiz") },
+      { id: "nar", label: "Nar", hint: "Bereket ve bolluk", when: desende("nar") },
+      { id: "ebru", label: "Ebru", hint: "UNESCO mirası Türk sanatı", when: desende("ebru") },
+      { id: "tac", label: "Şehzade tacı", hint: "Şehzademizin büyük günü", when: desende("tac") },
+      { id: "bulut", label: "Bulut ve yıldız", hint: "Bebek odası gibi", when: desende("bulut") },
+      { id: "basak", label: "Buğday başağı", hint: "Dişler buğday gibi sağlam olsun", when: desende("basak") },
+      { id: "kep", label: "Mezuniyet kepi", hint: "Emeğin taçlandığı gün", when: desende("kep") },
+      { id: "ayyildiz", label: "Ay yıldız", hint: "Vatan sana emanet", when: desende("ayyildiz") },
+      { id: "gul", label: "Gül", hint: "Gül kokulu meclis", when: desende("gul"), hintOf: (a) => (isToren(a) || a.tur === "kina" ? "Aşkın ve zarafetin çiçeği" : undefined) },
+      { id: "kilim", label: "Kilim", hint: "Anadolu'nun sıcaklığı", when: desende("kilim") },
+      { id: "cay", label: "İnce belli çay", hint: "Çayı demledik, buyurun", when: desende("cay") },
+      { id: "balon", label: "Balonlar", hint: "Kutlamanın neşesi", when: desende("balon") },
+      { id: "konfeti", label: "Konfeti", hint: "Parti havası", when: desende("konfeti") },
+      { id: "puantiye", label: "Puantiye", hint: "Tatlı ve oyuncu", when: desende("puantiye") },
+      { id: "kalp", label: "Kalpler", hint: "Sevgiyle", when: desende("kalp") },
       { id: "sade", label: "Sade", hint: "Dokusuz, yalnızca renk" },
-      { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre" },
+      { id: "sizsecin", label: "Siz seçin", hint: "Diğer cevaplarıma göre", hintOf: (a) => (isToren(a) ? undefined : `Önerimiz: ${patternOf(desenListesi(a)[0]).label}`) },
     ],
   },
   {
@@ -672,14 +772,6 @@ function categoryFor(a: Answers) {
   return CATEGORY_OF[a.tur ?? ""] ?? "Buluşma";
 }
 
-const PALETLER = ["lal", "klasik", "gul", "zumrut", "gece", "krem", "inci", "turkuaz", "pastel"];
-
-/** Etkinlik dalında "siz seçin" denirse türün Türkiye'de alışılmış rengi. */
-const TUR_RENK: Record<string, string> = {
-  sunnet: "turkuaz", babyshower: "pastel", cinsiyet: "pastel", disbugdayi: "pastel",
-  mevlid: "zumrut", hac: "zumrut", iftar: "gece", asker: "lal", kina: "lal", bekarlik: "gul",
-  dogumgunu: "gul", mezuniyet: "gece", evpartisi: "krem", yemek: "gece", bulusma: "krem",
-};
 const BEBEK = ["babyshower", "cinsiyet", "disbugdayi"];
 
 /**
@@ -687,8 +779,8 @@ const BEBEK = ["babyshower", "cinsiyet", "disbugdayi"];
  * "siz seçin" dendiğinde eksik eksen diğer cevaplardan türetilir.
  */
 function themeFor(a: Answers) {
-  if (PALETLER.includes(a.renk ?? "")) return a.renk;
-  if (!isToren(a) && TUR_RENK[a.tur ?? ""]) return TUR_RENK[a.tur ?? ""];
+  if (a.renk && a.renk !== "sizsecin" && isTheme(a.renk)) return a.renk;
+  if (!isToren(a)) return renkListesi(a)[0];
   const fromStil: Record<string, string> = { klasik: "klasik", romantik: "gul", sade: "inci", modern: "gece", bohem: "krem", cini: "turkuaz" };
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
   if (a.ton === "zarif") return "krem";
@@ -726,7 +818,11 @@ function ornamentFor(a: Answers, theme: string) {
   }
   const fromStil: Record<string, string> = { klasik: "sirma", romantik: "cicek", sade: "cizgi", modern: "deco", bohem: "yaprak", cini: "cini" };
   if (fromStil[a.stil ?? ""]) return fromStil[a.stil];
-  const fromTheme: Record<string, string> = { lal: "sirma", klasik: "sirma", gul: "cicek", zumrut: "deco", gece: "deco", krem: "yaprak", inci: "cizgi", turkuaz: "cini" };
+  const fromTheme: Record<string, string> = {
+    lal: "sirma", klasik: "sirma", gul: "cicek", zumrut: "deco", gece: "deco", krem: "yaprak", inci: "cizgi", turkuaz: "cini",
+    mor: "sirma", fusya: "deco", bebekpembe: "cicek", bebekmavi: "cicek", tahmin: "cicek", bugday: "yaprak",
+    siyahaltin: "deco", bayrak: "cizgi", haki: "cizgi", hurma: "cini", terrakota: "yaprak", cay: "cini",
+  };
   return fromTheme[theme] ?? "sirma";
 }
 
@@ -734,9 +830,8 @@ function ornamentFor(a: Answers, theme: string) {
 function patternFor(a: Answers) {
   const secim = a.desen ?? "";
   if (secim && secim !== "sizsecin") return secim;
-  const tur: Record<string, string> = { kina: "bindalli", sunnet: "nazar", iftar: "fener", mevlid: "cini", hac: "cini", bekarlik: "varak", dogumgunu: "varak" };
-  if (tur[a.tur ?? ""]) return tur[a.tur ?? ""];
-  if (["babyshower", "cinsiyet", "disbugdayi"].includes(a.tur ?? "")) return "dantel";
+  // Etkinlikte türün ilk dokusu; törende seçilen ruh (aşağıda)
+  if (!isToren(a)) return desenListesi(a)[0];
   const stil: Record<string, string> = { klasik: "varak", romantik: "cicekli", sade: "sade", modern: "mermer", bohem: "nar", cini: "cini" };
   return stil[a.stil ?? ""] ?? "sade";
 }

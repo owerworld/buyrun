@@ -6,7 +6,7 @@
  * "uğurluyoruz", sürpriz partide "ev sahibi" yazmasın.
  */
 
-import type { Answers } from "./wizard";
+import { cocukDogumGunu, type Answers } from "./wizard";
 
 export type Alanlar = [baslik: string, baslikOrnek: string, ev: string, evOrnek: string];
 
@@ -49,7 +49,7 @@ export function alanlarFor(a: Answers): Alanlar {
       return a.bsduzen === "aile" ? [b, bo, e, eo] : [b, bo, "Düzenleyen", "Zeynep'in arkadaşları"];
     case "dogumgunu": {
       const ev = a.surpriz === "evet" ? "Sürprizi hazırlayan" : e;
-      if (a.grup === "cocuk" || a.dgkim === "cocuk") return [b, "Ela 5 yaşında!", ev, a.surpriz === "evet" ? "Annesi ve babası" : "Zeynep & Can"];
+      if (cocukDogumGunu(a)) return [b, "Ela 5 yaşında!", ev, a.surpriz === "evet" ? "Annesi ve babası" : "Zeynep & Can"];
       if (a.dgkim === "buyuk") return [b, "Babaannemiz 80 yaşında!", ev, "Torunları"];
       if (a.dgkim === "genc") return [b, "Ece 18 oldu!", ev, a.surpriz === "evet" ? "Ece'nin arkadaşları" : eo];
       return [b, bo, ev, a.surpriz === "evet" ? "Ece'nin arkadaşları" : eo];

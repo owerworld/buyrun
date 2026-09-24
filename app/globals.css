@@ -500,7 +500,32 @@ details summary{cursor:pointer;font-weight:700}
 .desen-ornek.d-nazar,.hero.kucuk.d-nazar{--desen-boyut:30px}
 .d-fener{--desen:url(/desen/fener.svg);--desen-boyut:130px}
 .desen-ornek.d-fener,.hero.kucuk.d-fener{--desen-boyut:65px}
+.d-puantiye{--desen:url(/desen/puantiye.svg);--desen-boyut:36px}
+.desen-ornek.d-puantiye,.hero.kucuk.d-puantiye{--desen-boyut:18px}
+.d-konfeti{--desen:url(/desen/konfeti.svg);--desen-boyut:140px}
+.desen-ornek.d-konfeti,.hero.kucuk.d-konfeti{--desen-boyut:70px}
+.d-balon{--desen:url(/desen/balon.svg);--desen-boyut:150px}
+.desen-ornek.d-balon,.hero.kucuk.d-balon{--desen-boyut:75px}
+.d-bulut{--desen:url(/desen/bulut.svg);--desen-boyut:160px}
+.desen-ornek.d-bulut,.hero.kucuk.d-bulut{--desen-boyut:80px}
+.d-basak{--desen:url(/desen/basak.svg);--desen-boyut:140px}
+.desen-ornek.d-basak,.hero.kucuk.d-basak{--desen-boyut:70px}
+.d-kep{--desen:url(/desen/kep.svg);--desen-boyut:140px}
+.desen-ornek.d-kep,.hero.kucuk.d-kep{--desen-boyut:70px}
+.d-ayyildiz{--desen:url(/desen/ayyildiz.svg);--desen-boyut:120px}
+.desen-ornek.d-ayyildiz,.hero.kucuk.d-ayyildiz{--desen-boyut:60px}
+.d-gul{--desen:url(/desen/gul.svg);--desen-boyut:130px}
+.desen-ornek.d-gul,.hero.kucuk.d-gul{--desen-boyut:65px}
+.d-tac{--desen:url(/desen/tac.svg);--desen-boyut:130px}
+.desen-ornek.d-tac,.hero.kucuk.d-tac{--desen-boyut:65px}
+.d-kilim{--desen:url(/desen/kilim.svg);--desen-boyut:96px}
+.desen-ornek.d-kilim,.hero.kucuk.d-kilim{--desen-boyut:48px}
+.d-cay{--desen:url(/desen/cay.svg);--desen-boyut:130px}
+.desen-ornek.d-cay,.hero.kucuk.d-cay{--desen-boyut:65px}
+.d-kalp{--desen:url(/desen/kalp.svg);--desen-boyut:100px}
+.desen-ornek.d-kalp,.hero.kucuk.d-kalp{--desen-boyut:50px}
 .d-mermer{--desen-opak:.22}.d-ebru{--desen-opak:.2}.d-varak{--desen-opak:.3}
+.d-puantiye{--desen-opak:.14}.d-kilim{--desen-opak:.15}
 .desen-ornek.d-ebru,.desen-ornek.d-mermer{--desen-opak:.42}
 
 /* Kapak fotoğrafı seçici (sihirbazın son sayfası, etkinlik düzenleme) */

@@ -8,6 +8,7 @@ import { FontPicker, OrnamentPicker, PatternPicker } from "@/components/DesignPi
 import { VenuePicker } from "@/components/VenuePicker";
 import { MetinOneri } from "@/components/MetinOneri";
 import { acilisSecenekleri, cevaplarOf, oneriler } from "@/lib/sozler";
+import { desenListesi, renkListesi } from "@/lib/wizard";
 import { addExtraEventAction, removeExtraEventAction, updateInvitationAction } from "../../../actions";
 
 /** Çift davetiyesini oluşturduktan sonra buradan düzeltir. Davetli linkleri değişmez. */
@@ -99,10 +100,10 @@ export default async function Duzenle({ params, searchParams }: {
         )}
 
         <div className="form-section-heading"><span>✦</span><h2>Görünüm</h2></div>
-        <ThemePicker current={inv.theme} />
+        <ThemePicker current={inv.theme} ids={renkListesi({ tur: anaTur })} />
         <FontPicker current={inv.font} names={`${inv.name_a} & ${inv.name_b}`} />
         <OrnamentPicker current={inv.ornament} />
-        <PatternPicker current={inv.pattern} />
+        <PatternPicker current={inv.pattern} ids={desenListesi({ tur: anaTur })} />
         <div className="btns" style={{ marginTop: 18 }}>
           <button className="btn" type="submit">Değişiklikleri kaydet</button>
           <Link className="btn ghost" href={`/yonet/${token}`}>Vazgeç</Link>

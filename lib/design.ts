@@ -81,6 +81,19 @@ export const PATTERNS: Pattern[] = [
   { id: "bindalli", label: "Bindallı sırması", hint: "Kına gecesinin altın işlemesi", tile: 120 },
   { id: "nazar", label: "Nazar", hint: "Maşallah, nazardan korusun", tile: 60 },
   { id: "fener", label: "Hilal ve fener", hint: "Ramazan'ın ışığı", tile: 130 },
+  // Konsepte özel dokular: her davet türü kendi dünyasından seçer
+  { id: "puantiye", label: "Puantiye", hint: "Tatlı ve oyuncu", tile: 36 },
+  { id: "konfeti", label: "Konfeti", hint: "Parti havası", tile: 140 },
+  { id: "balon", label: "Balonlar", hint: "Kutlamanın neşesi", tile: 150 },
+  { id: "bulut", label: "Bulut ve yıldız", hint: "Bebek odası gibi", tile: 160 },
+  { id: "basak", label: "Buğday başağı", hint: "Diş buğdayının bereketi", tile: 140 },
+  { id: "kep", label: "Mezuniyet kepi", hint: "Emeğin taçlandığı gün", tile: 140 },
+  { id: "ayyildiz", label: "Ay yıldız", hint: "Vatan sana emanet", tile: 120 },
+  { id: "gul", label: "Gül", hint: "Gül kokulu meclis", tile: 130 },
+  { id: "tac", label: "Şehzade tacı", hint: "Şehzademizin büyük günü", tile: 130 },
+  { id: "kilim", label: "Kilim", hint: "Anadolu'nun sıcaklığı", tile: 96 },
+  { id: "cay", label: "İnce belli çay", hint: "Çayı demledik, buyurun", tile: 130 },
+  { id: "kalp", label: "Kalpler", hint: "Sevgiyle", tile: 100 },
 ];
 
 export const DEFAULT_PATTERN = "sade";

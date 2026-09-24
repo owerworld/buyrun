@@ -16,13 +16,17 @@ export function ThemeStyle({ theme }: { theme: string }) {
 }
 
 /** Oluşturma ve düzenleme formlarındaki tema seçici. */
-export function ThemePicker({ current }: { current?: string }) {
+/** ids verilirse yalnızca o davet türüne yakışan temalar, o sırayla (seçili olan her zaman listede). */
+export function ThemePicker({ current, ids }: { current?: string; ids?: string[] }) {
   const selected = themeOf(current).id;
+  const liste = ids
+    ? [...new Set([...ids, selected])].map((id) => THEMES.find((t) => t.id === id)).filter((t): t is (typeof THEMES)[number] => Boolean(t))
+    : THEMES;
   return (
     <fieldset style={{ marginTop: 14 }}>
       <legend className="lbl" style={{ margin: 0 }}>Tema</legend>
       <div className="temalar">
-        {THEMES.map((t) => (
+        {liste.map((t) => (
           <label key={t.id}>
             <input type="radio" name="theme" value={t.id} defaultChecked={t.id === selected} />
             <span className="tema">
