@@ -82,6 +82,12 @@ export function ShareKit({ event }: { event: Party }) {
         `SUMMARY:${escapeICS(event.title)}`,
         `LOCATION:${escapeICS([event.venue, event.address].filter(Boolean).join(", "))}`,
         `DESCRIPTION:${escapeICS(event.description + "\n" + (event.shareUrl || ""))}`,
+        // Bir gün önce takvim hatırlatması; uygulama kimseye mesaj göndermez
+        "BEGIN:VALARM",
+        "ACTION:DISPLAY",
+        "TRIGGER:-P1D",
+        `DESCRIPTION:${escapeICS("Yarın: " + event.title)}`,
+        "END:VALARM",
         "END:VEVENT",
         "END:VCALENDAR",
         "",

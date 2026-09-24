@@ -25,7 +25,7 @@ function utcStamp(dateIso: string, timeHHmm: string, addHours = 0) {
 }
 
 /** Takvim biçiminde ters eğik çizgi, noktalı virgül, virgül ve satır sonu kaçışlanır. */
-const esc = (v: string) => v.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+const esc = (v: string) => v.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 
 /** Satırlar 75 bayttan uzun olamaz; devamı bir boşlukla alt satıra taşınır. */
 function fold(line: string) {
@@ -43,6 +43,18 @@ function fold(line: string) {
   }
   return parts.join("\r\n ");
 }
+
+/**
+ * Hatırlatma: takvim uygulaması etkinlikten bir gün önce haber verir. Buyrun kimseye
+ * mesaj göndermez; hatırlatmayı davetlinin kendi takvimi yapar.
+ */
+const hatirlatma = (baslik: string) => [
+  "BEGIN:VALARM",
+  "ACTION:DISPLAY",
+  "TRIGGER:-P1D",
+  fold(`DESCRIPTION:${esc(`Yarın: ${baslik}`)}`),
+  "END:VALARM",
+];
 
 export function buildIcs(inv: Invitation, events: EventRow[], siteUrl: string) {
   const stamp = utcStamp(new Date().toISOString().slice(0, 10), "00:00");
@@ -65,11 +77,40 @@ export function buildIcs(inv: Invitation, events: EventRow[], siteUrl: string) {
       // Koordinat varsa takvim uygulaması "yol tarifi" düğmesini doğrudan doğru yere açar
       ...(e.lat != null && e.lng != null ? [`GEO:${e.lat};${e.lng}`] : []),
       fold(`DESCRIPTION:${esc(`Davetiye ve katılım bildirimi: ${siteUrl}`)}`),
+      ...hatirlatma(e.title),
       "END:VEVENT"
     );
   }
   lines.push("END:VCALENDAR");
   return lines.join("\r\n") + "\r\n";
+}
+
+/** Tek günlük davet (doğum günü, yemek, mevlid…) için takvim dosyası. */
+export function buildEventIcs(
+  e: { id: string; title: string; date: string; time: string; venue: string; address: string; lat?: number | null; lng?: number | null },
+  url: string
+) {
+  const stamp = utcStamp(new Date().toISOString().slice(0, 10), "00:00");
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Buyrun//Davet//TR",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${e.id}@buyrun`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${utcStamp(e.date, e.time)}`,
+    // Tek günlük davetlerde süre daha kısa: 3 saat
+    `DTEND:${utcStamp(e.date, e.time, 3)}`,
+    fold(`SUMMARY:${esc(e.title)}`),
+    fold(`LOCATION:${esc([e.venue, e.address].filter(Boolean).join(", "))}`),
+    ...(e.lat != null && e.lng != null ? [`GEO:${e.lat};${e.lng}`] : []),
+    fold(`DESCRIPTION:${esc(`Davet ve katılım yanıtı: ${url}`)}`),
+    ...hatirlatma(e.title),
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n") + "\r\n";
 }
 
 export const icsResponse = (body: string) =>

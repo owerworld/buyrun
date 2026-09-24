@@ -1,5 +1,5 @@
 "use client";
-import { GuestSocial } from "./social";
+import { Duyurular, PlanAlanlari, useGuestSocial } from "./social";
 import { COVER_CATALOG } from "@/lib/coverCatalog";
 import { useEffect, useState } from "react";
 import styles from "./invitation.module.css";
@@ -58,6 +58,7 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
   const [error,setError]=useState("");
   const [saved,setSaved]=useState(false);
   const t=design&&!samimi?SIZ:SEN;
+  const sosyal=useGuestSocial(inviteToken,guestToken);
   // "14:00 Mevlid-i Şerif" gibi satırlar: saat solda, madde sağda; saatsiz satır da olur
   const akis=(detay?.akis||"").split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(\d{1,2}[:.]\d{2})\s+(.*)$/);return m?[m[1].replace(".",":"),m[2]]:["",l];});
   useEffect(() => {
@@ -97,8 +98,12 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
       });
       const result=await response.json();
       if(!response.ok)throw new Error(result.error || "Yanıt kaydedilemedi.");
-      setGuestToken(result.token);setSaved(true);
+      setGuestToken(result.token);
       try {localStorage.setItem(`buyrun-rsvp-${inviteToken}`,result.token);} catch {}
+      // Oylama ve sorular aynı gönderimde: davetli ikinci bir düğmeye basmaz
+      try { await sosyal.save(result.token); }
+      catch(e){ setError((e instanceof Error?e.message:"")+" Katılım yanıtın kaydedildi; seçimlerini tekrar gönderebilirsin."); }
+      setSaved(true);
       // The personal link also preserves editing access when storage is unavailable.
       window.history.replaceState(null,"",`/m/${inviteToken}?guest=${result.token}`);
     } catch(e){setError(e instanceof Error?e.message:"Bağlantı kurulamadı. Tekrar dene.");}
@@ -122,9 +127,10 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
         <div className={styles.coverBottom} style={illustrated?{color:art.text,bottom:"28%",textAlign:"center",left:24,right:24}:undefined}><span>{event.category}</span><h1 style={illustrated?{color:art.text,fontFamily:art.font==="serif"?"var(--font-display), Georgia, serif":undefined}:undefined}>{event.title}</h1></div>
       </section>}
       {ekler?.uyari&&<p className={styles.surpriz} role="note"><span aria-hidden="true">🤫</span>{ekler.uyari}</p>}
+      <Duyurular data={sosyal.data}/>
       <section id="invitation" className={styles.details}>
         <div className={styles.host}><span className={styles.avatar}>{event.hostName.slice(0,1).toLocaleUpperCase("tr")}</span><div><span>{ekler?.ev?ekler.ev.toLocaleUpperCase("tr"):t.host}</span><strong>{event.hostName}</strong></div><span className={styles.star}>✳</span></div>
-        <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p>{ekler?.ipucu&&<p className={styles.ipucu}>{ekler.ipucu}</p>}{forecast&&<WeatherLine forecast={forecast} credit/>}</div></div>
+        <div className={styles.infoRow}><span className={styles.infoIcon}>↗</span><div><strong>{dateLabel}</strong><p>Saat {event.time}</p><a className={styles.takvimLink} href={`/m/${inviteToken}/takvim`} download>Takvime ekle · bir gün önce hatırlatır</a>{ekler?.ipucu&&<p className={styles.ipucu}>{ekler.ipucu}</p>}{forecast&&<WeatherLine forecast={forecast} credit/>}</div></div>
         <div className={styles.infoRow}><span className={styles.infoIcon}>⌖</span><div><strong>{event.venue}</strong>{event.address&&<p>{event.address}</p>}<Directions place={place}/></div></div>
         {detay?.mevlidhan&&<div className={styles.infoRow}><span className={styles.infoIcon}>✦</span><div><strong>Mevlidi okuyacak</strong><p>{detay.mevlidhan}</p></div></div>}
         {event.description&&<div className={styles.description}><h2>{t.descTitle}</h2><p>{event.description}</p></div>}
@@ -139,6 +145,7 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
             <label className={styles.label}>{t.name}<input value={name} onChange={e=>{setName(e.target.value);setSaved(false);}} placeholder={t.namePh} autoComplete="name" required maxLength={100}/></label>
             {status!=="declined"&&<div className={styles.countRow}><div><strong>{t.count}</strong><p>{t.countHint}</p></div><div className={styles.stepper}><button type="button" disabled={count<=1} onClick={()=>{setCount(c=>Math.max(1,c-1));setSaved(false);}} aria-label="Kişi sayısını azalt">−</button><output aria-live="polite">{count}</output><button type="button" disabled={count>=20} onClick={()=>{setCount(c=>Math.min(20,c+1));setSaved(false);}} aria-label="Kişi sayısını artır">+</button></div></div>}
             <label className={styles.label}>{t.note} <span>isteğe bağlı</span><textarea value={note} onChange={e=>{setNote(e.target.value);setSaved(false);}} maxLength={500} placeholder={ekler?.not||t.notePh} rows={3}/></label>
+            <div onChange={()=>setSaved(false)}><PlanAlanlari social={sosyal} samimi={t===SEN}/></div>
             {error&&<p role="alert" className={styles.error}>{error}</p>}
             {saved&&<p role="status" className={styles.success}>{t.saved}</p>}
             <button className={styles.submit} disabled={busy} type="submit">{busy?"Kaydediliyor…":guestToken?t.update:t.send}<span>↗</span></button>
@@ -146,7 +153,7 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
           <p className={styles.privacy}>{t.privacy}</p>
         </form>
       </section>
-      <GuestSocial inviteToken={inviteToken} guestToken={guestToken}/>
+
       <footer className={styles.footer}>Buluşmaya bir <b>buyrun</b> yeter. ✳</footer>
     </div>
   </main>;

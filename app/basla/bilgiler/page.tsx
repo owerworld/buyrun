@@ -207,6 +207,9 @@ export default async function Bilgiler({ searchParams }: { searchParams: Promise
         <p className="muted small centered" style={{ marginTop: 10 }}>
           Metni ve görünümü sonradan istediğiniz kadar değiştirebilirsiniz.
         </p>
+        <p className="muted small centered" style={{ marginTop: 6 }}>
+          Yayın fiyatı davet başına tek seferlik ₺49,99. Bu test sürümünde ödeme alınmaz.
+        </p>
       </form>
 
       <p className="muted small centered" style={{ marginTop: 14 }}>

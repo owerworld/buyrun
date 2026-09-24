@@ -8,10 +8,16 @@ import { davetEkleri } from "@/lib/ornekler";
 import { cevaplarOf } from "@/lib/sozler";
 import Invitation from "./invitation";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  title: "Buyrun · Davetlisin", description: "Bir araya gelmenin en güzel bahanesi.",
-  robots: { index: false, follow: false }, referrer: "no-referrer",
-};
+/** Bağlantı önizlemesinde davetin kendi başlığı ve tarihi görünür; arama motorları yine görmez. */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const row = await mobileEventByToken(token, "invite");
+  const temel: Metadata = { robots: { index: false, follow: false }, referrer: "no-referrer" };
+  if (!row) return { ...temel, title: "Buyrun · Davetlisin" };
+  const tarih = new Date(`${row.event_date}T12:00:00`).toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
+  const aciklama = `${tarih} · ${row.event_time} · ${row.venue}. Katılımını bağlantıdan bildir.`;
+  return { ...temel, title: `${row.title} · Buyrun`, description: aciklama, openGraph: { title: row.title, description: aciklama } };
+}
 export default async function MobileInvitation({params,searchParams}: {
   params:Promise<{token:string}>;searchParams:Promise<{guest?:string | string[]}>
 }) {

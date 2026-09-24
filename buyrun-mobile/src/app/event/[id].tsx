@@ -152,6 +152,17 @@ export default function EventScreen() {
       );
     }
   };
+  /** WhatsApp Türkiye'de davetin asıl yolu: mesaj hazır açılır, kişiyi kullanıcı seçer. */
+  const whatsapp = async (url: string, guest?: Guest) => {
+    if (!event || event.demo) return;
+    setError("");
+    const text = `${guest ? `Sevgili ${guest.name}, ` : ""}${event.title} için davetlisin! Ayrıntılar ve katılım yanıtın burada: ${url}`;
+    try {
+      await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(text)}`);
+    } catch {
+      setError("WhatsApp açılamadı. Bağlantıyı kopyalayıp gönderebilirsin.");
+    }
+  };
   const openMap = async () => {
     if (!event) return;
     const location = [event.venue, event.address].filter(Boolean).join(", ");
@@ -290,15 +301,38 @@ export default function EventScreen() {
               }
             />
           </View>
-          <View
-            style={{
-              marginHorizontal: 18,
-              borderRadius: 28,
-              overflow: "hidden",
-            }}
-          >
-            <InvitationArt event={event} height={380} />
-          </View>
+          {section === "invite" ? (
+            <View
+              style={{
+                marginHorizontal: 18,
+                borderRadius: 28,
+                overflow: "hidden",
+              }}
+            >
+              <InvitationArt event={event} height={380} />
+            </View>
+          ) : (
+            // Diğer sekmelerde kapak küçülür: davetliler, özet ve planlar ilk ekranda görünsün
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Davetiyeyi göster"
+              onPress={() => setSection("invite")}
+              style={styles.compactHero}
+            >
+              <View style={styles.compactArt}>
+                <InvitationArt event={event} height={96} mini />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Txt style={styles.compactTitle} numberOfLines={2}>
+                  {event.title}
+                </Txt>
+                <Txt style={styles.compactSub} numberOfLines={1}>
+                  {dateText(event.date, { day: "numeric", month: "long", weekday: "long" })}
+                  {event.time ? " · " + event.time : ""}
+                </Txt>
+              </View>
+            </Pressable>
+          )}
         </View>
 
         <View style={styles.tabs} accessibilityRole="tablist">
@@ -314,6 +348,10 @@ export default function EventScreen() {
               style={[styles.tab, section === item.id && styles.activeTab]}
             >
               <Txt
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+                maxFontSizeMultiplier={1.3}
                 style={[
                   styles.tabText,
                   section === item.id && styles.activeTabText,
@@ -361,6 +399,63 @@ export default function EventScreen() {
           {section === "tools" && <PlanTools event={event} />}
           {section === "invite" && (
             <>
+              {/* Davet oluşturulunca ilk iş paylaşmak: en üstte, WhatsApp da tek dokunuşta */}
+              {event.demo ? (
+                <View style={styles.shareBlock}>
+                  <Button
+                    tone="lime"
+                    icon="add"
+                    onPress={() =>
+                      router.push({
+                        pathname: "/create",
+                        params: { cover: event.coverId },
+                      })
+                    }
+                  >
+                    Kendi davetini oluştur
+                  </Button>
+                  <Txt style={styles.shareNote}>
+                    Bu örnek davet paylaşılmaz. Kendi planını oluşturup
+                    sevdiklerine gönder.
+                  </Txt>
+                </View>
+              ) : (
+                <View style={styles.shareBlock}>
+                  {publicLink ? (
+                    <>
+                      <View style={styles.shareRow}>
+                        <Button
+                          tone="lime"
+                          icon="share-social-outline"
+                          onPress={() => shareLink(publicLink)}
+                          style={{ flex: 1 }}
+                        >
+                          Davetini paylaş
+                        </Button>
+                        <IconButton
+                          label="Davet bağlantısını kopyala"
+                          name="copy-outline"
+                          onPress={() => copyLink(publicLink)}
+                          style={styles.copyMain}
+                        />
+                      </View>
+                      <Button
+                        tone="white"
+                        icon="logo-whatsapp"
+                        onPress={() => whatsapp(publicLink)}
+                        style={{ marginTop: 10 }}
+                      >
+                        {"WhatsApp'ta gönder"}
+                      </Button>
+                      <Txt style={styles.shareNote}>
+                        Davetlilerin uygulama indirmeden katılım bildirebilir.
+                      </Txt>
+                    </>
+                  ) : (
+                    <Notice message="Davet bağlantısı henüz alınamadı. Yanıtları yenileyerek tekrar deneyebilirsin." />
+                  )}
+                </View>
+              )}
               <ShareKit event={event} />
               <View style={styles.detailsCard}>
                 <View style={styles.detailRow}>
@@ -469,54 +564,6 @@ export default function EventScreen() {
                 </Pressable>
               </View>
 
-              {event.demo ? (
-                <View style={styles.shareBlock}>
-                  <Button
-                    tone="lime"
-                    icon="add"
-                    onPress={() =>
-                      router.push({
-                        pathname: "/create",
-                        params: { cover: event.coverId },
-                      })
-                    }
-                  >
-                    Kendi davetini oluştur
-                  </Button>
-                  <Txt style={styles.shareNote}>
-                    Bu örnek davet paylaşılmaz. Kendi planını oluşturup
-                    sevdiklerine gönder.
-                  </Txt>
-                </View>
-              ) : (
-                <View style={styles.shareBlock}>
-                  {publicLink ? (
-                    <>
-                      <View style={styles.shareRow}>
-                        <Button
-                          tone="lime"
-                          icon="share-social-outline"
-                          onPress={() => shareLink(publicLink)}
-                          style={{ flex: 1 }}
-                        >
-                          Davetini paylaş
-                        </Button>
-                        <IconButton
-                          label="Davet bağlantısını kopyala"
-                          name="copy-outline"
-                          onPress={() => copyLink(publicLink)}
-                          style={styles.copyMain}
-                        />
-                      </View>
-                      <Txt style={styles.shareNote}>
-                        Davetlilerin uygulama indirmeden katılım bildirebilir.
-                      </Txt>
-                    </>
-                  ) : (
-                    <Notice message="Davet bağlantısı henüz alınamadı. Yanıtları yenileyerek tekrar deneyebilirsin." />
-                  )}
-                </View>
-              )}
             </>
           )}
 
@@ -1069,7 +1116,11 @@ const styles = StyleSheet.create({
     backgroundColor: C.soft,
   },
   tab: {
-    flex: 1,
+    // Genişlik içeriğe göre paylaşılır: "Davetliler" + sayı dar ekranda sığar
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: "auto",
+    paddingHorizontal: 6,
     minHeight: 44,
     justifyContent: "center",
     alignItems: "center",
@@ -1162,7 +1213,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  shareBlock: { marginTop: 24 },
+  shareBlock: { marginTop: 4, marginBottom: 18 },
+  compactHero: {
+    marginHorizontal: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: C.white,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: C.line,
+    padding: 10,
+  },
+  compactArt: { width: 72, borderRadius: 14, overflow: "hidden" },
+  compactTitle: { fontFamily: F.bold, fontSize: 17, lineHeight: 22 },
+  compactSub: { color: C.muted, fontSize: 12, marginTop: 4 },
   shareRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   copyMain: {
     height: 54,

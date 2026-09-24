@@ -272,3 +272,59 @@ export async function storyImage(inv: Invitation, events: EventRow[]) {
     }
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Genel davet (doğum günü, yemek, mevlid…) bağlantı önizlemesi         */
+/* ------------------------------------------------------------------ */
+
+/** Kapak görselini data URL olarak okur: kullanıcının fotoğrafı, telifsiz fotoğraf ya da çizim. */
+async function kapakDataUrl(e: { cover_id: string; cover_data: string | null; photo_id?: string }) {
+  if (e.cover_data?.startsWith("data:image/")) return e.cover_data;
+  const { COVER_CATALOG } = await import("./coverCatalog");
+  const yol = e.photo_id
+    ? `/foto/${e.photo_id}.jpg`
+    : COVER_CATALOG[e.cover_id]?.src ?? `/mobile-covers/${["cherry", "midnight", "bloom"].includes(e.cover_id) ? e.cover_id : "cherry"}.png`;
+  // Yalnızca public klasöründeki kendi dosyalarımız okunur
+  if (!/^\/(foto|mobile-covers)\/[a-z0-9-]+\.(png|jpg)$/.test(yol)) return null;
+  try {
+    const veri = await readFile(join(process.cwd(), "public", yol));
+    return `data:image/${yol.endsWith(".png") ? "png" : "jpeg"};base64,${veri.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+export async function eventPoster(e: {
+  title: string; category: string; event_date: string; event_time: string; venue: string;
+  cover_id: string; cover_data: string | null; photo_id?: string;
+}) {
+  const kapak = await kapakDataUrl(e);
+  const tarih = new Date(`${e.event_date}T12:00:00`).toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
+  const boyut = e.title.length <= 18 ? 76 : e.title.length <= 30 ? 62 : e.title.length <= 45 ? 50 : 42;
+  return new ImageResponse(
+    (
+      <div style={{ width: "100%", height: "100%", display: "flex", backgroundColor: "#F8F8F5", fontFamily: "Manrope" }}>
+        <div style={{ width: 470, height: "100%", display: "flex", backgroundColor: "#28282F" }}>
+          {kapak && <img src={kapak} width={470} height={630} style={{ objectFit: "cover" }} alt="" />}
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "56px 60px" }}>
+          <div style={{ display: "flex", fontSize: 22, fontWeight: 700, letterSpacing: 5, color: "#8062A3" }}>
+            {e.category.toLocaleUpperCase("tr")}
+          </div>
+          <div style={{ display: "flex", fontFamily: "Cormorant", fontWeight: 600, fontSize: boyut, lineHeight: 1.05, color: "#202025", marginTop: 18 }}>
+            {e.title}
+          </div>
+          <div style={{ display: "flex", width: 60, height: 3, backgroundColor: "#DDFC79", marginTop: 30 }} />
+          <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#202025", marginTop: 26 }}>
+            {tarih} · {e.event_time}
+          </div>
+          <div style={{ display: "flex", fontSize: 26, fontWeight: 500, color: "#797982", marginTop: 10 }}>{e.venue}</div>
+          <div style={{ display: "flex", fontSize: 22, fontWeight: 700, color: "#202025", marginTop: 44 }}>
+            buyrun · Katılımını bildir
+          </div>
+        </div>
+      </div>
+    ),
+    { ...ogSize, fonts: await fonts() }
+  );
+}

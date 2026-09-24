@@ -154,7 +154,10 @@ export function PlanTools({ event }: { event: Party }) {
               setMessage("");
             }}
             style={{
+              // İki sütunlu düzen: küçük ekranda da 2+2 dizilir, tek düğme boşta kalmaz
               flexGrow: 1,
+              flexBasis: "45%",
+              minHeight: 44,
               borderRadius: 15,
               backgroundColor: tab === id ? C.ink : C.white,
               padding: 12,
