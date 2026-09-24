@@ -1,3 +1,4 @@
+import { COVER_CATALOG } from "./coverCatalog";
 import { q } from "./db";
 import { id, token } from "./tokens";
 import { addDays, todayIso } from "./format";
@@ -136,7 +137,7 @@ export function validateEvent(body: unknown, existing?: MobileInput): MobileInpu
   const time = textField(b.time, "Saat", 5);
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new MobileError("Geçerli bir saat seç (SS:DD).");
   const coverId = textField(b.coverId || "cherry", "Kapak", 64);
-  if (!["cherry", "midnight", "bloom"].includes(coverId)) throw new MobileError("Geçerli bir kapak seç.");
+  if (!["cherry", "midnight", "bloom"].includes(coverId) && !Object.hasOwn(COVER_CATALOG, coverId)) throw new MobileError("Geçerli bir kapak seç.");
   let capacity: number | null = null;
   if (b.capacity != null && b.capacity !== "") {
     if (typeof b.capacity !== "number" || !Number.isInteger(b.capacity) || b.capacity < 1 || b.capacity > 10000) throw new MobileError("Kapasite 1–10000 arasında bir tam sayı olmalı.");

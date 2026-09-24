@@ -93,8 +93,8 @@ function Secenek({
   onPress: () => void;
   hareket: boolean;
 }) {
-  const gel = useRef(new Animated.Value(hareket ? 0 : 1)).current;
-  const bas = useRef(new Animated.Value(1)).current;
+  const [gel] = useState(() => new Animated.Value(hareket ? 0 : 1));
+  const [bas] = useState(() => new Animated.Value(1));
   useEffect(() => {
     if (!hareket) return;
     Animated.timing(gel, {
@@ -197,7 +197,7 @@ function KapakOnizleme({
   /** Türe uygun telifsiz fotoğraf; sunucudan çekilir, yüklenemezse çizim kapak görünür */
   photoId?: string;
 }) {
-  const g = useRef(new Animated.Value(0)).current;
+  const [g] = useState(() => new Animated.Value(0));
   useEffect(() => {
     g.setValue(0);
     Animated.timing(g, {
@@ -304,7 +304,7 @@ export default function Wizard() {
   }, []);
 
   // Soru değişince yana kayarak gelir
-  const soru = useRef(new Animated.Value(1)).current;
+  const [soru] = useState(() => new Animated.Value(1));
   useEffect(() => {
     if (!hareket) return;
     soru.setValue(0);
@@ -317,7 +317,7 @@ export default function Wizard() {
   }, [question?.id, soru, hareket]);
 
   // İlerleme çubuğu kayarak dolar
-  const bar = useRef(new Animated.Value(0)).current;
+  const [bar] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(bar, {
       toValue: total ? done / total : 0,
@@ -327,19 +327,7 @@ export default function Wizard() {
     }).start();
   }, [done, total, bar, hareket]);
 
-  // Ekran zemini seçilen kapağın rengine doğru ısınır
-  const [renk, setRenk] = useState({ from: C.bg, to: C.bg });
-  const zemin = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const hedef = answers.tur ? ton(covers[coverId].color) : C.bg;
-    setRenk((r) => ({ from: r.to, to: hedef }));
-    zemin.setValue(0);
-    Animated.timing(zemin, {
-      toValue: 1,
-      duration: hareket ? 600 : 0,
-      useNativeDriver: false,
-    }).start();
-  }, [coverId, answers.tur, zemin, hareket]);
+  const background = answers.tur ? ton(covers[coverId].color) : C.bg;
 
   function geri() {
     const answered = askable(answers).filter((q) => answers[q.id]);
@@ -419,10 +407,7 @@ export default function Wizard() {
     router.replace("/create");
   }
 
-  const zeminRengi = zemin.interpolate({
-    inputRange: [0, 1],
-    outputRange: [renk.from, renk.to],
-  });
+  const zeminRengi = background;
 
   if (hazirlik >= 0) {
     const adimlar = [
@@ -435,7 +420,11 @@ export default function Wizard() {
         <SafeAreaView
           style={{ flex: 1, padding: 22, justifyContent: "center" }}
         >
-          <KapakOnizleme coverId={coverId} category={plan.category} photoId={plan.photoId} />
+          <KapakOnizleme
+            coverId={coverId}
+            category={plan.category}
+            photoId={plan.photoId}
+          />
           <Heading style={{ marginTop: 28 }}>
             {buyukHarf(davetAdi(answers))} hazırlanıyor
           </Heading>
@@ -522,7 +511,11 @@ export default function Wizard() {
           keyboardShouldPersistTaps="handled"
         >
           {!!answers.tur && (
-            <KapakOnizleme coverId={coverId} category={plan.category} photoId={plan.photoId} />
+            <KapakOnizleme
+              coverId={coverId}
+              category={plan.category}
+              photoId={plan.photoId}
+            />
           )}
           <Animated.View
             key={question.id}

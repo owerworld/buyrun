@@ -43,30 +43,30 @@ const tur =
     t.includes(a.tur ?? "");
 /** Havası kendi sorusundan belli olan türler: "Nasıl bir hava olsun?" sorulmaz. */
 const HAVASIZ = ["sunnet", "kina", "asker", "evpartisi", "mezuniyet"];
-const HAVA_KARSILIGI: Record<string, Record<string, string>> = {
-  sunakis: { mevlid: "sik", eglence: "cosku", ikisi: "cosku", sofra: "sicakhava" },
-  kinatarz: { modern: "cosku" },
-  askakis: { kina: "cosku", davul: "cosku", konvoy: "cosku", yemek: "sicakhava" },
-  evtur: { hayirli: "sicakhava", parti: "cosku", ikisi: "sicakhava" },
-  mzkutla: { parti: "cosku", yemek: "sik", aile: "sicakhava" },
-};
-function havaOf(a: Answers) {
-  if (a.hava) return a.hava;
-  for (const [soru, karsilik] of Object.entries(HAVA_KARSILIGI))
-    if (karsilik[a[soru] ?? ""]) return karsilik[a[soru]];
-  return "";
-}
-
 /** Davetin adı, uygulamanın "sen" diliyle: "sünnet davetiyen", "baby shower davetin". */
 export function davetAdi(a: Answers) {
   const ad: Record<string, string> = {
-    dugun: "düğün davetiyen", kina: "kına davetiyen", sunnet: "sünnet davetiyen",
-    babyshower: "baby shower davetin", disbugdayi: "diş buğdayı davetin", mevlid: "mevlid davetin",
-    iftar: "iftar davetin", yemek: "yemek davetin", mezuniyet: "mezuniyet davetin", bulusma: "buluşma davetin",
+    dugun: "düğün davetiyen",
+    kina: "kına davetiyen",
+    sunnet: "sünnet davetiyen",
+    babyshower: "baby shower davetin",
+    disbugdayi: "diş buğdayı davetin",
+    mevlid: "mevlid davetin",
+    iftar: "iftar davetin",
+    yemek: "yemek davetin",
+    mezuniyet: "mezuniyet davetin",
+    bulusma: "buluşma davetin",
   };
-  if (a.tur === "dogumgunu") return a.surpriz === "evet" ? "sürpriz parti davetin" : "doğum günü davetin";
-  if (a.tur === "asker") return a.askyon === "karsilama" ? "hoş geldin davetin" : "uğurlama davetin";
-  if (a.tur === "evpartisi") return a.evtur === "hayirli" ? "ev hayırlısı davetin" : "ev partisi davetin";
+  if (a.tur === "dogumgunu")
+    return a.surpriz === "evet"
+      ? "sürpriz parti davetin"
+      : "doğum günü davetin";
+  if (a.tur === "asker")
+    return a.askyon === "karsilama" ? "hoş geldin davetin" : "uğurlama davetin";
+  if (a.tur === "evpartisi")
+    return a.evtur === "hayirli"
+      ? "ev hayırlısı davetin"
+      : "ev partisi davetin";
   return ad[a.tur ?? ""] ?? "davetin";
 }
 export const buyukHarf = (s: string) =>
@@ -77,7 +77,17 @@ export const soruBasligi = (q: Question, a: Answers) =>
 /** Renkli, coşkulu kapağın yakışmadığı günler: "hava" sorulmaz, neşeli dil sunulmaz. */
 const MANEVI = ["mevlid", "iftar"];
 /** "Manevi ve dualı" dilin sunulduğu türler (web'deki listeyle aynı). */
-const DUALI = ["dugun", "kina", "sunnet", "disbugdayi", "babyshower", "mevlid", "iftar", "asker", "evpartisi"];
+const DUALI = [
+  "dugun",
+  "kina",
+  "sunnet",
+  "disbugdayi",
+  "babyshower",
+  "mevlid",
+  "iftar",
+  "asker",
+  "evpartisi",
+];
 
 type Ton = "zarif" | "sicak" | "neseli" | "manevi";
 /**
@@ -85,19 +95,78 @@ type Ton = "zarif" | "sicak" | "neseli" | "manevi";
  * ile aynı cümleler): mezuniyette "kepler havaya uçacak", askerde "yolu açık olsun".
  */
 const TON_ORNEK: Record<string, Partial<Record<Ton, string>>> = {
-  dugun: { zarif: "Sizleri aramızda görmekten onur duyarız.", sicak: "Bu güzel günde yanımızda olmanızı çok isteriz.", neseli: "Pistte yeriniz hazır, kaçmak yok!", manevi: "Allah'ın izniyle… Hayır dualarınızı bekleriz." },
-  kina: { zarif: "Gelinimizin kınası yakılacak.", sicak: "Kınalar yakılacak, türküler söylenecek.", neseli: "Çalsın davullar, oynasın kızlar!", manevi: "Allah'ın izniyle kınamız yakılacak." },
-  sunnet: { zarif: "Oğlumuzun sünnet düğününe teşriflerinizi bekleriz.", sicak: "Bir sünnet, bir bayram, bir dua…", neseli: "Büyüdüm artık maşallah, çocukluğuma eyvallah!", manevi: "Allah'ın izniyle oğlumuzu sünnet ettiriyoruz." },
-  babyshower: { zarif: "Minik misafirimizi birlikte bekleyelim.", sicak: "Minik ayaklar yolda!", neseli: "Bebek geliyor, parti başlıyor!", manevi: "Allah'ın izniyle minik bir can aramıza katılıyor." },
-  disbugdayi: { zarif: "İlk dişin sevincini paylaşmak isteriz.", sicak: "Minik incimiz göründü!", neseli: "Makas mı, kalem mi? Bebeğimiz mesleğini seçiyor!", manevi: "İlk dişi çıktı, maşallah! Dualarınızı bekleriz." },
-  dogumgunu: { zarif: "Yeni yaşı sevdiklerle karşılayalım.", sicak: "Yeni bir yaş, yeni bir sayfa!", neseli: "Mumları saymayın, sadece gelin!" },
-  mevlid: { zarif: "Mevlid-i Şerif'e teşriflerinizi rica ederiz.", sicak: "Şerbetimiz, lokumumuz sizi bekliyor.", manevi: "Dualarınızla aramızda olmanızı dileriz." },
-  iftar: { zarif: "Sofralarımızı sizinle paylaşmak isteriz.", sicak: "Bir hurma, bir yudum su, bol muhabbet.", manevi: "Oruçlarınız kabul olsun, iftarımıza buyurun." },
-  asker: { zarif: "Yiğidimizi vatan hizmetine uğurluyoruz.", sicak: "Yolu açık, bahtı açık olsun!", neseli: "Tezkereye kadar yok; son halayı birlikte çekelim!", manevi: "Allah'a emanet, dualarla uğurlayalım." },
-  evpartisi: { zarif: "Yeni yuvamızda sizi ağırlamak isteriz.", sicak: "Çayımız demlendi, kapımız açık.", neseli: "Kolileri açtık (çoğunu!), sıra kutlamada!", manevi: "Evimiz hayırlı olsun; dualarınızla buyurun." },
-  yemek: { zarif: "Sofralarımızı sizinle paylaşmak isteriz.", sicak: "Sofra kuruldu, çay demde, muhabbet hazır.", neseli: "Diyetler bir akşamlığına iptal!" },
-  mezuniyet: { zarif: "Yılların emeği bir diplomada buluştu.", sicak: "Okul bitti, hayat başlıyor!", neseli: "Kepler havaya uçacak, siz de orada olun!" },
-  bulusma: { zarif: "Güzel bir buluşmada görüşmek isteriz.", sicak: "Özledik! Bir çay içimi muhabbet.", neseli: "Bahaneler kabul edilmiyor!" },
+  dugun: {
+    zarif: "Sizleri aramızda görmekten onur duyarız.",
+    sicak: "Bu güzel günde yanımızda olmanızı çok isteriz.",
+    neseli: "Pistte yeriniz hazır, kaçmak yok!",
+    manevi: "Allah'ın izniyle… Hayır dualarınızı bekleriz.",
+  },
+  kina: {
+    zarif: "Gelinimizin kınası yakılacak.",
+    sicak: "Kınalar yakılacak, türküler söylenecek.",
+    neseli: "Çalsın davullar, oynasın kızlar!",
+    manevi: "Allah'ın izniyle kınamız yakılacak.",
+  },
+  sunnet: {
+    zarif: "Oğlumuzun sünnet düğününe teşriflerinizi bekleriz.",
+    sicak: "Bir sünnet, bir bayram, bir dua…",
+    neseli: "Büyüdüm artık maşallah, çocukluğuma eyvallah!",
+    manevi: "Allah'ın izniyle oğlumuzu sünnet ettiriyoruz.",
+  },
+  babyshower: {
+    zarif: "Minik misafirimizi birlikte bekleyelim.",
+    sicak: "Minik ayaklar yolda!",
+    neseli: "Bebek geliyor, parti başlıyor!",
+    manevi: "Allah'ın izniyle minik bir can aramıza katılıyor.",
+  },
+  disbugdayi: {
+    zarif: "İlk dişin sevincini paylaşmak isteriz.",
+    sicak: "Minik incimiz göründü!",
+    neseli: "Makas mı, kalem mi? Bebeğimiz mesleğini seçiyor!",
+    manevi: "İlk dişi çıktı, maşallah! Dualarınızı bekleriz.",
+  },
+  dogumgunu: {
+    zarif: "Yeni yaşı sevdiklerle karşılayalım.",
+    sicak: "Yeni bir yaş, yeni bir sayfa!",
+    neseli: "Mumları saymayın, sadece gelin!",
+  },
+  mevlid: {
+    zarif: "Mevlid-i Şerif'e teşriflerinizi rica ederiz.",
+    sicak: "Şerbetimiz, lokumumuz sizi bekliyor.",
+    manevi: "Dualarınızla aramızda olmanızı dileriz.",
+  },
+  iftar: {
+    zarif: "Sofralarımızı sizinle paylaşmak isteriz.",
+    sicak: "Bir hurma, bir yudum su, bol muhabbet.",
+    manevi: "Oruçlarınız kabul olsun, iftarımıza buyurun.",
+  },
+  asker: {
+    zarif: "Yiğidimizi vatan hizmetine uğurluyoruz.",
+    sicak: "Yolu açık, bahtı açık olsun!",
+    neseli: "Tezkereye kadar yok; son halayı birlikte çekelim!",
+    manevi: "Allah'a emanet, dualarla uğurlayalım.",
+  },
+  evpartisi: {
+    zarif: "Yeni yuvamızda sizi ağırlamak isteriz.",
+    sicak: "Çayımız demlendi, kapımız açık.",
+    neseli: "Kolileri açtık (çoğunu!), sıra kutlamada!",
+    manevi: "Evimiz hayırlı olsun; dualarınızla buyurun.",
+  },
+  yemek: {
+    zarif: "Sofralarımızı sizinle paylaşmak isteriz.",
+    sicak: "Sofra kuruldu, çay demde, muhabbet hazır.",
+    neseli: "Diyetler bir akşamlığına iptal!",
+  },
+  mezuniyet: {
+    zarif: "Yılların emeği bir diplomada buluştu.",
+    sicak: "Okul bitti, hayat başlıyor!",
+    neseli: "Kepler havaya uçacak, siz de orada olun!",
+  },
+  bulusma: {
+    zarif: "Güzel bir buluşmada görüşmek isteriz.",
+    sicak: "Özledik! Bir çay içimi muhabbet.",
+    neseli: "Bahaneler kabul edilmiyor!",
+  },
 };
 export function tonOrnegi(tur: string | undefined, ton: string) {
   const s = (TON_ORNEK[tur ?? ""] ?? TON_ORNEK.dugun)[ton as Ton];
@@ -119,16 +188,6 @@ export const TUR_TEPKI: Record<string, string> = {
   yemek: "Afiyet olsun şimdiden! Sofrana davet hazırlıyoruz.",
   mezuniyet: "Tebrikler! Emeklerin kutlanacağı bir davet hazırlayalım.",
   bulusma: "Özlem giderelim! Buluşmaya çağıralım.",
-};
-
-/**
- * Türün ilk kapak fotoğrafı. Fotoğraflar sunucudan gelir (/foto/<id>.jpg, CC0,
- * telifsiz); liste web'deki lib/fotolar.ts ile aynı, /api/foto?tur= ile tamamı alınır.
- */
-const ILK_FOTO: Record<string, string> = {
-  kina: "kina-1", sunnet: "sunnet-1", babyshower: "babyshower-1", disbugdayi: "disbugdayi-1",
-  dogumgunu: "dogumgunu-1", mevlid: "mevlid-1", iftar: "iftar-1", asker: "asker-1",
-  evpartisi: "evpartisi-1", yemek: "yemek-1", mezuniyet: "mezuniyet-1", bulusma: "bulusma-3",
 };
 
 export const QUESTIONS: Question[] = [
@@ -162,7 +221,11 @@ export const QUESTIONS: Question[] = [
       { id: "bebek", label: "Bebeğimiz için" },
       { id: "ev", label: "Yeni evimiz için" },
       { id: "rahmetli", label: "Rahmetlimizin anısına" },
-      { id: "sukur", label: "Şükür için", hint: "Hayırlı bir iş, sağlık, kavuşma" },
+      {
+        id: "sukur",
+        label: "Şükür için",
+        hint: "Hayırlı bir iş, sağlık, kavuşma",
+      },
     ],
   },
   {
@@ -171,9 +234,21 @@ export const QUESTIONS: Question[] = [
     lead: "Bugün kınaların çoğu ikisini birleştiriyor: önce kına yakılıyor, sonra dans.",
     when: tur("kina"),
     options: [
-      { id: "geleneksel", label: "Geleneksel", hint: "Bindallı, kına türküleri, gelin ağlatma" },
-      { id: "hibrit", label: "Gelenek ve eğlence bir arada", hint: "Kına yakılır, sonra müzik ve dans" },
-      { id: "modern", label: "Modern kına partisi", hint: "Koreografi, DJ, konfeti" },
+      {
+        id: "geleneksel",
+        label: "Geleneksel",
+        hint: "Bindallı, kına türküleri, gelin ağlatma",
+      },
+      {
+        id: "hibrit",
+        label: "Gelenek ve eğlence bir arada",
+        hint: "Kına yakılır, sonra müzik ve dans",
+      },
+      {
+        id: "modern",
+        label: "Modern kına partisi",
+        hint: "Koreografi, DJ, konfeti",
+      },
     ],
   },
   {
@@ -192,9 +267,17 @@ export const QUESTIONS: Question[] = [
     title: "Sünnet düğününde neler olacak?",
     when: tur("sunnet"),
     options: [
-      { id: "ikisi", label: "Mevlid de eğlence de", hint: "En yaygını: önce mevlid, sonra eğlence" },
+      {
+        id: "ikisi",
+        label: "Mevlid de eğlence de",
+        hint: "En yaygını: önce mevlid, sonra eğlence",
+      },
       { id: "mevlid", label: "Mevlid ve yemek", hint: "Manevi ve sade" },
-      { id: "eglence", label: "Müzik ve eğlence", hint: "Palyaço, sihirbaz, DJ" },
+      {
+        id: "eglence",
+        label: "Müzik ve eğlence",
+        hint: "Palyaço, sihirbaz, DJ",
+      },
       { id: "sofra", label: "Aile sofrası", hint: "Küçük ve sade" },
     ],
   },
@@ -215,8 +298,16 @@ export const QUESTIONS: Question[] = [
     when: tur("babyshower"),
     options: [
       { id: "aile", label: "Anne-baba adayı" },
-      { id: "sevenler", label: "Arkadaşlar ve aile", hint: "Anne adayının haberi var" },
-      { id: "surpriz", label: "Sürpriz parti", hint: "Davette “çaktırmayın” uyarısı çıkar" },
+      {
+        id: "sevenler",
+        label: "Arkadaşlar ve aile",
+        hint: "Anne adayının haberi var",
+      },
+      {
+        id: "surpriz",
+        label: "Sürpriz parti",
+        hint: "Davette “çaktırmayın” uyarısı çıkar",
+      },
     ],
   },
   {
@@ -237,7 +328,11 @@ export const QUESTIONS: Question[] = [
       { id: "cocuk", label: "Bir çocuğun" },
       { id: "genc", label: "Bir gencin", hint: "13–25 yaş" },
       { id: "yetiskin", label: "Bir yetişkinin" },
-      { id: "buyuk", label: "Bir büyüğümüzün", hint: "Annemiz, babamız, dedemiz, ninemiz" },
+      {
+        id: "buyuk",
+        label: "Bir büyüğümüzün",
+        hint: "Annemiz, babamız, dedemiz, ninemiz",
+      },
     ],
   },
   {
@@ -246,7 +341,11 @@ export const QUESTIONS: Question[] = [
     when: tur("dogumgunu"),
     options: [
       { id: "hayir", label: "Hayır, haberi var" },
-      { id: "evet", label: "Evet, sürpriz!", hint: "Davette “çaktırmayın” uyarısı çıkar" },
+      {
+        id: "evet",
+        label: "Evet, sürpriz!",
+        hint: "Davette “çaktırmayın” uyarısı çıkar",
+      },
     ],
   },
   {
@@ -285,10 +384,28 @@ export const QUESTIONS: Question[] = [
     lead: "Pek çok yörede askere gidene kına yakılır, davul zurna çalar.",
     when: tur("asker"),
     options: [
-      { id: "kina", label: "Kına ve davul zurna", hint: "Geleneksel asker gecesi", when: (a) => a.askyon !== "karsilama" },
-      { id: "davul", label: "Davul zurnayla karşılama", when: (a) => a.askyon === "karsilama" },
-      { id: "yemek", label: "Yemek", hint: "Uğurlama ya da hoş geldin sofrası" },
-      { id: "konvoy", label: "Konvoyla uğurlama", hint: "Otogara ya da havalimanına", when: (a) => a.askyon !== "karsilama" },
+      {
+        id: "kina",
+        label: "Kına ve davul zurna",
+        hint: "Geleneksel asker gecesi",
+        when: (a) => a.askyon !== "karsilama",
+      },
+      {
+        id: "davul",
+        label: "Davul zurnayla karşılama",
+        when: (a) => a.askyon === "karsilama",
+      },
+      {
+        id: "yemek",
+        label: "Yemek",
+        hint: "Uğurlama ya da hoş geldin sofrası",
+      },
+      {
+        id: "konvoy",
+        label: "Konvoyla uğurlama",
+        hint: "Otogara ya da havalimanına",
+        when: (a) => a.askyon !== "karsilama",
+      },
     ],
   },
   {
@@ -316,8 +433,16 @@ export const QUESTIONS: Question[] = [
     title: "Nasıl bir ev daveti?",
     when: tur("evpartisi"),
     options: [
-      { id: "hayirli", label: "Ev hayırlısı", hint: "Büyüklerle, çay ve sohbet" },
-      { id: "parti", label: "Ev partisi", hint: "Arkadaşlarla, müzik ve eğlence" },
+      {
+        id: "hayirli",
+        label: "Ev hayırlısı",
+        hint: "Büyüklerle, çay ve sohbet",
+      },
+      {
+        id: "parti",
+        label: "Ev partisi",
+        hint: "Arkadaşlarla, müzik ve eğlence",
+      },
       { id: "ikisi", label: "İkisi bir arada" },
     ],
   },
@@ -327,8 +452,16 @@ export const QUESTIONS: Question[] = [
     when: tur("yemek"),
     options: [
       { id: "ozlem", label: "Sebepsiz, özledik" },
-      { id: "kutlama", label: "Bir kutlama", hint: "Terfi, yıl dönümü, güzel bir haber" },
-      { id: "tanisma", label: "Tanışma yemeği", hint: "Aileler, yeni komşular" },
+      {
+        id: "kutlama",
+        label: "Bir kutlama",
+        hint: "Terfi, yıl dönümü, güzel bir haber",
+      },
+      {
+        id: "tanisma",
+        label: "Tanışma yemeği",
+        hint: "Aileler, yeni komşular",
+      },
       { id: "bayram", label: "Bayram sofrası" },
     ],
   },
@@ -362,8 +495,16 @@ export const QUESTIONS: Question[] = [
     title: "Davetin nasıl konuşsun?",
     titleOf: (a) => `${buyukHarf(davetAdi(a))} nasıl konuşsun?`,
     options: [
-      { id: "zarif", label: "Zarif ve ölçülü", hintOf: (a) => tonOrnegi(a.tur, "zarif") },
-      { id: "sicak", label: "Sıcak ve içten", hintOf: (a) => tonOrnegi(a.tur, "sicak") },
+      {
+        id: "zarif",
+        label: "Zarif ve ölçülü",
+        hintOf: (a) => tonOrnegi(a.tur, "zarif"),
+      },
+      {
+        id: "sicak",
+        label: "Sıcak ve içten",
+        hintOf: (a) => tonOrnegi(a.tur, "sicak"),
+      },
       {
         id: "neseli",
         label: "Neşeli ve esprili",
@@ -464,22 +605,23 @@ export function planFromAnswers(a: Answers): {
   /** Türe uygun kapak fotoğrafı; düğünde boş (çizim kapak) */
   photoId: string;
 } {
-  // İstenen hava her zaman kazanır; yoksa türün doğal karşılığı (web'deki kuralla aynı)
-  let coverId: CoverId = "bloom";
-  if (isToren(a))
-    coverId =
-      a.stil === "modern"
-        ? "midnight"
-        : a.stil === "klasik"
-          ? "cherry"
-          : "bloom";
-  else if (a.tur === "iftar") coverId = "midnight";
-  else if (a.tur === "mevlid") coverId = "bloom";
-  else if (havaOf(a) === "cosku") coverId = "cherry";
-  else if (havaOf(a) === "sik") coverId = "midnight";
-  else if (havaOf(a) === "sicakhava") coverId = "bloom";
-  else if (a.tur === "dogumgunu" || a.tur === "evpartisi") coverId = "cherry";
-  else if (a.tur === "yemek" || a.tur === "bulusma") coverId = "midnight";
+  // Sihirbazın gerçek cevap kimliklerinden türe uygun özgün kapak seçilir.
+  const selected: Record<string, CoverId> = {
+    dugun: a.stil === "klasik" ? "olive" : "arch",
+    kina: "henna",
+    sunnet: "nazar",
+    babyshower: "flower",
+    disbugdayi: "wheat",
+    mevlid: "rose",
+    iftar: "moon",
+    dogumgunu: a.dgkim === "cocuk" ? "ribbon" : "chess",
+    mezuniyet: a.mzkutla === "parti" ? "neon" : "film",
+    asker: a.askyon === "karsilama" ? "welcomeback" : "flag",
+    evpartisi: a.evtur === "hayirli" ? "home" : "disco",
+    yemek: a.hava === "sik" ? "cobalt" : "citrus",
+    bulusma: "paper",
+  };
+  const coverId: CoverId = selected[a.tur || ""] || "sunset";
   return {
     coverId: coverId in covers ? coverId : "cherry",
     category:
@@ -487,27 +629,98 @@ export function planFromAnswers(a: Answers): {
         ? "Askerden dönüş"
         : (CATEGORY_OF[a.tur ?? ""] ?? "Buluşma"),
     request: a.istek && a.istek !== "yok" ? a.istek : "",
-    photoId: ILK_FOTO[a.tur ?? ""] ?? "",
+    photoId: "",
   };
 }
 
 /** Türe özel sorulara karşılık (web'deki lib/sozler.ts ile aynı). */
 export const SORU_TEPKI: Record<string, Record<string, string>> = {
-  kinatarz: { geleneksel: "Bindallılar, türküler… Geleneğe yakışır bir davet olacak.", hibrit: "Önce kına, sonra dans!", modern: "Pist hazır, konfetiler hazır!" },
-  sunyas: { bebek: "Minik şehzade! Metni ailenin ağzından yazacağız.", kucuk: "Şehzademiz davetine kendi ağzından da seslenebilir!", buyuk: "Şehzademiz davetine kendi ağzından da seslenebilir!" },
-  sunakis: { ikisi: "Önce mevlid, sonra eğlence. Davette ikisi de yazacak.", mevlid: "Mevlid-i Şerif davette yer alacak.", eglence: "Eğlence dolu bir gün, not aldık!", sofra: "Sade ve sıcak bir sofra." },
-  bscins: { kiz: "Bir kız bebek, ne güzel!", erkek: "Bir erkek bebek, ne güzel!", sir: "Sır kalsın; davetliler tahminini yazacak." },
-  bsduzen: { surpriz: "Şşşt! Davette “çaktırmayın” uyarısı çıkacak.", aile: "Not aldık.", sevenler: "Ne güzel bir jest!" },
-  meslek: { evet: "Makas mı, kalem mi? Davette de soracağız!", hayir: "Buğday ve sofra, sade ve güzel." },
-  dgkim: { cocuk: "Çocuklara göre neşeli bir dil kuracağız.", genc: "Genç ve enerjik bir dil geliyor.", yetiskin: "Not aldık.", buyuk: "Büyüğümüze yakışır, saygılı bir dil kuracağız." },
-  surpriz: { evet: "Şşşt! Davette “çaktırmayın” uyarısı çıkacak.", hayir: "Not aldık." },
-  okul: { ilk: "Minik mezunumuza tebrikler!", lise: "Lise bitti, yeni yol başlıyor!", uni: "Kepler havaya!", yuksek: "Tebrikler, emeğe saygı!" },
-  mzkutla: { yemek: "Törenden sonra sofrada buluşulacak.", parti: "Mezuniyet partisi, harika!", aile: "Aile sofrasında, sıcacık." },
-  askyon: { ugurlama: "Yolu açık olsun!", karsilama: "Hoş geldin askerimiz! Tezkere kutlaması hazırlanıyor." },
-  askakis: { kina: "Kınası yakılacak, davul zurna çalacak!", davul: "Davul zurnayla karşılanacak!", yemek: "Sofra kuruluyor.", konvoy: "Konvoy bilgisi davette yazacak." },
-  ikram: { yemek: "Mevlidin ardından yemek, not aldık.", lokma: "Lokma, helva ve şerbet… Geleneğe yakışır.", cay: "Çay ve kurabiye, not aldık." },
-  iftaryer: { ev: "Ev sofrası, en güzeli.", restoran: "Not aldık.", bahce: "Açık havada iftar, ne güzel!" },
-  evtur: { hayirli: "Ev hayırlısı: büyüklere yakışır, sıcak bir davet.", parti: "Ev partisi, müzik hazır!", ikisi: "Hem hayırlı olsun hem eğlence!" },
-  yemekneden: { ozlem: "Özlem gidermeye en güzel bahane!", kutlama: "Güzel haberler kutlanır!", tanisma: "Tanışmaya en güzel bahane: bir sofra.", bayram: "Bayram sofrası, el öpmeye hazır olun!" },
-  kimler: { okul: "Eski dostlar bir araya geliyor!", is: "Mesai dışında buluşma, harika.", aile: "Hasret giderilecek.", komsu: "Komşuluk en güzel akrabalık." },
+  kinatarz: {
+    geleneksel: "Bindallılar, türküler… Geleneğe yakışır bir davet olacak.",
+    hibrit: "Önce kına, sonra dans!",
+    modern: "Pist hazır, konfetiler hazır!",
+  },
+  sunyas: {
+    bebek: "Minik şehzade! Metni ailenin ağzından yazacağız.",
+    kucuk: "Şehzademiz davetine kendi ağzından da seslenebilir!",
+    buyuk: "Şehzademiz davetine kendi ağzından da seslenebilir!",
+  },
+  sunakis: {
+    ikisi: "Önce mevlid, sonra eğlence. Davette ikisi de yazacak.",
+    mevlid: "Mevlid-i Şerif davette yer alacak.",
+    eglence: "Eğlence dolu bir gün, not aldık!",
+    sofra: "Sade ve sıcak bir sofra.",
+  },
+  bscins: {
+    kiz: "Bir kız bebek, ne güzel!",
+    erkek: "Bir erkek bebek, ne güzel!",
+    sir: "Sır kalsın; davetliler tahminini yazacak.",
+  },
+  bsduzen: {
+    surpriz: "Şşşt! Davette “çaktırmayın” uyarısı çıkacak.",
+    aile: "Not aldık.",
+    sevenler: "Ne güzel bir jest!",
+  },
+  meslek: {
+    evet: "Makas mı, kalem mi? Davette de soracağız!",
+    hayir: "Buğday ve sofra, sade ve güzel.",
+  },
+  dgkim: {
+    cocuk: "Çocuklara göre neşeli bir dil kuracağız.",
+    genc: "Genç ve enerjik bir dil geliyor.",
+    yetiskin: "Not aldık.",
+    buyuk: "Büyüğümüze yakışır, saygılı bir dil kuracağız.",
+  },
+  surpriz: {
+    evet: "Şşşt! Davette “çaktırmayın” uyarısı çıkacak.",
+    hayir: "Not aldık.",
+  },
+  okul: {
+    ilk: "Minik mezunumuza tebrikler!",
+    lise: "Lise bitti, yeni yol başlıyor!",
+    uni: "Kepler havaya!",
+    yuksek: "Tebrikler, emeğe saygı!",
+  },
+  mzkutla: {
+    yemek: "Törenden sonra sofrada buluşulacak.",
+    parti: "Mezuniyet partisi, harika!",
+    aile: "Aile sofrasında, sıcacık.",
+  },
+  askyon: {
+    ugurlama: "Yolu açık olsun!",
+    karsilama: "Hoş geldin askerimiz! Tezkere kutlaması hazırlanıyor.",
+  },
+  askakis: {
+    kina: "Kınası yakılacak, davul zurna çalacak!",
+    davul: "Davul zurnayla karşılanacak!",
+    yemek: "Sofra kuruluyor.",
+    konvoy: "Konvoy bilgisi davette yazacak.",
+  },
+  ikram: {
+    yemek: "Mevlidin ardından yemek, not aldık.",
+    lokma: "Lokma, helva ve şerbet… Geleneğe yakışır.",
+    cay: "Çay ve kurabiye, not aldık.",
+  },
+  iftaryer: {
+    ev: "Ev sofrası, en güzeli.",
+    restoran: "Not aldık.",
+    bahce: "Açık havada iftar, ne güzel!",
+  },
+  evtur: {
+    hayirli: "Ev hayırlısı: büyüklere yakışır, sıcak bir davet.",
+    parti: "Ev partisi, müzik hazır!",
+    ikisi: "Hem hayırlı olsun hem eğlence!",
+  },
+  yemekneden: {
+    ozlem: "Özlem gidermeye en güzel bahane!",
+    kutlama: "Güzel haberler kutlanır!",
+    tanisma: "Tanışmaya en güzel bahane: bir sofra.",
+    bayram: "Bayram sofrası, el öpmeye hazır olun!",
+  },
+  kimler: {
+    okul: "Eski dostlar bir araya geliyor!",
+    is: "Mesai dışında buluşma, harika.",
+    aile: "Hasret giderilecek.",
+    komsu: "Komşuluk en güzel akrabalık.",
+  },
 };

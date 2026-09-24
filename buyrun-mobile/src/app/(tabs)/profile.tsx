@@ -1,3 +1,4 @@
+import { LOCAL_PREVIEW, API_URL } from "../../lib/api";
 import { coverSource } from "../../lib/cover";
 import React, { useState } from "react";
 import {
@@ -24,7 +25,7 @@ import {
   Txt,
   shared,
 } from "../../components/ui";
-import { C, F, covers, type CoverId } from "../../lib/theme";
+import { C, F } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 import { dateText } from "../../lib/model";
 
@@ -222,7 +223,6 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.backupList}>
               {plans.map((event) => {
-                const cover = covers[event.coverId as CoverId] || covers.cherry;
                 return (
                   <View key={event.id} style={styles.backupCard}>
                     <View style={styles.backupTop}>
@@ -309,6 +309,18 @@ export default function ProfileScreen() {
             buyrun. · Bahanesi bizden, buluşması sizden.
           </Txt>
         </View>
+        {LOCAL_PREVIEW && (
+          <View style={[shared.card, { margin: 22, gap: 10 }]}>
+            <Txt style={{ fontFamily: F.bold }}>Yerel test sürümü</Txt>
+            <Txt style={{ fontSize: 12, color: C.muted, lineHeight: 20 }}>
+              Telefonun ve bilgisayarın aynı Wi-Fi ağına bağlı olmalı. Sunucu
+              bilgisayarda açık kaldığı sürece davetlerini yönetebilirsin.
+            </Txt>
+            <Txt selectable style={{ fontSize: 11, color: C.muted }}>
+              {API_URL}
+            </Txt>
+          </View>
+        )}
       </ScrollView>
 
       <Modal

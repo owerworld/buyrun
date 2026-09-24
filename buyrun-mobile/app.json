@@ -3,13 +3,14 @@
     "name": "Buyrun",
     "slug": "buyrun-mobile",
     "owner": "owerworlds-team",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.buyrun.mobile"
+      "bundleIdentifier": "app.buyrun.mobile",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +18,8 @@
         "foregroundImage": "./assets/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "app.buyrun.mobile"
+      "package": "app.buyrun.mobile",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -36,7 +38,8 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
-      ]
+      ],
+      "./plugins/withLocalPreview"
     ],
     "scheme": "buyrun",
     "extra": {

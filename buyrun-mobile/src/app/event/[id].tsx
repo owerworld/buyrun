@@ -1,8 +1,9 @@
-import { coverSource } from "../../lib/cover";
+import { ShareKit } from "../../components/ShareKit";
+import { PlanTools } from "../../components/PlanTools";
+import { InvitationArt } from "../../components/InvitationArt";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Linking,
@@ -15,7 +16,6 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import * as Clipboard from "expo-clipboard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -29,14 +29,7 @@ import {
   Txt,
   shared,
 } from "../../components/ui";
-import {
-  C,
-  F,
-  covers,
-  statusColors,
-  statusLabels,
-  type CoverId,
-} from "../../lib/theme";
+import { C, F, statusColors, statusLabels } from "../../lib/theme";
 import {
   counts,
   dateText,
@@ -46,12 +39,13 @@ import {
 } from "../../lib/model";
 import { useStore } from "../../lib/store";
 
-type Section = "invite" | "guests" | "summary";
+type Section = "invite" | "guests" | "summary" | "tools";
 const statuses: GuestStatus[] = ["going", "maybe", "pending", "declined"];
 const sections: { id: Section; label: string }[] = [
   { id: "invite", label: "Davetiye" },
   { id: "guests", label: "Davetliler" },
   { id: "summary", label: "Özet" },
+  { id: "tools", label: "Planla" },
 ];
 const statusIcons = {
   going: "checkmark-circle-outline",
@@ -250,7 +244,6 @@ export default function EventScreen() {
       </View>
     );
 
-  const cover = covers[event.coverId as CoverId] || covers.cherry;
   const summary = counts(event);
   const distribution = {
     going: summary.going,
@@ -263,7 +256,6 @@ export default function EventScreen() {
       (filter === "all" || guest.status === filter) &&
       (!search.trim() || fold(guest.name).includes(fold(search.trim()))),
   );
-  const source = coverSource(event);
   const publicLink = !event.demo ? event.shareUrl : undefined;
   const capacity = event.capacity && event.capacity > 0 ? event.capacity : null;
 
@@ -277,64 +269,37 @@ export default function EventScreen() {
           paddingBottom: Math.max(insets.bottom, 18) + 18,
         }}
       >
-        <ImageBackground
-          source={source}
-          resizeMode="cover"
-          imageStyle={{ width: "100%", height: "100%" }}
-          style={[
-            styles.hero,
-            { paddingTop: insets.top + 14, backgroundColor: cover.color },
-          ]}
-        >
-          <LinearGradient
-            colors={["#15151E35", "#15151E00", "#15151EEB"]}
-            locations={[0, 0.36, 1]}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={[shared.between, { paddingHorizontal: 20 }]}>
+        <View style={{ paddingTop: insets.top + 8 }}>
+          <View
+            style={[
+              shared.between,
+              { paddingHorizontal: 20, paddingBottom: 12 },
+            ]}
+          >
             <IconButton
               name="arrow-back"
               label="Planlarıma dön"
               onPress={goBack}
-              style={styles.heroButton}
             />
-            <Pressable
-              accessibilityRole="button"
+            <Txt style={{ fontFamily: F.bold }}>Davet alanın</Txt>
+            <IconButton
+              name="create-outline"
+              label="Davetiyeyi düzenle"
               onPress={() =>
                 router.push({ pathname: "/create", params: { id: event.id } })
               }
-              style={styles.editButton}
-            >
-              <Icon name="create-outline" size={17} color={C.white} />
-              <Txt style={styles.editButtonText}>Düzenle</Txt>
-            </Pressable>
+            />
           </View>
-          <View style={styles.heroBottom}>
-            <View style={styles.categoryBadge}>
-              <Txt style={styles.categoryText}>{event.category}</Txt>
-            </View>
-            <Txt
-              accessibilityRole="header"
-              accessibilityLabel={event.title}
-              numberOfLines={4}
-              adjustsFontSizeToFit
-              minimumFontScale={0.78}
-              style={styles.heroTitle}
-            >
-              {event.title}
-            </Txt>
-            <View style={styles.hostRow}>
-              <View style={styles.hostAvatar}>
-                <Txt style={styles.hostInitial}>
-                  {event.hostName.charAt(0).toLocaleUpperCase("tr") || "B"}
-                </Txt>
-              </View>
-              <Txt style={styles.hostText}>
-                {event.hostName || "Ev sahibi"} davet ediyor.
-              </Txt>
-            </View>
+          <View
+            style={{
+              marginHorizontal: 18,
+              borderRadius: 28,
+              overflow: "hidden",
+            }}
+          >
+            <InvitationArt event={event} height={380} />
           </View>
-        </ImageBackground>
+        </View>
 
         <View style={styles.tabs} accessibilityRole="tablist">
           {sections.map((item) => (
@@ -393,8 +358,10 @@ export default function EventScreen() {
             </Pressable>
           )}
 
+          {section === "tools" && <PlanTools event={event} />}
           {section === "invite" && (
             <>
+              <ShareKit event={event} />
               <View style={styles.detailsCard}>
                 <View style={styles.detailRow}>
                   <View

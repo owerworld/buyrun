@@ -1,3 +1,4 @@
+import { studioCovers } from "./catalog";
 export const C = {
   bg: "#F8F8F5",
   ink: "#202025",
@@ -12,8 +13,14 @@ export const C = {
   red: "#AD4949",
   soft: "#EFEFEA",
 };
-export const F = { regular: "Manrope", bold: "ManropeBold" };
+export const F = {
+  regular: "Manrope",
+  bold: "ManropeBold",
+  serif: "Cormorant",
+  display: "Playfair",
+};
 export const covers = {
+  ...studioCovers,
   cherry: {
     image: require("../../assets/covers/cherry.png"),
     label: "Kiraz gibi",
@@ -55,6 +62,9 @@ export const categories = [
   "İftar",
   "Asker uğurlaması",
   "Askerden dönüş",
+  "Bekârlığa veda",
+  "Cinsiyet partisi",
+  "Hac uğurlaması",
 ];
 export const statusLabels = {
   going: "Geliyor",

@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const privatePaths = ["/d/:path*", "/g/:path*", "/m/:path*", "/p/:path*", "/yonet/:path*", "/onizleme/:path*", "/etkinlik/:path+"];
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1", ...(process.env.NEXT_PUBLIC_SITE_URL ? [new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname] : [])],
   serverExternalPackages: ["@electric-sql/pglite"],
   // Link önizleme posterinin yazı tipleri sunucu paketine dahil edilsin
   outputFileTracingIncludes: { "/**": ["./assets/fonts/*.ttf"] },

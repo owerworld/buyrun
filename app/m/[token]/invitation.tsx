@@ -1,4 +1,6 @@
 "use client";
+import { GuestSocial } from "./social";
+import { COVER_CATALOG } from "@/lib/coverCatalog";
 import { useEffect, useState } from "react";
 import styles from "./invitation.module.css";
 import { EventHero } from "@/components/EventHero";
@@ -104,7 +106,9 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
   }
   const date=new Date(`${event.date}T12:00:00`);
   const dateLabel=date.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"});
-  const cover=["cherry","midnight","bloom"].includes(event.coverId)?event.coverId:"cherry";
+  const cover=event.coverId;
+  const art=COVER_CATALOG[cover];
+  const illustrated=art && !cover.startsWith("photo-") && !event.coverData && !event.photoId;
   // Web sihirbazıyla hazırlanan davet kendi tasarımını taşır; uygulamanınki fotoğraflı kapakla açılır
   return <main className={`${styles.page}${design?` ${styles.tasarimli}`:""}`}>
     <div className={styles.shell}>
@@ -113,9 +117,9 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
       {design ? <EventHero title={event.title} category={event.category} font={design.font} ornament={design.ornament} pattern={design.pattern} photo={event.photoId} credit/> :
       <section className={`${styles.cover} ${styles[cover]}`} aria-label="Etkinlik kapağı">
         {/* Local generated artwork or an explicitly selected photo. No external tracking requests. */}
-        <img src={event.coverData || (event.photoId ? fotoSrc(event.photoId) : `/mobile-covers/${cover}.png`)} alt="" className={styles.coverImage}/>
-        <div className={styles.coverShade}/><span className={styles.badge}>SEN DE DAVETLİSİN ↗</span>
-        <div className={styles.coverBottom}><span>{event.category}</span><h1>{event.title}</h1></div>
+        <img src={event.coverData || (event.photoId ? fotoSrc(event.photoId) : art?.src || `/mobile-covers/${cover}.png`)} alt="" className={styles.coverImage}/>
+        {!illustrated && <div className={styles.coverShade}/>}<span className={styles.badge}>SEN DE DAVETLİSİN ↗</span>
+        <div className={styles.coverBottom} style={illustrated?{color:art.text,bottom:"28%",textAlign:"center",left:24,right:24}:undefined}><span>{event.category}</span><h1 style={illustrated?{color:art.text,fontFamily:art.font==="serif"?"var(--font-display), Georgia, serif":undefined}:undefined}>{event.title}</h1></div>
       </section>}
       {ekler?.uyari&&<p className={styles.surpriz} role="note"><span aria-hidden="true">🤫</span>{ekler.uyari}</p>}
       <section id="invitation" className={styles.details}>
@@ -142,6 +146,7 @@ export default function Invitation({event,design,place,dayState,forecast,inviteT
           <p className={styles.privacy}>{t.privacy}</p>
         </form>
       </section>
+      <GuestSocial inviteToken={inviteToken} guestToken={guestToken}/>
       <footer className={styles.footer}>Buluşmaya bir <b>buyrun</b> yeter. ✳</footer>
     </div>
   </main>;

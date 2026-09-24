@@ -1,0 +1,125 @@
+import React from "react";
+import { ImageBackground, StyleSheet, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { covers, F, type CoverId } from "../lib/theme";
+import { coverSource } from "../lib/cover";
+import { dateText, type EventInput } from "../lib/model";
+import { Txt } from "./ui";
+export function InvitationArt({
+  event,
+  height = 420,
+  mini = false,
+}: {
+  event: Partial<EventInput> & { coverId: string };
+  height?: number;
+  mini?: boolean;
+}) {
+  const c = covers[event.coverId as CoverId] || covers.cherry;
+  const illustrated =
+    "collection" in c &&
+    c.collection === "İllüstrasyon" &&
+    !event.coverData &&
+    !event.photoId;
+  const text = illustrated ? c.text : "#FFF";
+  const serif = "font" in c && c.font === "serif";
+  const size = mini ? Math.min(24, Math.round(height * 0.1)) : 42;
+  return (
+    <ImageBackground
+      accessible={false}
+      source={coverSource(event)}
+      resizeMode="cover"
+      style={{
+        height,
+        width: "100%",
+        overflow: "hidden",
+        backgroundColor: c.color,
+      }}
+      imageStyle={{ width: "100%", height: "100%" }}
+    >
+      {!illustrated && (
+        <LinearGradient
+          colors={["#00000012", "#00000000", "#000000BB"]}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
+      <View
+        style={{
+          flex: 1,
+          padding: mini ? 14 : 27,
+          justifyContent: illustrated ? "center" : "flex-end",
+          alignItems: illustrated ? "center" : "flex-start",
+          paddingTop: illustrated ? height * 0.2 : 20,
+          paddingBottom: illustrated ? height * 0.18 : mini ? 20 : 28,
+        }}
+      >
+        <Txt
+          style={{
+            color: text,
+            fontSize: mini ? 8 : 10,
+            letterSpacing: 2,
+            fontFamily: F.bold,
+            textAlign: illustrated ? "center" : "left",
+            marginBottom: mini ? 10 : 17,
+          }}
+        >
+          {(event.category || c.category).toLocaleUpperCase("tr")}
+        </Txt>
+        <Txt
+          numberOfLines={mini ? 4 : 5}
+          adjustsFontSizeToFit
+          minimumFontScale={0.65}
+          style={{
+            color: text,
+            fontFamily: serif ? F.serif : F.bold,
+            fontSize: size,
+            lineHeight: size * (serif ? 1.03 : 1.1),
+            letterSpacing: serif ? -0.5 : -1.3,
+            textAlign: illustrated ? "center" : "left",
+          }}
+        >
+          {event.title || c.caption}
+        </Txt>
+        {!mini && (
+          <>
+            <View
+              style={{
+                width: 34,
+                height: 1,
+                backgroundColor: text,
+                opacity: 0.55,
+                marginVertical: 20,
+              }}
+            />
+            <Txt
+              style={{
+                color: text,
+                fontSize: 11,
+                textAlign: illustrated ? "center" : "left",
+                lineHeight: 19,
+              }}
+            >
+              {event.date ? dateText(event.date) : "Senin günün, senin hikâyen"}
+              {event.date ? " · " + event.time : ""}
+              {event.venue ? "\n" + event.venue : ""}
+            </Txt>
+          </>
+        )}
+      </View>
+      {!mini && (
+        <Txt
+          style={{
+            position: "absolute",
+            bottom: 10,
+            alignSelf: "center",
+            fontSize: 9,
+            color: text,
+            opacity: 0.65,
+            letterSpacing: 1,
+          }}
+        >
+          buyrun ✦
+        </Txt>
+      )}
+    </ImageBackground>
+  );
+}

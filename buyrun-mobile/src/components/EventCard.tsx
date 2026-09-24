@@ -1,9 +1,8 @@
-import { coverSource } from "../lib/cover";
+import { InvitationArt } from "./InvitationArt";
 import React from "react";
-import { ImageBackground, View, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Pressable } from "react-native";
 import { router } from "expo-router";
-import { C, F, covers, type CoverId } from "../lib/theme";
+import { C, F } from "../lib/theme";
 import { counts, dateText, type Party } from "../lib/model";
 import { Txt, Icon } from "./ui";
 export function EventCard({
@@ -13,7 +12,6 @@ export function EventCard({
   event: Party;
   compact?: boolean;
 }) {
-  const cover = covers[event.coverId as CoverId] || covers.cherry;
   const n = counts(event);
   return (
     <Pressable
@@ -32,92 +30,21 @@ export function EventCard({
         opacity: pressed ? 0.9 : 1,
       })}
     >
-      <ImageBackground
-        source={coverSource(event)}
-        imageStyle={{ width: "100%", height: "100%" }}
-        style={{ width: "100%", height: compact ? 225 : 355 }}
-        resizeMode="cover"
-      >
-        <LinearGradient
-          colors={["rgba(0,0,0,.32)", "transparent", "rgba(0,0,0,.1)"]}
-          style={{ flex: 1, padding: 22, justifyContent: "space-between" }}
+      <InvitationArt event={event} height={compact ? 280 : 370} />
+      {event.demo && (
+        <View
+          style={{
+            position: "absolute",
+            top: 12,
+            left: 14,
+            backgroundColor: "#FFFFFFED",
+            padding: 8,
+            borderRadius: 10,
+          }}
         >
-          <View>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 20,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: "rgba(255,255,255,.9)",
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 9,
-                }}
-              >
-                <Txt
-                  style={{
-                    fontSize: 10,
-                    fontFamily: F.bold,
-                    letterSpacing: 0.6,
-                  }}
-                >
-                  {event.category.toLocaleUpperCase("tr")}
-                </Txt>
-              </View>
-              {event.demo && (
-                <View
-                  style={{
-                    backgroundColor: "rgba(0,0,0,.28)",
-                    paddingHorizontal: 8,
-                    paddingVertical: 5,
-                    borderRadius: 7,
-                  }}
-                >
-                  <Txt style={{ fontSize: 10, color: "white" }}>Örnek plan</Txt>
-                </View>
-              )}
-            </View>
-            <Txt
-              numberOfLines={3}
-              adjustsFontSizeToFit
-              minimumFontScale={0.75}
-              style={{
-                fontFamily: F.bold,
-                fontSize: compact ? 28 : 37,
-                lineHeight: compact ? 34 : 43,
-                color: "white",
-                letterSpacing: -1.5,
-                maxWidth: "90%",
-              }}
-            >
-              {event.title}
-            </Txt>
-          </View>
-          <View
-            style={{
-              alignSelf: "flex-start",
-              backgroundColor: C.white,
-              borderRadius: 12,
-              paddingHorizontal: 12,
-              paddingVertical: 9,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <Icon name="calendar-outline" size={16} />
-            <Txt style={{ fontSize: 12, fontFamily: F.bold }}>
-              {dateText(event.date, { day: "numeric", month: "short" })} ·{" "}
-              {event.time}
-            </Txt>
-          </View>
-        </LinearGradient>
-      </ImageBackground>
+          <Txt style={{ fontSize: 10 }}>Örnek plan</Txt>
+        </View>
+      )}
       <View style={{ paddingHorizontal: 17, paddingVertical: 16, gap: 12 }}>
         <View
           style={{

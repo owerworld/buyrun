@@ -8,6 +8,8 @@ import { StoreProvider } from "../lib/store";
 import { C } from "../lib/theme";
 export default function RootLayout() {
   const [loaded, error] = useFonts({
+    Cormorant: require("../../assets/fonts/cormorant-600.ttf"),
+    Playfair: require("../../assets/fonts/playfair-500.ttf"),
     Manrope: require("../../assets/fonts/manrope-500.ttf"),
     ManropeBold: require("../../assets/fonts/manrope-700.ttf"),
   });

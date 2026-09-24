@@ -1,8 +1,7 @@
+import { InvitationArt } from "../components/InvitationArt";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  ImageBackground,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,10 +10,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { coverSource } from "../lib/cover";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Button,
@@ -34,7 +31,12 @@ import { api, ApiError } from "../lib/api";
 import { dateText, type EventInput } from "../lib/model";
 import { useStore } from "../lib/store";
 const DRAFT = DRAFT_KEY;
-const titles = ["Havasını seç.", "Planı güzelleştir.", "Davetiyen hazır."];
+const titles = [
+  "Havasını seç.",
+  "Planı güzelleştir.",
+  "Davetiyen hazır.",
+  "Güzel bir plan başlıyor.",
+];
 export default function Create() {
   const store = useStore();
   const params = useLocalSearchParams<{ cover?: string; id?: string }>();
@@ -155,7 +157,8 @@ function CreateForm() {
     try {
       const not = data.description.trim();
       // Kutudaki metin bizim önceki önerimizse istek değildir; kullanıcının kendi notuysa metne eklenir
-      const kendiNotu = not && not !== oneri.current.son ? not.slice(0, 160) : "";
+      const kendiNotu =
+        not && not !== oneri.current.son ? not.slice(0, 160) : "";
       const { text } = await api.wizardText({
         answers,
         title: data.title.trim(),
@@ -221,7 +224,7 @@ function CreateForm() {
         return;
       }
     }
-    setStep((s) => Math.min(2, s + 1));
+    setStep((s) => Math.min(editing ? 2 : 3, s + 1));
     scroll.current?.scrollTo({ y: 0, animated: true });
   }
   async function choosePhoto() {
@@ -298,7 +301,6 @@ function CreateForm() {
       setSaving(false);
     }
   }
-  const cover = covers[data.coverId as CoverId] || covers.cherry;
   if (!draftReady)
     return (
       <View
@@ -332,7 +334,9 @@ function CreateForm() {
           <Txt style={{ fontFamily: F.bold }}>
             {editing ? "Planı düzenle" : "Yeni bir plan"}
           </Txt>
-          <Txt style={{ color: C.muted, fontSize: 13 }}>{step + 1} / 3</Txt>
+          <Txt style={{ color: C.muted, fontSize: 13 }}>
+            {step + 1} / {editing ? 3 : 4}
+          </Txt>
         </View>
         <View
           style={{
@@ -342,7 +346,7 @@ function CreateForm() {
             paddingBottom: 20,
           }}
         >
-          {[0, 1, 2].map((i) => (
+          {(editing ? [0, 1, 2] : [0, 1, 2, 3]).map((i) => (
             <View
               key={i}
               style={{
@@ -367,6 +371,7 @@ function CreateForm() {
                 "Bir kapakla başla. Gerisi güzel bir hikâye.",
                 "Ne zaman, nerede, kimlerle?",
                 "Son bir göz at. Sonra sevdiklerine gönder.",
+                "Tasarım tamam. Şimdi sevdiklerine yer aç.",
               ][step]
             }
           </Txt>
@@ -388,81 +393,69 @@ function CreateForm() {
           {!!error && <Notice message={error} />}
           {step === 0 && (
             <>
-              <ImageBackground
-                source={coverSource(data)}
-                imageStyle={{ width: "100%", height: "100%" }}
+              <View
                 style={{
-                  width: "100%",
-                  height: 330,
                   borderRadius: 26,
                   overflow: "hidden",
-                  justifyContent: "flex-end",
                   marginBottom: 18,
                 }}
               >
-                <LinearGradient
-                  colors={["transparent", "#0009"]}
-                  style={{ padding: 24, paddingTop: 150 }}
-                >
-                  <Txt
-                    numberOfLines={3}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.75}
-                    style={{
-                      color: "#FFF",
-                      fontFamily: F.bold,
-                      fontSize: 34,
-                      lineHeight: 38,
-                      letterSpacing: -1,
-                    }}
-                  >
-                    {data.title || cover.caption}
-                  </Txt>
-                  <Txt style={{ color: "#FFF", marginTop: 10, fontSize: 12 }}>
-                    senin planın, senin tarzın ✦
-                  </Txt>
-                </LinearGradient>
-              </ImageBackground>
-              <View style={{ flexDirection: "row", gap: 12, marginBottom: 14 }}>
-                {Object.entries(covers).map(([id, c]) => (
-                  <Pressable
-                    key={id}
-                    accessibilityRole="button"
-                    accessibilityLabel={c.label + " kapağını seç"}
-                    accessibilityState={{
-                      selected: data.coverId === id && !data.coverData,
-                    }}
-                    onPress={() => patch({ coverId: id, coverData: null, photoId: "" })}
-                    style={{ flex: 1, gap: 7 }}
-                  >
-                    <View
-                      style={{
-                        padding: 3,
-                        borderWidth: 2,
-                        borderColor:
-                          data.coverId === id && !data.coverData
-                            ? C.ink
-                            : "transparent",
-                        borderRadius: 18,
-                      }}
-                    >
-                      <Image
-                        source={c.image}
-                        style={{ height: 88, width: "100%", borderRadius: 12 }}
-                      />
-                    </View>
-                    <Txt
-                      style={{
-                        fontSize: 11,
-                        textAlign: "center",
-                        color: C.muted,
-                      }}
-                    >
-                      {c.label}
-                    </Txt>
-                  </Pressable>
-                ))}
+                <InvitationArt event={data} height={360} />
               </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12, paddingBottom: 18 }}
+              >
+                {Object.entries(covers)
+                  .filter(
+                    ([id, c]) =>
+                      c.category === data.category || id === data.coverId,
+                  )
+                  .map(([id, c]) => (
+                    <Pressable
+                      key={id}
+                      accessibilityRole="button"
+                      accessibilityLabel={c.label + " tasarımını seç"}
+                      accessibilityState={{
+                        selected:
+                          data.coverId === id &&
+                          !data.coverData &&
+                          !data.photoId,
+                      }}
+                      onPress={() =>
+                        patch({ coverId: id, coverData: null, photoId: "" })
+                      }
+                      style={{ width: 94 }}
+                    >
+                      <View
+                        style={{
+                          borderRadius: 15,
+                          overflow: "hidden",
+                          borderWidth: 2,
+                          borderColor:
+                            data.coverId === id ? C.ink : "transparent",
+                        }}
+                      >
+                        <InvitationArt
+                          event={{ coverId: id }}
+                          height={124}
+                          mini
+                        />
+                      </View>
+                      <Txt
+                        numberOfLines={1}
+                        style={{
+                          fontSize: 10,
+                          marginTop: 7,
+                          textAlign: "center",
+                        }}
+                      >
+                        {c.label}
+                      </Txt>
+                    </Pressable>
+                  ))}
+              </ScrollView>
               <Button
                 tone="white"
                 icon="image-outline"
@@ -484,7 +477,17 @@ function CreateForm() {
                     key={category}
                     label={category}
                     active={data.category === category}
-                    onPress={() => patch({ category })}
+                    onPress={() =>
+                      patch({
+                        category,
+                        coverId:
+                          Object.keys(covers).find(
+                            (id) => covers[id as CoverId].category === category,
+                          ) || data.coverId,
+                        coverData: null,
+                        photoId: "",
+                      })
+                    }
                   />
                 ))}
               </View>
@@ -612,49 +615,9 @@ function CreateForm() {
           )}
           {step === 2 && (
             <>
-              <ImageBackground
-                source={coverSource(data)}
-                imageStyle={{ width: "100%", height: "100%" }}
-                style={{
-                  width: "100%",
-                  height: 380,
-                  borderRadius: 27,
-                  overflow: "hidden",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <LinearGradient
-                  colors={["transparent", "#000B"]}
-                  style={{ padding: 25, paddingTop: 160 }}
-                >
-                  <Txt
-                    style={{ color: "#FFF", fontSize: 12, marginBottom: 12 }}
-                  >
-                    {data.category.toLocaleUpperCase("tr")}
-                  </Txt>
-                  <Heading
-                    numberOfLines={4}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.7}
-                    style={{ color: "#FFF", fontSize: 38, lineHeight: 43 }}
-                  >
-                    {data.title}
-                  </Heading>
-                  <View
-                    style={{
-                      marginTop: 20,
-                      flexDirection: "row",
-                      gap: 7,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Icon name="calendar-outline" color="#FFF" size={18} />
-                    <Txt style={{ color: "#FFF", fontSize: 13 }}>
-                      {dateText(data.date)} · {data.time}
-                    </Txt>
-                  </View>
-                </LinearGradient>
-              </ImageBackground>
+              <View style={{ borderRadius: 27, overflow: "hidden" }}>
+                <InvitationArt event={data} height={440} />
+              </View>
               <View style={{ paddingVertical: 22, gap: 13 }}>
                 <View style={[shared.row, { gap: 12 }]}>
                   <Icon name="location-outline" />
@@ -699,6 +662,86 @@ function CreateForm() {
               )}
             </>
           )}
+          {step === 3 && (
+            <View style={{ gap: 20 }}>
+              <View
+                style={{
+                  backgroundColor: "#ECE6F3",
+                  borderRadius: 25,
+                  padding: 22,
+                  flexDirection: "row",
+                  gap: 18,
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{ width: 100, borderRadius: 13, overflow: "hidden" }}
+                >
+                  <InvitationArt event={data} height={140} mini />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Icon name="sparkles-outline" color="#8062A3" />
+                  <Heading style={{ fontSize: 24, marginTop: 12 }}>
+                    Tam senlik oldu.
+                  </Heading>
+                  <Txt
+                    style={{
+                      fontSize: 12,
+                      lineHeight: 20,
+                      color: C.muted,
+                      marginTop: 7,
+                    }}
+                  >
+                    {data.title}
+                  </Txt>
+                </View>
+              </View>
+              <View style={[shared.card, { gap: 18 }]}>
+                <Txt style={shared.eyebrow}>DAVETİNİN İÇİNDE</Txt>
+                {[
+                  "Kişiselleştirdiğin davetiye",
+                  "Sınırsız bağlantı paylaşımı",
+                  "Katılım takibi ve misafir yanıtları",
+                  "Tarih oylaması, sorular ve duyurular",
+                  "Görsel, QR ve takvim paylaşımı",
+                ].map((t) => (
+                  <View
+                    key={t}
+                    style={{
+                      flexDirection: "row",
+                      gap: 10,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Icon name="checkmark-circle" size={19} color={C.green} />
+                    <Txt style={{ fontSize: 13, flex: 1 }}>{t}</Txt>
+                  </View>
+                ))}
+                <View style={{ height: 1, backgroundColor: C.line }} />
+                <View style={shared.between}>
+                  <Txt style={{ fontFamily: F.bold }}>
+                    Davet başına · tek seferlik
+                  </Txt>
+                  <Heading style={{ fontSize: 29 }}>₺49,99</Heading>
+                </View>
+                <Txt style={{ color: C.muted, fontSize: 12, lineHeight: 20 }}>
+                  Yayın fiyatı ₺49,99. Bu test sürümünde ödeme alınmaz; tüm
+                  özellikleri ücretsiz deneyebilirsin.
+                </Txt>
+              </View>
+              <Txt
+                style={{
+                  fontSize: 12,
+                  color: C.muted,
+                  textAlign: "center",
+                  lineHeight: 20,
+                }}
+              >
+                Davetiyeni sonradan düzenleyebilirsin. Misafirlerin uygulama
+                indirmeden yanıt verebilir.
+              </Txt>
+            </View>
+          )}
         </ScrollView>
         <View
           style={{
@@ -712,11 +755,11 @@ function CreateForm() {
         >
           <Button
             tone="lime"
-            icon={step === 2 ? "checkmark" : "arrow-forward"}
+            icon={step === (editing ? 2 : 3) ? "checkmark" : "arrow-forward"}
             loading={saving || picking}
-            onPress={step === 2 ? save : next}
+            onPress={step === (editing ? 2 : 3) ? save : next}
           >
-            {step === 2
+            {step === (editing ? 2 : 3)
               ? editing
                 ? "Değişiklikleri kaydet"
                 : "Davetiyeyi oluştur"

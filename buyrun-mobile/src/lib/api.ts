@@ -1,6 +1,8 @@
+import type { SocialData, SocialSettings } from "./socialSchema";
 import type { EventInput, Party, Guest } from "./model";
 
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim() || "";
+export const LOCAL_PREVIEW = process.env.EXPO_PUBLIC_LOCAL_PREVIEW === "1";
 const development = typeof __DEV__ !== "undefined" && __DEV__;
 export const API_URL = (
   configuredApiUrl || (development ? "http://127.0.0.1:3000" : "")
@@ -18,7 +20,12 @@ function configurationError(): string | null {
       !["http:", "https:"].includes(url.protocol)
     )
       return "Uygulamanın sunucu adresi geçersiz. Lütfen geliştiricisine bildirin.";
-    if (!development && url.protocol !== "https:")
+    const privatePreview =
+      LOCAL_PREVIEW &&
+      /^(127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/.test(
+        url.hostname,
+      );
+    if (!development && !privatePreview && url.protocol !== "https:")
       return "Bu sürüm için güvenli bir sunucu bağlantısı ayarlanmamış. Lütfen uygulamanın geliştiricisine bildirin.";
   } catch {
     return "Uygulamanın sunucu adresi geçersiz. Lütfen geliştiricisine bildirin.";
@@ -84,6 +91,16 @@ async function request<T>(
 }
 
 export const api = {
+  social: (token: string) =>
+    request<SocialData>(
+      "/api/mobile/events/" + encodeURIComponent(token) + "/social",
+    ),
+  updateSocial: (token: string, settings: SocialSettings, version: number) =>
+    request<SocialData>(
+      "/api/mobile/events/" + encodeURIComponent(token) + "/social",
+      "PATCH",
+      { settings, version },
+    ),
   /** Sihirbaz cevaplarından davet metni. Anahtar sunucuda durur, uygulamaya gömülmez. */
   wizardText: (body: {
     answers: Record<string, string>;
