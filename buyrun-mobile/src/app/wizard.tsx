@@ -71,8 +71,6 @@ function tepki(qid: string, v: string, a: Answers) {
     case "stil":
     case "hava":
       return `“${kapak}” kapağı sana çok yakışacak.`;
-    case "kalabalik":
-      return "Son dokunuşlar yapılıyor…";
     default:
       return SORU_TEPKI[qid]?.[v] ?? "";
   }
@@ -404,7 +402,7 @@ export default function Wizard() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
       () => {},
     );
-    router.replace("/create");
+    router.replace({ pathname: "/create", params: { from: "wizard" } });
   }
 
   const zeminRengi = background;

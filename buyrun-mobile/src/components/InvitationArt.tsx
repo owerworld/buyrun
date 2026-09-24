@@ -66,8 +66,10 @@ export function InvitationArt({
       imageStyle={{ width: "100%", height: "100%" }}
     >
       {!illustrated && (
+        // Fotoğraflı kapaklarda yazı alt yarıda: orası iyice koyulaşır, üst kısım fotoğraf kalır
         <LinearGradient
-          colors={["#00000012", "#00000000", "#000000BB"]}
+          colors={["#00000012", "#00000008", "#00000066", "#000000D9"]}
+          locations={[0, 0.35, 0.6, 1]}
           style={StyleSheet.absoluteFill}
         />
       )}
@@ -105,6 +107,14 @@ export function InvitationArt({
             lineHeight: size * (serif ? 1.03 : 1.1),
             letterSpacing: serif ? -0.5 : -1.3,
             textAlign: illustrated ? "center" : "left",
+            // Parlak fotoğraf ayrıntıları (disko topu, konfeti) yazının üstünde kalmasın
+            ...(illustrated
+              ? null
+              : {
+                  textShadowColor: "#00000080",
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 8,
+                }),
           }}
         >
           {event.title || c.caption}

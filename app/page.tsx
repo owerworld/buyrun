@@ -25,7 +25,7 @@ export default function Home() {
             <Link className="btn ghost" href="/olustur">Formu kendim dolduracağım</Link>
           </div>
           <p className="home-note">
-            Birkaç soru soruyoruz, gerisini biz hazırlıyoruz. Üyelik yok, uygulama indirmek yok.
+            Birkaç soru soruyoruz, gerisini biz hazırlıyoruz. Üyelik yok; davetlileriniz uygulama indirmeden yanıt verir.
           </p>
         </div>
         <div className="home-invite">
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-paths" aria-label="İki davet türü">
+      <section className="home-paths" aria-label="Davet türleri ve uygulama">
         <div>
           <p className="eyebrow">Düğün davetiyesi</p>
           <h2>Kına, nişan, söz ve düğün</h2>
@@ -52,6 +52,16 @@ export default function Home() {
             der; kontenjanınızı aşmadan kaç kişi olacağınızı bilirsiniz.
           </p>
           <Link className="lnk" href="/basla">Etkinlik daveti oluştur →</Link>
+        </div>
+        <div>
+          <p className="eyebrow">Buyrun uygulaması</p>
+          <h2>Planını cebinden yönet</h2>
+          <p>
+            74 tasarım, tarih oylaması, davetliye sorular ve duyurular. Davetlerini
+            telefonundan hazırla ve takip et; davetlilerin yine uygulama indirmeden yanıt verir.
+          </p>
+          <Link className="lnk" href="/uygulama">Uygulamayı tarayıcıda aç →</Link>
+          <p className="small" style={{ marginTop: 10, marginBottom: 0 }}>Android ve iPhone mağaza sürümleri hazırlanıyor.</p>
         </div>
       </section>
 

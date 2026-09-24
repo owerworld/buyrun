@@ -204,7 +204,8 @@ details summary{cursor:pointer;font-weight:700}
 
 /* Ana sayfada iki davet türü */
 .home-actions{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0}
-.home-paths{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding:8px 0 34px}
+.home-paths{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:8px 0 34px}
+@media(max-width:1000px) and (min-width:761px){.home-paths{grid-template-columns:1fr 1fr}.home-paths>div:last-child{grid-column:1/-1}}
 .home-paths>div{padding:26px;background:var(--card);border:1px solid var(--line);border-radius:18px}
 .home-paths h2{font-size:1.4rem;margin:6px 0 10px}
 .home-paths p{color:var(--muted);font-size:.95rem;margin:0 0 14px}

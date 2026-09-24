@@ -285,6 +285,11 @@ export const MOBILE_STATUS_LABEL: Record<MobileStatus, string> = {
   going: "Geliyor", maybe: "Belki", declined: "Gelemiyor", pending: "Bekliyor",
 };
 
+/** Ev sahibinin isteğiyle davet, davetliler ve plan verileri kalıcı silinir (bağlı tablolar CASCADE). */
+export async function deleteMobileEvent(row: EventRow) {
+  await q(`DELETE FROM mobile_events WHERE id=$1`, [row.id]);
+}
+
 export async function cleanupMobileExpired(today: string) {
   await mobileReady();
   const rows = await q(`DELETE FROM mobile_events WHERE delete_after < $1 RETURNING id`,[today]);
@@ -301,7 +306,7 @@ export function mobileOrigin(req: Request) {
   }
   return url.origin;
 }
-const RESPONSE_HEADERS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" };
+const RESPONSE_HEADERS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" };
 export const mobileJson = (body: unknown, status = 200) => Response.json(body, {status, headers: RESPONSE_HEADERS});
 export const mobileOptions = () => new Response(null, { status: 204, headers: RESPONSE_HEADERS });
 export async function readMobileBody(req: Request) {

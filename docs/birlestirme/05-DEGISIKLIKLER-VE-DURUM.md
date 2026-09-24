@@ -61,7 +61,7 @@ Veritabanı: **yeni tablo veya sütun yok.** Astra'nın eklediği iki tablo zate
 ### Kalan işler (öncelik sırası)
 1. Gerçek cihazda yukarıdaki "test edilemedi" listesi.
 2. Kontenjan dolunca yanıtların kapanması (veritabanı değişikliği gerekmez).
-3. Mobil davetlerde harita/yol tarifi.
+3. ~~Mobil davetlerde harita/yol tarifi~~ — düzeltme: davetli sayfasında zaten var.
 4. Ortak ev sahibi (güvenlik testleriyle).
 5. Ödeme: mağaza ürünleri, sunucu doğrulaması, iptal/hata — ürün sahibinin mağaza hesapları ve fiyat kararı gerekiyor.
 6. iOS derlemesi: Apple Developer hesabı gerekiyor.
@@ -71,3 +71,19 @@ Veritabanı: **yeni tablo veya sütun yok.** Astra'nın eklediği iki tablo zate
 - **Android APK 1.2.0** (EAS `preview`, commit `bd9ccf1`, canlı sunucuya bağlı, 117 MB): https://expo.dev/artifacts/eas/mmDTAozh-fvPXjHrw9c7Dyfb6yKsMcAWL-_5whSQTUE.apk — bağlantı 8 Ekim 2026'ya kadar geçerli; sonra EAS panelinden yeniden derlenir.
 - **iOS:** Apple Developer hesabı olmadığı için üretilmedi.
 - **Web önizleme:** https://buyrun.vercel.app/uygulama
+
+## D. "10/10" turu (müşteri gözüyle puanlamadan sonra)
+| Alan | Önce | Yapılan | Şimdi (tahmin) |
+|---|---|---|---|
+| Davet oluşturma akışı | 6 | Hiçbir yerde kullanılmayan "Kaç kişilik?" sorusu kaldırıldı; kapak sihirbazda/Tasarımlar'da seçildiyse kapak adımı atlanıyor; önizleme ile son adım birleşti (4 → 3 adım, sihirbazdan sonra 2 ekran). | 8,5 |
+| Verinin güvende kalması | 5 | Davet oluşunca "Davetini güvenceye al" kartı: yönetim kodu tek dokunuşla kendine gönderilir/kopyalanır; geri getirirken mesajın tamamı yapıştırılabilir. "Daveti sil" eklendi. | 8,5 |
+| Ev sahibinin takibi | 8 | Toplu davetli ekleme: liste yapıştırılır, her satır bir davetli; numara/madde işaretleri atılır, tekrarlar birleşir; yarıda kalırsa kalanlar kutuda kalır. | 9 |
+| Tasarım | 8,5 | Fotoğraflı kapaklarda yazının arkası koyulaştırıldı, başlığa hafif gölge. | 9 |
+| Gizlilik ve güven | 8,5 | "Daveti sil" (sunucudan kalıcı); gizlilik metni gerçeğe uygun hale getirildi (kapak fotoğrafı, oylama/sorular, cihazda saklama, üçüncü taraflar). | 9 (avukat onayıyla 10) |
+| Tutarlılık | 5 | Ana sayfaya "Buyrun uygulaması" kartı; "uygulama indirmek yok" ifadesi "davetlileriniz uygulama indirmeden yanıt verir" olarak düzeltildi. | 7,5 |
+| Ürüne ulaşabilme | 2 | Web önizleme (/uygulama) + APK; mağaza yol haritası ve metinleri hazır (07). | 4 → hesaplar açılınca 9–10 |
+| Para kazanma | 1 | Ödeme tasarımı, altyapı seçimi, komisyon/ücret araştırması (07). | 2 → hesaplar açılınca 9–10 |
+
+Düzeltme: Önceki belgede "mobil davetlerde yol tarifi yok" yazıyordu; yanlıştı. Davetli sayfasında Google, Yandex, Apple Haritalar ve Waze bağlantıları var.
+
+Yeni otomatik test: `scripts/check-delete.mjs` (12 kontrol: yalnızca yönetim koduyla silinir, bağlı veriler silinir, başka davetler etkilenmez).

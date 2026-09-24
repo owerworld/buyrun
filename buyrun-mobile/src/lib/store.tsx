@@ -152,6 +152,8 @@ type Store = {
   updateGuest: (id: string, gid: string, data: Partial<Guest>) => Promise<void>;
   refresh: (id: string) => Promise<void>;
   importEvent: (token: string) => Promise<Party>;
+  /** Daveti sunucudan ve cihazdan kalıcı olarak siler. */
+  deleteEvent: (id: string) => Promise<void>;
   error: string;
 };
 const Context = createContext<Store | null>(null);
@@ -416,6 +418,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ),
       );
     },
+    deleteEvent: async (id) => {
+      const event = find(id);
+      if (!event.demo) {
+        try {
+          await api.remove(managementKey(event));
+        } catch (error) {
+          // Sunucuda zaten yoksa (süresi dolmuş) cihazdan kaldırmak yeterli
+          if (!(error instanceof ApiError && error.status === 404)) throw error;
+        }
+      }
+      delete keys.current[id];
+      failedSync.current.delete(id);
+      setSyncError(failedSync.current.size ? syncMessage : "");
+      await commit(current.current.filter((value) => value.id !== id));
+    },
     refresh: async (id) => {
       const event = find(id);
       if (event.demo) return;
@@ -440,7 +457,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
     importEvent: async (token) => {
       ensureReady();
-      const normalized = token.trim();
+      // Kendine gönderdiğin mesajın tamamı da yapıştırılabilir: kod "yönetim kodu:" sonrasındadır
+      const normalized =
+        token.match(/kodu:\s*([A-Za-z0-9_-]{16,128})/)?.[1] ?? token.trim();
       try {
         const event = await api.get(normalized);
         if (expired(event)) {

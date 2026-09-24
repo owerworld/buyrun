@@ -553,17 +553,6 @@ export const QUESTIONS: Question[] = [
       { id: "kiyafet", label: "Kıyafet konusunda bir not var" },
     ],
   },
-  {
-    id: "kalabalik",
-    title: "Kaç kişilik bir davet?",
-    lead: "Kesin olması gerekmiyor, kabaca yeter.",
-    options: [
-      { id: "kucuk", label: "20 kişiye kadar" },
-      { id: "orta", label: "20 – 100 kişi" },
-      { id: "buyuk", label: "100 – 300 kişi" },
-      { id: "cokbuyuk", label: "300 kişiden fazla" },
-    ],
-  },
 ];
 
 /** Sorunun bu cevaplarla gösterilecek seçenekleri; türe bağlı açıklamalar doldurulmuş. */

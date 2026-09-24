@@ -31,12 +31,9 @@ import { api, ApiError } from "../lib/api";
 import { dateText, type EventInput } from "../lib/model";
 import { useStore } from "../lib/store";
 const DRAFT = DRAFT_KEY;
-const titles = [
-  "Havasını seç.",
-  "Planı güzelleştir.",
-  "Davetiyen hazır.",
-  "Güzel bir plan başlıyor.",
-];
+const titles = ["Havasını seç.", "Planı güzelleştir.", "Davetiyen hazır."];
+/** Son adım: önizleme ve oluşturma tek ekranda. */
+const LAST = 2;
 export default function Create() {
   const store = useStore();
   const params = useLocalSearchParams<{ cover?: string; id?: string }>();
@@ -66,7 +63,11 @@ export default function Create() {
   return <CreateForm key={params.id || params.cover || "new"} />;
 }
 function CreateForm() {
-  const params = useLocalSearchParams<{ cover?: string; id?: string }>();
+  const params = useLocalSearchParams<{
+    cover?: string;
+    id?: string;
+    from?: string;
+  }>();
   const store = useStore();
   const existing = store.events.find((e) => e.id === params.id);
   const editing = !!existing;
@@ -90,7 +91,11 @@ function CreateForm() {
           capacity: null,
         },
   );
-  const [step, setStep] = useState(0),
+  // Kapak sihirbazda ya da Tasarımlar'da seçildiyse doğrudan bilgilere geçilir;
+  // kapak adımına geri okla dönülebilir.
+  const [step, setStep] = useState(
+    !existing && (params.cover || params.from === "wizard") ? 1 : 0,
+  ),
     [error, setError] = useState(""),
     [saving, setSaving] = useState(false),
     [picking, setPicking] = useState(false),
@@ -121,7 +126,8 @@ function CreateForm() {
                 }
               : {}),
           });
-          setRestored(true);
+          // Sihirbaz taslağı kendisi yazar; o durumda "geri geldi" demek yanıltır
+          setRestored(params.from !== "wizard");
         }
       })
       .catch(() => {})
@@ -131,7 +137,7 @@ function CreateForm() {
     return () => {
       alive = false;
     };
-  }, [editing, params.cover, selected]);
+  }, [editing, params.cover, params.from, selected]);
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(ANSWERS_KEY)
@@ -224,7 +230,7 @@ function CreateForm() {
         return;
       }
     }
-    setStep((s) => Math.min(editing ? 2 : 3, s + 1));
+    setStep((s) => Math.min(LAST, s + 1));
     scroll.current?.scrollTo({ y: 0, animated: true });
   }
   async function choosePhoto() {
@@ -335,7 +341,7 @@ function CreateForm() {
             {editing ? "Planı düzenle" : "Yeni bir plan"}
           </Txt>
           <Txt style={{ color: C.muted, fontSize: 13 }}>
-            {step + 1} / {editing ? 3 : 4}
+            {step + 1} / 3
           </Txt>
         </View>
         <View
@@ -346,7 +352,7 @@ function CreateForm() {
             paddingBottom: 20,
           }}
         >
-          {(editing ? [0, 1, 2] : [0, 1, 2, 3]).map((i) => (
+          {[0, 1, 2].map((i) => (
             <View
               key={i}
               style={{
@@ -371,11 +377,10 @@ function CreateForm() {
                 "Bir kapakla başla. Gerisi güzel bir hikâye.",
                 "Ne zaman, nerede, kimlerle?",
                 "Son bir göz at. Sonra sevdiklerine gönder.",
-                "Tasarım tamam. Şimdi sevdiklerine yer aç.",
               ][step]
             }
           </Txt>
-          {restored && step === 0 && (
+          {restored && step < 2 && (
             <View
               style={{
                 marginBottom: 18,
@@ -495,6 +500,32 @@ function CreateForm() {
           )}
           {step === 1 && (
             <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Kapağı değiştir"
+                onPress={() => setStep(0)}
+                style={[
+                  shared.card,
+                  {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: 10,
+                    marginBottom: 20,
+                  },
+                ]}
+              >
+                <View style={{ width: 52, borderRadius: 10, overflow: "hidden" }}>
+                  <InvitationArt event={data} height={68} mini />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Txt style={{ fontFamily: F.bold }}>{data.category}</Txt>
+                  <Txt style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
+                    Kapağı değiştir
+                  </Txt>
+                </View>
+                <Icon name="chevron-forward" size={18} color={C.muted} />
+              </Pressable>
               <Field
                 label="ETKİNLİK ADI"
                 placeholder="Bir bahane bulalım…"
@@ -642,18 +673,37 @@ function CreateForm() {
                   </Txt>
                 )}
               </View>
-              <View
-                style={[
-                  shared.card,
-                  { backgroundColor: "#EDF2E0", borderWidth: 0 },
-                ]}
-              >
-                <Txt style={{ fontSize: 12, lineHeight: 20 }}>
-                  Davetliler linkten, uygulama indirmeden yanıt verebilir.
-                  Davetiyeni daha sonra da düzenleyebilirsin. Bilgiler
-                  etkinlikten 90 gün sonra silinir.
-                </Txt>
-              </View>
+              {!editing && (
+                <View style={[shared.card, { gap: 14 }]}>
+                  <Txt style={shared.eyebrow}>DAVETİNİN İÇİNDE</Txt>
+                  {[
+                    "Uygulamasız yanıt: davetli bağlantıdan katılımını bildirir",
+                    "Kim geliyor, kaç kişi: anlık katılım takibi",
+                    "Tarih oylaması, sorular ve duyurular",
+                    "WhatsApp, QR'lı görsel ve takvim paylaşımı",
+                  ].map((t) => (
+                    <View
+                      key={t}
+                      style={{ flexDirection: "row", gap: 10, alignItems: "center" }}
+                    >
+                      <Icon name="checkmark-circle" size={19} color={C.green} />
+                      <Txt style={{ fontSize: 13, flex: 1 }}>{t}</Txt>
+                    </View>
+                  ))}
+                  <View style={{ height: 1, backgroundColor: C.line }} />
+                  <View style={shared.between}>
+                    <Txt style={{ fontFamily: F.bold }}>
+                      Davet başına · tek seferlik
+                    </Txt>
+                    <Heading style={{ fontSize: 29 }}>₺49,99</Heading>
+                  </View>
+                  <Txt style={{ color: C.muted, fontSize: 12, lineHeight: 20 }}>
+                    Yayın fiyatı ₺49,99. Bu test sürümünde ödeme alınmaz; tüm
+                    özellikleri ücretsiz deneyebilirsin. Davetiyeni sonradan
+                    düzenleyebilirsin; bilgiler etkinlikten 90 gün sonra silinir.
+                  </Txt>
+                </View>
+              )}
               {existing?.demo && (
                 <Txt style={{ marginTop: 14, fontSize: 12, color: C.muted }}>
                   Bu bir örnek plan. Değişikliklerin yalnızca bu cihazda
@@ -661,86 +711,6 @@ function CreateForm() {
                 </Txt>
               )}
             </>
-          )}
-          {step === 3 && (
-            <View style={{ gap: 20 }}>
-              <View
-                style={{
-                  backgroundColor: "#ECE6F3",
-                  borderRadius: 25,
-                  padding: 22,
-                  flexDirection: "row",
-                  gap: 18,
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{ width: 100, borderRadius: 13, overflow: "hidden" }}
-                >
-                  <InvitationArt event={data} height={140} mini />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Icon name="sparkles-outline" color="#8062A3" />
-                  <Heading style={{ fontSize: 24, marginTop: 12 }}>
-                    Tam senlik oldu.
-                  </Heading>
-                  <Txt
-                    style={{
-                      fontSize: 12,
-                      lineHeight: 20,
-                      color: C.muted,
-                      marginTop: 7,
-                    }}
-                  >
-                    {data.title}
-                  </Txt>
-                </View>
-              </View>
-              <View style={[shared.card, { gap: 18 }]}>
-                <Txt style={shared.eyebrow}>DAVETİNİN İÇİNDE</Txt>
-                {[
-                  "Kişiselleştirdiğin davetiye",
-                  "Sınırsız bağlantı paylaşımı",
-                  "Katılım takibi ve misafir yanıtları",
-                  "Tarih oylaması, sorular ve duyurular",
-                  "Görsel, QR ve takvim paylaşımı",
-                ].map((t) => (
-                  <View
-                    key={t}
-                    style={{
-                      flexDirection: "row",
-                      gap: 10,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Icon name="checkmark-circle" size={19} color={C.green} />
-                    <Txt style={{ fontSize: 13, flex: 1 }}>{t}</Txt>
-                  </View>
-                ))}
-                <View style={{ height: 1, backgroundColor: C.line }} />
-                <View style={shared.between}>
-                  <Txt style={{ fontFamily: F.bold }}>
-                    Davet başına · tek seferlik
-                  </Txt>
-                  <Heading style={{ fontSize: 29 }}>₺49,99</Heading>
-                </View>
-                <Txt style={{ color: C.muted, fontSize: 12, lineHeight: 20 }}>
-                  Yayın fiyatı ₺49,99. Bu test sürümünde ödeme alınmaz; tüm
-                  özellikleri ücretsiz deneyebilirsin.
-                </Txt>
-              </View>
-              <Txt
-                style={{
-                  fontSize: 12,
-                  color: C.muted,
-                  textAlign: "center",
-                  lineHeight: 20,
-                }}
-              >
-                Davetiyeni sonradan düzenleyebilirsin. Misafirlerin uygulama
-                indirmeden yanıt verebilir.
-              </Txt>
-            </View>
           )}
         </ScrollView>
         <View
@@ -755,11 +725,11 @@ function CreateForm() {
         >
           <Button
             tone="lime"
-            icon={step === (editing ? 2 : 3) ? "checkmark" : "arrow-forward"}
+            icon={step === LAST ? "checkmark" : "arrow-forward"}
             loading={saving || picking}
-            onPress={step === (editing ? 2 : 3) ? save : next}
+            onPress={step === LAST ? save : next}
           >
-            {step === (editing ? 2 : 3)
+            {step === LAST
               ? editing
                 ? "Değişiklikleri kaydet"
                 : "Davetiyeyi oluştur"

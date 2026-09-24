@@ -29,7 +29,7 @@ Araştırma tarihi: 24 Eylül 2026.
 | K1 | Davetliye tarih sormak için ayrı anket uygulaması gerekiyor | Astra'nın **tarih oylaması** korundu; oy artık katılım yanıtıyla **aynı düğmeyle** kaydediliyor. | Düşük | **Y** |
 | K1, K5 | Davetliden ek bilgi toplamak (şarkı, yemek tercihi) | Astra'nın **özel soruları**; yanıt yalnızca ev sahibine. | — | **Y** (korundu) |
 | K6, K8 | Davet WhatsApp'ta dolaşıyor; bağlantı çirkin görünürse açılmıyor | Mobil davet bağlantısına **kapaklı önizleme kartı** ve **WhatsApp'ta gönder** düğmesi. | Düşük | **Y** |
-| K6 | Salona nasıl gidilir? | Web davetlerinde harita/yol tarifi var; mobil davetlerde yalnızca yer adı ve adres metni. | Orta (harita seçici mobil tarafa) | **O** |
+| K6 | Salona nasıl gidilir? | Davetli sayfasında (web ve mobil davetler) "Yol tarifi al" + Yandex, Apple Haritalar, Waze bağlantıları zaten var. | — | **Y** (mevcut) |
 | K5 | Çocuk/yetişkin ayrımı (sünnet, doğum günü) | Şimdilik "kaç kişi" + not. Ayrı sayaç, veritabanına sütun eklemeyi gerektirir (ekleme türü, güvenli). | Düşük–orta | **O** |
 | K2, K5 | Kontenjan dolunca ne olacak? | Kontenjan bilgisi zaten var. **Otomatik kapanma** ve **bekleme listesi** aşağıda ayrıca değerlendirildi. | Orta–yüksek | **S** |
 | K1, K5 | Organizasyonu iki kişi yürütüyor (gelin–damat, anne–baba) | **Ortak ev sahibi** aşağıda değerlendirildi. | Orta | **O** |
@@ -44,7 +44,7 @@ Başarı iddiası yapılmıyor; yalnızca mağaza sayfasında (K6) görülen öz
 
 1. **Vesileye göre şablon bolluğu** (gözlem: ~1000 şablon, düğün/doğum/taşınma kategorileri). → Buyrun'da 17 kategori; Türk vesileleri (kına, sünnet, asker uğurlaması, mevlid, hac uğurlaması, diş buğdayı, iftar) kategori olarak var. **Çıkarım:** Şablon sayısından çok, vesileye uygun ilk 3 önerinin doğru olması önemli; sihirbaz bunu yapıyor.
 2. **Paylaşım yerel mesajlaşma uygulamasına göre tasarlanmış** (gözlem: WeChat/QQ paylaşımı). → Türkiye karşılığı WhatsApp (K8). Uygulandı: WhatsApp düğmesi + önizleme kartı.
-3. **Yol tarifi tek dokunuş** (gözlem). → Web davetlerinde var; mobil için "O".
+3. **Yol tarifi tek dokunuş** (gözlem). → Davetli sayfasında var (Google, Yandex, Apple Haritalar, Waze).
 4. **Tek seferlik / süreli ücret** (gözlem: aylık, yıllık, ömür boyu). → Buyrun'un tek seferlik ₺49,99 modeli bununla uyumlu; abonelik önerilmiyor çünkü davet sıklığı düşük (**çıkarım**, doğrulanmadı).
 5. **Davetlinin iyi dilek bırakması** (gözlem). → Buyrun'da "Ev sahibine not" alanı bu işi görüyor; herkese açık dilek duvarı gizlilik kuralı nedeniyle yok.
 

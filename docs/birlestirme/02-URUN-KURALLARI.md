@@ -20,6 +20,8 @@ Bu kurallar birleşik sürümün "anayasası"dır. Yeni bir özellik bu kurallar
 - **Özel soru yanıtları ve notlar yalnızca ev sahibine görünür**; diğer davetlilere ne isim ne yanıt döner. Oylamada davetliler yalnızca toplam sayıyı görür.
 - Davet bağlantıları arama motorlarına kapalıdır (`noindex`, `no-referrer`).
 - Davet bilgileri **etkinlikten 90 gün sonra silinir**; plan verileri (oylama, sorular, duyurular) da etkinlikle birlikte silinir.
+- Ev sahibi daveti istediği an **"Daveti sil"** ile kalıcı olarak silebilir (davetliler, yanıtlar, oylama ve sorular dahil). Silme için yönetim kodu gerekir; davet bağlantısıyla silinemez.
+- Hesap yok; davetler cihazda durur. Kullanıcıya ilk davetten sonra **yönetim kodunu kendine göndermesi** hatırlatılır.
 - Sistem **kimseye kendiliğinden mesaj göndermez.** Paylaşım ev sahibinin kendi WhatsApp'ından / paylaş menüsünden yapılır. Hatırlatma, davetlinin kendi takvimine eklediği dosyadaki alarmla çalışır.
 - İzin ve altyapı olmadan izleme/analitik servisi eklenmez, dışarıya veri gönderilmez.
 - Şifreler, API anahtarları ve imza anahtarları kaynak koduna ve teslim ZIP'ine konmaz.

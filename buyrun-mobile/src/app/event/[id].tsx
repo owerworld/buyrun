@@ -1,4 +1,5 @@
 import { ShareKit } from "../../components/ShareKit";
+import { BackupCard } from "../../components/BackupCard";
 import { PlanTools } from "../../components/PlanTools";
 import { InvitationArt } from "../../components/InvitationArt";
 import React, { useEffect, useRef, useState } from "react";
@@ -40,6 +41,23 @@ import {
 import { useStore } from "../../lib/store";
 
 type Section = "invite" | "guests" | "summary" | "tools";
+
+/** Yapıştırılan listeyi isimlere böler: satır başı numara/madde işaretleri atılır, tekrarlar birleşir. */
+function splitNames(text: string) {
+  return [
+    ...new Set(
+      text
+        .split(/[\n;]+/)
+        .map((n) =>
+          n
+            .replace(/^[\s\d.)\-–•*]+/, "")
+            .trim()
+            .slice(0, 80),
+        )
+        .filter(Boolean),
+    ),
+  ];
+}
 const statuses: GuestStatus[] = ["going", "maybe", "pending", "declined"];
 const sections: { id: Section; label: string }[] = [
   { id: "invite", label: "Davetiye" },
@@ -60,7 +78,10 @@ export default function EventScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const insets = useSafeAreaInsets();
-  const { events, ready, addGuest, updateGuest, refresh } = useStore();
+  const { events, ready, addGuest, updateGuest, refresh, deleteEvent } =
+    useStore();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const event = events.find((item) => item.id === id);
   const [section, setSection] = useState<Section>("invite");
   const [filter, setFilter] = useState<GuestStatus | "all">("all");
@@ -72,6 +93,7 @@ export default function EventScreen() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Guest | null>(null);
   const [guestName, setGuestName] = useState("");
+  const [bulkProgress, setBulkProgress] = useState("");
   const [guestStatus, setGuestStatus] = useState<GuestStatus>("pending");
   const [guestCount, setGuestCount] = useState(1);
   const [formError, setFormError] = useState("");
@@ -195,6 +217,41 @@ export default function EventScreen() {
     const name = guestName.trim();
     if (!name) {
       setFormError("Davetlinin ya da ailenin adını yaz.");
+      return;
+    }
+    // Eklerken her satır bir davetli: liste topluca yapıştırılabilir
+    const names = editing ? [name] : splitNames(guestName);
+    if (names.length > 200) {
+      setFormError("Tek seferde en fazla 200 isim ekleyebilirsin.");
+      return;
+    }
+    if (names.length > 1) {
+      setSaving(true);
+      setFormError("");
+      let added = 0;
+      try {
+        for (const n of names) {
+          setBulkProgress(`${added + 1} / ${names.length} ekleniyor…`);
+          await addGuest(event.id, n);
+          added++;
+        }
+        setFeedback(`${added} davetli listeye eklendi.`);
+        setModalOpen(false);
+        setSection("guests");
+        setFilter("all");
+        setSearch("");
+        Keyboard.dismiss();
+      } catch (cause) {
+        // Eklenenleri listeden çıkar ki tekrar denerken aynı kişi iki kez eklenmesin
+        setGuestName(names.slice(added).join("\n"));
+        setFormError(
+          `${added} davetli eklendi, kalanlar eklenemedi. ` +
+            errorMessage(cause, "Tekrar dene."),
+        );
+      } finally {
+        setBulkProgress("");
+        setSaving(false);
+      }
       return;
     }
     setSaving(true);
@@ -456,6 +513,7 @@ export default function EventScreen() {
                   )}
                 </View>
               )}
+              <BackupCard event={event} />
               <ShareKit event={event} />
               <View style={styles.detailsCard}>
                 <View style={styles.detailRow}>
@@ -564,6 +622,59 @@ export default function EventScreen() {
                 </Pressable>
               </View>
 
+              {!event.demo &&
+                (confirmDelete ? (
+                  <View style={styles.deleteCard}>
+                    <Txt style={{ fontFamily: F.bold, fontSize: 15 }}>
+                      Davet kalıcı olarak silinsin mi?
+                    </Txt>
+                    <Txt style={{ fontSize: 13, lineHeight: 20, color: C.muted }}>
+                      Davet, davetli listesi, yanıtlar, oylama ve sorular
+                      silinir; davet bağlantısı çalışmaz. Bu işlem geri alınamaz.
+                    </Txt>
+                    <View style={{ gap: 10 }}>
+                      <Button
+                        tone="dark"
+                        icon="trash-outline"
+                        loading={deleting}
+                        onPress={async () => {
+                          setDeleting(true);
+                          setError("");
+                          try {
+                            await deleteEvent(event.id);
+                            router.replace("/");
+                          } catch (cause) {
+                            setDeleting(false);
+                            setError(
+                              errorMessage(
+                                cause,
+                                "Davet silinemedi. Bağlantını kontrol edip tekrar dene.",
+                              ),
+                            );
+                          }
+                        }}
+                      >
+                        Kalıcı olarak sil
+                      </Button>
+                      <Button
+                        tone="white"
+                        onPress={() => setConfirmDelete(false)}
+                        disabled={deleting}
+                      >
+                        Vazgeç
+                      </Button>
+                    </View>
+                  </View>
+                ) : (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setConfirmDelete(true)}
+                    style={styles.deleteLink}
+                  >
+                    <Icon name="trash-outline" size={16} color={C.muted} />
+                    <Txt style={{ fontSize: 13, color: C.muted }}>Daveti sil</Txt>
+                  </Pressable>
+                ))}
             </>
           )}
 
@@ -912,16 +1023,30 @@ export default function EventScreen() {
             >
               <Notice message={formError} />
               <Field
-                label="Ad soyad veya aile adı"
+                label={
+                  editing
+                    ? "Ad soyad veya aile adı"
+                    : "Ad soyad veya aile adı · her satıra bir kişi"
+                }
                 value={guestName}
                 onChangeText={setGuestName}
-                placeholder="Örn. Deniz ve ailesi"
-                maxLength={80}
+                placeholder={
+                  editing
+                    ? "Örn. Deniz ve ailesi"
+                    : "Örn. Deniz ve ailesi\nAyşe Teyze\nKaya ailesi"
+                }
+                maxLength={editing ? 80 : 12000}
+                multiline={!editing}
                 autoCapitalize="words"
                 autoFocus={!editing}
-                returnKeyType={editing ? "done" : "go"}
-                onSubmitEditing={editing ? Keyboard.dismiss : saveGuest}
+                returnKeyType={editing ? "done" : "default"}
+                onSubmitEditing={editing ? Keyboard.dismiss : undefined}
                 editable={!saving}
+                style={
+                  editing
+                    ? undefined
+                    : { minHeight: 96, maxHeight: 220, textAlignVertical: "top" }
+                }
               />
               {editing ? (
                 <>
@@ -1025,7 +1150,7 @@ export default function EventScreen() {
                 <Txt style={styles.addHint}>
                   {event.demo
                     ? "Bu örneğe eklediğin davetli yalnızca cihazında saklanır."
-                    : "Telefon numarası gerekmez. Ekledikten sonra kişiye özel bağlantısını paylaşabilirsin."}
+                    : "Telefon numarası gerekmez. Listeni topluca yapıştırabilirsin; her satır ayrı bir davetli olur ve her birine özel bağlantı hazırlanır."}
                 </Txt>
               )}
               <Button
@@ -1035,7 +1160,12 @@ export default function EventScreen() {
                 tone="lime"
                 icon={editing ? "checkmark" : "person-add-outline"}
               >
-                {editing ? "Değişiklikleri kaydet" : "Davetli ekle"}
+                {editing
+                  ? "Değişiklikleri kaydet"
+                  : bulkProgress ||
+                    (splitNames(guestName).length > 1
+                      ? `${splitNames(guestName).length} davetliyi ekle`
+                      : "Davetli ekle")}
               </Button>
             </ScrollView>
           </View>
@@ -1046,6 +1176,21 @@ export default function EventScreen() {
 }
 
 const styles = StyleSheet.create({
+  deleteLink: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    marginTop: 26,
+  },
+  deleteCard: {
+    marginTop: 26,
+    gap: 12,
+    padding: 18,
+    borderRadius: 20,
+    backgroundColor: "#FBEDEA",
+  },
   loading: { justifyContent: "center", alignItems: "center", padding: 28 },
   loadingText: { color: C.muted, marginTop: 16, fontSize: 13 },
   notFoundCopy: {

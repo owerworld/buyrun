@@ -390,15 +390,16 @@ export default function ProfileScreen() {
               {sheet === "import" && (
                 <>
                   <Txt style={styles.sheetCopy}>
-                    Daha önce sakladığın yönetim kodunu yaz. Planın ve gelen
-                    yanıtlar burada yeniden görünsün.
+                    Sakladığın yönetim kodunu ya da kendine gönderdiğin mesajın
+                    tamamını yapıştır. Planın ve gelen yanıtlar burada yeniden
+                    görünsün.
                   </Txt>
                   <Field
                     label="Yönetim kodu"
                     value={token}
                     onChangeText={setToken}
-                    maxLength={180}
-                    placeholder="Kodunu buraya yapıştır"
+                    maxLength={600}
+                    placeholder="Kodu ya da mesajı buraya yapıştır"
                     autoCapitalize="none"
                     autoCorrect={false}
                     autoFocus

@@ -127,6 +127,12 @@ export const api = {
       "PATCH",
       data,
     ),
+  /** Davet, davetliler ve yanıtlar sunucudan kalıcı silinir. */
+  remove: (token: string) =>
+    request<{ deleted: boolean }>(
+      "/api/mobile/events/" + encodeURIComponent(token),
+      "DELETE",
+    ),
   add: (token: string, name: string) =>
     request<Guest>(
       "/api/mobile/events/" + encodeURIComponent(token) + "/guests",
