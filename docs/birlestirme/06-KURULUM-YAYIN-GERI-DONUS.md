@@ -80,10 +80,10 @@ Veritabanı değişikliği olmadığı için kod geri dönüşü veri kaybına y
 git revert <birleştirme-commit'i>      # yalnızca o değişikliği geri alır, geçmişi silmez
 git push -u origin claude/wizardly-meitner-5vakb6
 ```
-Referans noktaları (etiketler):
-- `claude-final` — birleştirmeden önceki Claude sürümü
-- `astra-final` — Astra'nın olduğu gibi içe alınmış sürümü
+Referans noktaları (commit kimlikleri uzak dalda mevcut; `claude-final` / `astra-final` etiketleri yalnızca yerel kopyada, uzak sunucuya gönderilemedi):
+- `e408d68` (`claude-final`) — birleştirmeden önceki Claude sürümü
+- `6c3b998` (`astra-final`) — Astra'nın olduğu gibi içe alınmış sürümü
 
-Bir etiketteki dosyaya bakmak için: `git show astra-final:app/m/[token]/social.tsx`
+Bir etiketteki dosyaya bakmak için: `git show 6c3b998:app/m/[token]/social.tsx`
 
 **Mobil:** Eski APK'yı yeniden kurmak yeterli (EAS paneli → Builds → önceki derleme). Sunucu API'si geriye uyumlu olduğu için eski uygulama yeni sunucuyla çalışır.

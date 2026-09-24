@@ -43,6 +43,11 @@ Veritabanı: **yeni tablo veya sütun yok.** Astra'nın eklediği iki tablo zate
 | Mobil akış (web önizlemesi) | 390 px ve 320 px'te: sihirbaz → önizleme → son adım (fiyat) → etkinlik → 4 sekme; sayfa hatası yok |
 | Önizleme kartı ve takvim dosyası | Görüntü 1200×630 üretildi; .ics içinde VALARM ve doğru saat dilimi |
 
+### Canlıda doğrulandı (24 Eylül 2026, commit `bd9ccf1`)
+- Vercel yayını `READY` (production).
+- Web sihirbazı son adımında fiyat notu görünüyor.
+- İşaretli tek bir deneme davetiyle ("Canlı kontrol — silinebilir", etkinlik 1 Ekim 2026, 90 gün sonra kendiliğinden silinir): davet sayfası 200, önizleme kartı PNG olarak üretiliyor, takvim dosyası hatırlatmalı iniyor, sayfa arama motorlarına kapalı (`noindex`).
+
 ### Test edilemedi (dürüst liste)
 | Ne | Neden | Nasıl test edilir |
 |---|---|---|
