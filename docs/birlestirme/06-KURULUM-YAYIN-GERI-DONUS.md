@@ -87,3 +87,9 @@ Referans noktaları (commit kimlikleri uzak dalda mevcut; `claude-final` / `astr
 Bir etiketteki dosyaya bakmak için: `git show 6c3b998:app/m/[token]/social.tsx`
 
 **Mobil:** Eski APK'yı yeniden kurmak yeterli (EAS paneli → Builds → önceki derleme). Sunucu API'si geriye uyumlu olduğu için eski uygulama yeni sunucuyla çalışır.
+
+## 7. Uygulamanın web önizlemesi
+- Adres: **https://buyrun.vercel.app/uygulama** — telefondaki uygulamanın aynısı, tarayıcıda. Arama motorlarına kapalı.
+- Web'de desteklenmeyenler: QR'lı görsel paylaşımı ve takvim dosyası paylaşımı (telefonda çalışır).
+- Uygulamada değişiklik yaptıktan sonra önizlemeyi güncellemek için: `sh scripts/web-onizleme.sh`, sonra commit + gönderim.
+- Kaldırmak için: `public/uygulama` klasörünü ve `next.config.ts` içindeki `/uygulama` yönlendirmesini silmek yeterli.

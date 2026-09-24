@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const privatePaths = ["/d/:path*", "/g/:path*", "/m/:path*", "/p/:path*", "/yonet/:path*", "/onizleme/:path*", "/etkinlik/:path+"];
+const privatePaths = ["/uygulama", "/uygulama/:path*", "/d/:path*", "/g/:path*", "/m/:path*", "/p/:path*", "/yonet/:path*", "/onizleme/:path*", "/etkinlik/:path+"];
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", ...(process.env.NEXT_PUBLIC_SITE_URL ? [new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname] : [])],
@@ -8,6 +8,18 @@ const nextConfig: NextConfig = {
   // Link önizleme posterinin yazı tipleri sunucu paketine dahil edilsin
   outputFileTracingIncludes: { "/**": ["./assets/fonts/*.ttf"] },
   poweredByHeader: false,
+  // Mobil uygulamanın web önizlemesi (public/uygulama, expo export çıktısı).
+  // Dosya olmayan her adres uygulamanın kendisine gider; yönlendirmeyi uygulama yapar.
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: [
+        { source: "/uygulama", destination: "/uygulama/index.html" },
+        { source: "/uygulama/:path*", destination: "/uygulama/index.html" },
+      ],
+    };
+  },
   async headers() {
     return [
       {

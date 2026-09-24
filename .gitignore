@@ -11,3 +11,6 @@ AGENTS.md
 CLAUDE.md
 test-fixture.json
 Buyrun-Birlesik-*.zip
+
+# Uygulamanın web önizlemesi (expo export çıktısı) ikon dosyalarını içerir
+!public/uygulama/**/node_modules
