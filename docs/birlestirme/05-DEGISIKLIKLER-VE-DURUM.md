@@ -69,6 +69,7 @@ Veritabanı: **yeni tablo veya sütun yok.** Astra'nın eklediği iki tablo zate
 
 ## C. Kurulum dosyaları
 - **Android APK 1.2.0** (EAS `preview`, commit `bd9ccf1`, canlı sunucuya bağlı, 117 MB): https://expo.dev/artifacts/eas/mmDTAozh-fvPXjHrw9c7Dyfb6yKsMcAWL-_5whSQTUE.apk — bağlantı 8 Ekim 2026'ya kadar geçerli; sonra EAS panelinden yeniden derlenir.
+- **Android APK 1.3.0** (güncel; kısa akış, davet güvencesi, toplu davetli, daveti sil — commit `fe154d8`): https://expo.dev/artifacts/eas/yG0tNGr_0dyUQXXNyqWISxZBhHM3a3nz-WTzw-ShYIo.apk — 8 Ekim 2026'ya kadar geçerli.
 - **iOS:** Apple Developer hesabı olmadığı için üretilmedi.
 - **Web önizleme:** https://buyrun.vercel.app/uygulama
 
