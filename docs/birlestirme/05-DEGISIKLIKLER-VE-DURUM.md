@@ -66,3 +66,8 @@ Veritabanı: **yeni tablo veya sütun yok.** Astra'nın eklediği iki tablo zate
 5. Ödeme: mağaza ürünleri, sunucu doğrulaması, iptal/hata — ürün sahibinin mağaza hesapları ve fiyat kararı gerekiyor.
 6. iOS derlemesi: Apple Developer hesabı gerekiyor.
 7. Bekleme listesi ve ortak albüm: ürün sahibi onayı + altyapı kararı.
+
+## C. Kurulum dosyaları
+- **Android APK 1.2.0** (EAS `preview`, commit `bd9ccf1`, canlı sunucuya bağlı, 117 MB): https://expo.dev/artifacts/eas/mmDTAozh-fvPXjHrw9c7Dyfb6yKsMcAWL-_5whSQTUE.apk — bağlantı 8 Ekim 2026'ya kadar geçerli; sonra EAS panelinden yeniden derlenir.
+- **iOS:** Apple Developer hesabı olmadığı için üretilmedi.
+- **Web önizleme:** https://buyrun.vercel.app/uygulama
